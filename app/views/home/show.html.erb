@@ -1,0 +1,104 @@
+<% content_for :title, "Tsunagari" %>
+
+<section class="hero-stage">
+  <article class="hero-card hero-copy">
+    <p class="ribbon-label">First Policy</p>
+    <h1 class="hero-title">出会いから、<br>より良くなる。</h1>
+    <p class="lede">
+      Tsunagari は、人との出会いによって何が前に進んだのかを、
+      人物録と背景メモから読み解いていくための情報サイトです。
+    </p>
+
+    <div class="hero-actions">
+      <% if user_signed_in? %>
+        <%= link_to "編集プロフィールへ", profile_path, class: "primary-link" %>
+        <%= link_to "人物録を見る", users_path, class: "secondary-link" %>
+      <% else %>
+        <%= link_to "人物録を見る", users_path, class: "primary-link" %>
+        <%= link_to "編集ログイン", sign_in_path, class: "secondary-link" %>
+      <% end %>
+    </div>
+
+    <% unless user_signed_in? %>
+      <p class="meta">編集参加する場合は <%= link_to "編集メンバー登録", sign_up_path %> から始められます。</p>
+    <% end %>
+
+    <div class="feature-strip">
+      <span class="feature-pill">encounter</span>
+      <span class="feature-pill">change</span>
+      <span class="feature-pill">betterment</span>
+    </div>
+  </article>
+
+  <aside class="hero-card mascot-panel">
+    <div class="mascot-orb">
+      <div class="mascot-core">ROOT</div>
+    </div>
+    <p class="mascot-name">Better Through Encounters</p>
+    <p class="mascot-copy">
+      ただ出会った事実を並べるのではなく、その出会いが仕事、学び、
+      行動、関係をどう良くしたのかまで読める形に整えていきます。
+    </p>
+    <ul class="speech-list">
+      <li>人物録を辿る</li>
+      <li>出会いの背景を探る</li>
+      <li>より良くなった変化を残す</li>
+    </ul>
+  </aside>
+</section>
+
+<% if user_signed_in? %>
+  <section class="dashboard-grid">
+    <article class="panel soft-panel">
+      <p class="eyebrow">Watchlist</p>
+      <h2>最近注目した人物</h2>
+      <% if @favorite_users.any? %>
+        <ul class="stack-list soft-list">
+          <% @favorite_users.each do |user| %>
+            <li>
+              <strong><%= link_to user.profile.display_name, user_path(user) %></strong>
+              <span class="meta"><%= user.profile.organization.presence || "所属未設定" %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">注目人物はまだありません。出会いの先で何かを良くしていそうな人物を見つけたら、ここに残していきましょう。</p>
+      <% end %>
+    </article>
+
+    <article class="panel soft-panel">
+      <p class="eyebrow">Editorial Notes</p>
+      <h2>最近の取材メモ</h2>
+      <% if @recent_notes.any? %>
+        <ul class="stack-list soft-list">
+          <% @recent_notes.each do |note| %>
+            <li>
+              <strong><%= link_to note.subject_user.profile.display_name, user_path(note.subject_user) %></strong>
+              <span class="meta"><%= truncate(note.note, length: 70) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">取材メモはまだありません。どんな出会いが何を前進させたのかを残しておくと、人物録の密度が上がります。</p>
+      <% end %>
+    </article>
+  </section>
+<% else %>
+  <section class="dashboard-grid">
+    <article class="panel soft-panel">
+      <p class="eyebrow">Step 01</p>
+      <h2>出会いの入口を知る</h2>
+      <p>公開中の人物票から、どの分野でどんな人が誰かの変化の起点になっているかを掴めます。</p>
+    </article>
+    <article class="panel soft-panel">
+      <p class="eyebrow">Step 02</p>
+      <h2>変化のきっかけを探す</h2>
+      <p>名前、所属、役割、タグから検索して、自分の次の出会いにつながりそうな人物や分野を横断的に辿れます。</p>
+    </article>
+    <article class="panel soft-panel">
+      <p class="eyebrow">Step 03</p>
+      <h2>より良くなった先まで読む</h2>
+      <p>人物単体ではなく、その出会いで何が良くなったのかを追える土台にしていきます。</p>
+    </article>
+  </section>
+<% end %>

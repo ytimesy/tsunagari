@@ -1,0 +1,44 @@
+<% content_for :title, "編集プロフィール" %>
+
+<section class="profile-hero">
+  <div class="profile-badge">
+    <p class="eyebrow">Editor Profile</p>
+    <h1><%= @profile.display_name %></h1>
+    <p class="meta"><%= @profile.organization.presence || "所属未設定" %> / <%= @profile.role.presence || "役割未設定" %></p>
+    <div class="status-petal"><%= visibility_label(@profile.visibility_level) %></div>
+  </div>
+  <%= link_to "設定を開く", edit_profile_path, class: "primary-link" %>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Published Entry</p>
+    <h2>公開中の人物票</h2>
+    <p><strong>自己紹介:</strong></p>
+    <%= simple_format(@profile.bio.presence || "未設定") %>
+    <div class="tag-cloud">
+      <% if @profile.tags.any? %>
+        <% @profile.tags.order(:name).each do |tag| %>
+          <span class="tag-pill"><%= tag.name %></span>
+        <% end %>
+      <% else %>
+        <span class="tag-pill muted">タグ未設定</span>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Editorial Activity</p>
+    <h2>編集状況</h2>
+    <div class="compact-stats">
+      <div class="stat-chip">
+        <strong><%= @favorites_count %></strong>
+        <span>注目人物</span>
+      </div>
+      <div class="stat-chip">
+        <strong><%= @encounter_notes_count %></strong>
+        <span>取材メモ</span>
+      </div>
+    </div>
+  </article>
+</section>

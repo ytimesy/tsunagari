@@ -1,0 +1,52 @@
+<% content_for :title, "編集プロフィール設定" %>
+
+<section class="form-panel cute-frame">
+  <p class="ribbon-label">Editorial Profile</p>
+  <h1>編集プロフィール設定</h1>
+
+  <% if @profile.errors.any? %>
+    <div class="error-summary">
+      <p>入力内容を確認してください。</p>
+      <ul>
+        <% @profile.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @profile, url: profile_path, method: :patch do |form| %>
+    <div class="field">
+      <%= form.label :display_name, "表示名" %>
+      <%= form.text_field :display_name, required: true, placeholder: "掲載名 / 編集名" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :organization, "所属" %>
+      <%= form.text_field :organization, placeholder: "OpenAI / デザイン研究会 / もくもく会" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :role, "役割" %>
+      <%= form.text_field :role, placeholder: "Builder / Designer / Organizer" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :bio, "自己紹介" %>
+      <%= form.text_area :bio, rows: 6, placeholder: "どの分野を見ているか、何を作っているか、なぜこのテーマを追うのかを書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :visibility_level, "公開範囲" %>
+      <%= form.select :visibility_level, Profile::VISIBILITY_LEVELS.map { |value| [ visibility_label(value), value ] } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :tag_list, "タグ" %>
+      <%= form.text_field :tag_list, value: @tag_list, placeholder: "Rails, Ruby, Design" %>
+      <p class="field-hint">カンマ区切りで入力します。専門軸や継続して追っているテーマを入れると整理しやすくなります。</p>
+    </div>
+
+    <%= form.submit "設定を保存する", class: "primary-button" %>
+  <% end %>
+</section>

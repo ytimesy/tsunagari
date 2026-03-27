@@ -1,0 +1,58 @@
+<% content_for :title, "編集メンバー登録" %>
+
+<section class="entry-layout">
+  <aside class="entry-aside">
+    <p class="ribbon-label">Editorial Member</p>
+    <h1 class="hero-title small">公開人物録を整える、<br>最初の一歩。</h1>
+    <p class="lede">
+      編集メンバーとしての基本情報を登録して、
+      公開人物録と取材メモの整理を始めます。
+    </p>
+    <div class="aside-badges">
+      <span class="feature-pill">editor profile</span>
+      <span class="feature-pill">public archive</span>
+    </div>
+  </aside>
+
+  <section class="form-panel narrow cute-frame">
+    <p class="eyebrow">Editor Sign Up</p>
+    <h2>編集メンバー登録</h2>
+
+    <% if @user.errors.any? %>
+      <div class="error-summary">
+        <p>入力内容を確認してください。</p>
+        <ul>
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= form_with model: @user, url: sign_up_path do |form| %>
+      <div class="field">
+        <%= form.label :email, "メールアドレス" %>
+        <%= form.email_field :email, required: true, autofocus: true, placeholder: "you@example.com" %>
+      </div>
+
+      <div class="field">
+        <%= form.fields_for :profile, @user.profile || @user.build_profile do |profile_form| %>
+          <%= profile_form.label :display_name, "表示名" %>
+          <%= profile_form.text_field :display_name, required: true, placeholder: "Haru / Yuna / 佐藤花子" %>
+        <% end %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password, "パスワード" %>
+        <%= form.password_field :password, required: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password_confirmation, "パスワード確認" %>
+        <%= form.password_field :password_confirmation, required: true %>
+      </div>
+
+      <%= form.submit "編集メンバーを作成", class: "primary-button" %>
+    <% end %>
+  </section>
+</section>

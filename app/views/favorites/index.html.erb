@@ -1,0 +1,28 @@
+<% content_for :title, "注目人物" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">Watchlist</p>
+    <h1>注目人物</h1>
+    <p class="lede compact">継続して追いたい人物や、関係の背景を掘りたい人物を整理する一覧です。</p>
+  </div>
+</section>
+
+<section class="results-grid">
+  <% @favorites.each do |favorite| %>
+    <% user = favorite.target_user %>
+    <article class="panel result-card">
+      <p class="eyebrow">Watchlist</p>
+      <h2><%= link_to user.profile.display_name, user_path(user) %></h2>
+      <p class="meta"><%= user.profile.organization.presence || "所属未設定" %> / <%= user.profile.role.presence || "役割未設定" %></p>
+      <p class="meta">追加日時: <%= l(favorite.created_at, format: :short) %></p>
+      <%= button_to "注目解除", user_favorite_path(user), method: :delete, class: "ghost-button" %>
+    </article>
+  <% end %>
+
+  <% if @favorites.empty? %>
+    <article class="panel empty-state">
+      <p>まだ注目人物はありません。追いかけたい人物を追加すると、ここに並びます。</p>
+    </article>
+  <% end %>
+</section>

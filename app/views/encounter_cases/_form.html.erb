@@ -1,0 +1,125 @@
+<section class="form-panel cute-frame">
+  <p class="ribbon-label">Encounter Case</p>
+  <h1><%= @encounter_case.new_record? ? "出会い事例を作成" : "出会い事例を編集" %></h1>
+
+  <% if @encounter_case.errors.any? %>
+    <div class="error-summary">
+      <p>入力内容を確認してください。</p>
+      <ul>
+        <% @encounter_case.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @encounter_case, url: @encounter_case.new_record? ? encounter_cases_path : encounter_case_path(@encounter_case) do |form| %>
+    <div class="field">
+      <%= form.label :title, "事例タイトル" %>
+      <%= form.text_field :title, required: true, placeholder: "研究者と地域が出会い、新しい実験が始まった" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :summary, "要約" %>
+      <%= form.text_area :summary, rows: 3, placeholder: "何が起きた事例なのかを短くまとめます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :background, "背景" %>
+      <%= form.text_area :background, rows: 8, placeholder: "出会いの背景、文脈、前提条件を書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :happened_on, "起きた日" %>
+      <%= form.date_field :happened_on %>
+    </div>
+
+    <div class="field">
+      <%= form.label :place, "場所" %>
+      <%= form.text_field :place, placeholder: "Tokyo / Online / Community Lab" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :publication_status, "公開状態" %>
+      <%= form.select :publication_status, EncounterCase::PUBLICATION_STATUSES.map { |value| [ publication_status_label(value), value ] } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :published_at, "公開日時" %>
+      <%= form.datetime_local_field :published_at %>
+    </div>
+
+    <div class="field">
+      <%= form.label :tag_list, "事例タグ" %>
+      <%= form.text_field :tag_list, value: @tag_list, placeholder: "mentorship, collaboration, civic-tech" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :participant_names, "参加人物" %>
+      <%= form.text_field :participant_names, value: @participant_names, placeholder: "Ada Lovelace, Charles Babbage" %>
+      <p class="field-hint">カンマ区切りで入力します。未登録人物は下書きで自動作成されます。</p>
+    </div>
+
+    <div class="field">
+      <%= form.label :participant_role, "参加ロール" %>
+      <%= form.text_field :participant_role, value: @participant_role, placeholder: "participant / mentor / connector" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :outcome_category, "成果カテゴリ" %>
+      <%= form.text_field :outcome_category, value: @outcome_category, placeholder: "innovation / learning / community" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :outcome_description, "何が良くなったか" %>
+      <%= form.text_area :outcome_description, value: @outcome_description, rows: 4, placeholder: "出会いによって前進したことを書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :impact_scope, "影響範囲" %>
+      <%= form.text_field :impact_scope, value: @impact_scope, placeholder: "individual / team / field / community" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :evidence_level, "根拠レベル" %>
+      <%= form.select :evidence_level, CaseOutcome::EVIDENCE_LEVELS.map { |value| [ evidence_level_label(value), value ] }, { include_blank: "未設定" }, value: @evidence_level %>
+    </div>
+
+    <div class="field">
+      <%= form.label :factor_type, "要因カテゴリ" %>
+      <%= form.text_field :factor_type, value: @factor_type, placeholder: "trust / timing / shared-interest" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :factor_description, "なぜ起きたか" %>
+      <%= form.text_area :factor_description, value: @factor_description, rows: 4, placeholder: "前進が起きた条件や要因を書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :reproducibility_note, "再現のヒント" %>
+      <%= form.text_area :reproducibility_note, value: @reproducibility_note, rows: 3, placeholder: "次に活かせる条件や示唆を書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :source_title, "出典タイトル" %>
+      <%= form.text_field :source_title, value: @source_title, placeholder: "Interview / Article / Report" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :source_url, "出典URL" %>
+      <%= form.url_field :source_url, value: @source_url, placeholder: "https://example.com/source" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :source_type, "出典種別" %>
+      <%= form.text_field :source_type, value: @source_type, placeholder: "article / interview / report" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :source_published_on, "出典公開日" %>
+      <%= form.date_field :source_published_on, value: @source_published_on %>
+    </div>
+
+    <%= form.submit(@encounter_case.new_record? ? "事例を作成" : "事例を更新", class: "primary-button") %>
+  <% end %>
+</section>

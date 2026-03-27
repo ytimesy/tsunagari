@@ -10,54 +10,151 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_27_225645) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "encounter_notes", force: :cascade do |t|
-    t.bigint "author_user_id", null: false
-    t.bigint "subject_user_id", null: false
-    t.date "encountered_on"
-    t.string "encounter_place"
-    t.text "note", null: false
-    t.text "next_action"
+  create_table "case_outcomes", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
+    t.string "category", null: false
+    t.text "description", null: false
+    t.string "impact_scope"
+    t.string "evidence_level"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["author_user_id", "subject_user_id"], name: "index_encounter_notes_on_author_user_id_and_subject_user_id"
-    t.index ["author_user_id"], name: "index_encounter_notes_on_author_user_id"
-    t.index ["subject_user_id"], name: "index_encounter_notes_on_subject_user_id"
+    t.index ["encounter_case_id"], name: "index_case_outcomes_on_encounter_case_id"
   end
 
-  create_table "favorites", force: :cascade do |t|
-    t.bigint "owner_user_id", null: false
-    t.bigint "target_user_id", null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["owner_user_id", "target_user_id"], name: "index_favorites_on_owner_user_id_and_target_user_id", unique: true
-    t.index ["owner_user_id"], name: "index_favorites_on_owner_user_id"
-    t.index ["target_user_id"], name: "index_favorites_on_target_user_id"
-    t.check_constraint "owner_user_id <> target_user_id", name: "favorites_owner_target_check"
+  create_table "case_participants", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
+    t.bigint "person_id", null: false
+    t.string "participation_role", null: false
+    t.text "contribution_summary"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encounter_case_id", "person_id", "participation_role"], name: "index_case_participants_uniqueness", unique: true
+    t.index ["encounter_case_id"], name: "index_case_participants_on_encounter_case_id"
+    t.index ["person_id"], name: "index_case_participants_on_person_id"
   end
 
-  create_table "profile_tags", force: :cascade do |t|
-    t.bigint "profile_id", null: false
+  create_table "case_sources", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
+    t.bigint "source_id", null: false
+    t.string "citation_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encounter_case_id", "source_id"], name: "index_case_sources_on_encounter_case_id_and_source_id", unique: true
+    t.index ["encounter_case_id"], name: "index_case_sources_on_encounter_case_id"
+    t.index ["source_id"], name: "index_case_sources_on_source_id"
+  end
+
+  create_table "case_tags", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
     t.bigint "tag_id", null: false
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["profile_id", "tag_id"], name: "index_profile_tags_on_profile_id_and_tag_id", unique: true
-    t.index ["profile_id"], name: "index_profile_tags_on_profile_id"
-    t.index ["tag_id"], name: "index_profile_tags_on_tag_id"
-  end
-
-  create_table "profiles", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.string "display_name", null: false
-    t.text "bio"
-    t.string "organization"
-    t.string "role"
-    t.string "visibility_level", default: "member", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
-    t.check_constraint "visibility_level::text = ANY (ARRAY['public'::character varying, 'member'::character varying, 'private'::character varying]::text[])", name: "profiles_visibility_level_check"
+    t.index ["encounter_case_id", "tag_id"], name: "index_case_tags_on_encounter_case_id_and_tag_id", unique: true
+    t.index ["encounter_case_id"], name: "index_case_tags_on_encounter_case_id"
+    t.index ["tag_id"], name: "index_case_tags_on_tag_id"
+  end
+
+  create_table "encounter_cases", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "summary"
+    t.text "background"
+    t.date "happened_on"
+    t.string "place"
+    t.string "publication_status", default: "draft", null: false
+    t.datetime "published_at"
+    t.bigint "editor_user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["editor_user_id"], name: "index_encounter_cases_on_editor_user_id"
+    t.index ["publication_status"], name: "index_encounter_cases_on_publication_status"
+    t.index ["slug"], name: "index_encounter_cases_on_slug", unique: true
+  end
+
+  create_table "organizations", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "name", null: false
+    t.string "category"
+    t.string "website_url"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_organizations_on_slug", unique: true
+  end
+
+  create_table "people", force: :cascade do |t|
+    t.string "slug", null: false
+    t.string "display_name", null: false
+    t.text "summary"
+    t.text "bio"
+    t.string "publication_status", default: "draft", null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["publication_status"], name: "index_people_on_publication_status"
+    t.index ["slug"], name: "index_people_on_slug", unique: true
+  end
+
+  create_table "person_affiliations", force: :cascade do |t|
+    t.bigint "person_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "title"
+    t.date "started_on"
+    t.date "ended_on"
+    t.boolean "primary_flag", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_person_affiliations_on_organization_id"
+    t.index ["person_id", "organization_id", "title", "started_on"], name: "index_person_affiliations_uniqueness", unique: true
+    t.index ["person_id"], name: "index_person_affiliations_on_person_id"
+  end
+
+  create_table "person_tags", force: :cascade do |t|
+    t.bigint "person_id", null: false
+    t.bigint "tag_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id", "tag_id"], name: "index_person_tags_on_person_id_and_tag_id", unique: true
+    t.index ["person_id"], name: "index_person_tags_on_person_id"
+    t.index ["tag_id"], name: "index_person_tags_on_tag_id"
+  end
+
+  create_table "research_notes", force: :cascade do |t|
+    t.bigint "author_user_id", null: false
+    t.bigint "person_id"
+    t.bigint "encounter_case_id"
+    t.string "note_kind", default: "research", null: false
+    t.text "body", null: false
+    t.string "status", default: "open", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_user_id"], name: "index_research_notes_on_author_user_id"
+    t.index ["encounter_case_id"], name: "index_research_notes_on_encounter_case_id"
+    t.index ["person_id"], name: "index_research_notes_on_person_id"
+    t.index ["status"], name: "index_research_notes_on_status"
+  end
+
+  create_table "sources", force: :cascade do |t|
+    t.string "title", null: false
+    t.string "url", null: false
+    t.string "source_type"
+    t.date "published_on"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["url"], name: "index_sources_on_url", unique: true
+  end
+
+  create_table "success_factors", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
+    t.string "factor_type", null: false
+    t.text "description", null: false
+    t.text "reproducibility_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encounter_case_id"], name: "index_success_factors_on_encounter_case_id"
   end
 
   create_table "tags", force: :cascade do |t|
@@ -71,16 +168,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_27_225645) do
   create_table "users", force: :cascade do |t|
     t.string "email", null: false
     t.string "password_digest", null: false
+    t.string "role", default: "editor", null: false
+    t.string "status", default: "active", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
-  add_foreign_key "encounter_notes", "users", column: "author_user_id"
-  add_foreign_key "encounter_notes", "users", column: "subject_user_id"
-  add_foreign_key "favorites", "users", column: "owner_user_id"
-  add_foreign_key "favorites", "users", column: "target_user_id"
-  add_foreign_key "profile_tags", "profiles"
-  add_foreign_key "profile_tags", "tags"
-  add_foreign_key "profiles", "users"
+  add_foreign_key "case_outcomes", "encounter_cases"
+  add_foreign_key "case_participants", "encounter_cases"
+  add_foreign_key "case_participants", "people"
+  add_foreign_key "case_sources", "encounter_cases"
+  add_foreign_key "case_sources", "sources"
+  add_foreign_key "case_tags", "encounter_cases"
+  add_foreign_key "case_tags", "tags"
+  add_foreign_key "encounter_cases", "users", column: "editor_user_id"
+  add_foreign_key "person_affiliations", "organizations"
+  add_foreign_key "person_affiliations", "people"
+  add_foreign_key "person_tags", "people"
+  add_foreign_key "person_tags", "tags"
+  add_foreign_key "research_notes", "encounter_cases"
+  add_foreign_key "research_notes", "people"
+  add_foreign_key "research_notes", "users", column: "author_user_id"
+  add_foreign_key "success_factors", "encounter_cases"
 end

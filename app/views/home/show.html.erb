@@ -11,10 +11,10 @@
 
     <div class="hero-actions">
       <% if user_signed_in? %>
-        <%= link_to "編集プロフィールへ", profile_path, class: "primary-link" %>
-        <%= link_to "人物録を見る", users_path, class: "secondary-link" %>
+        <%= link_to "新規事例を作る", new_encounter_case_path, class: "primary-link" %>
+        <%= link_to "人物録を見る", people_path, class: "secondary-link" %>
       <% else %>
-        <%= link_to "人物録を見る", users_path, class: "primary-link" %>
+        <%= link_to "出会い事例を見る", encounter_cases_path, class: "primary-link" %>
         <%= link_to "編集ログイン", sign_in_path, class: "secondary-link" %>
       <% end %>
     </div>
@@ -50,55 +50,72 @@
 <% if user_signed_in? %>
   <section class="dashboard-grid">
     <article class="panel soft-panel">
-      <p class="eyebrow">Watchlist</p>
-      <h2>最近注目した人物</h2>
-      <% if @favorite_users.any? %>
+      <p class="eyebrow">Editorial Cases</p>
+      <h2>最近編集した事例</h2>
+      <% if @recent_cases.any? %>
         <ul class="stack-list soft-list">
-          <% @favorite_users.each do |user| %>
+          <% @recent_cases.each do |encounter_case| %>
             <li>
-              <strong><%= link_to user.profile.display_name, user_path(user) %></strong>
-              <span class="meta"><%= user.profile.organization.presence || "所属未設定" %></span>
+              <strong><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></strong>
+              <span class="meta"><%= publication_status_label(encounter_case.publication_status) %></span>
             </li>
           <% end %>
         </ul>
       <% else %>
-        <p class="empty-note">注目人物はまだありません。良い出会いの起点になりそうな人物を見つけたら、ここに残していきましょう。</p>
+        <p class="empty-note">まだ事例はありません。最初の出会い事例を作るところから始めましょう。</p>
       <% end %>
     </article>
 
     <article class="panel soft-panel">
       <p class="eyebrow">Editorial Notes</p>
-      <h2>最近の取材メモ</h2>
+      <h2>最近の編集メモ</h2>
       <% if @recent_notes.any? %>
         <ul class="stack-list soft-list">
           <% @recent_notes.each do |note| %>
             <li>
-              <strong><%= link_to note.subject_user.profile.display_name, user_path(note.subject_user) %></strong>
-              <span class="meta"><%= truncate(note.note, length: 70) %></span>
+              <strong>
+                <% if note.person.present? %>
+                  <%= link_to note.person.display_name, person_path(note.person) %>
+                <% elsif note.encounter_case.present? %>
+                  <%= link_to note.encounter_case.title, encounter_case_path(note.encounter_case) %>
+                <% end %>
+              </strong>
+              <span class="meta"><%= truncate(note.body, length: 70) %></span>
             </li>
           <% end %>
         </ul>
       <% else %>
-        <p class="empty-note">取材メモはまだありません。どんな出会いが何を前進させ、なぜそうなったのかを残しておくと、事例の質が上がります。</p>
+        <p class="empty-note">編集メモはまだありません。人物や事例に仮説を書き始めると、調査の軸が定まります。</p>
       <% end %>
     </article>
   </section>
 <% else %>
   <section class="dashboard-grid">
     <article class="panel soft-panel">
-      <p class="eyebrow">Step 01</p>
-      <h2>良い出会いの入口を知る</h2>
-      <p>公開中の人物票から、どんな人がどんな前進の起点になっているかを掴めます。</p>
+      <p class="eyebrow">Published People</p>
+      <h2><%= @published_people_count %> 人物</h2>
+      <p>公開中の人物録から、どんな人がどんな前進の起点になっているかを辿れます。</p>
     </article>
     <article class="panel soft-panel">
-      <p class="eyebrow">Step 02</p>
-      <h2>条件と文脈を読む</h2>
-      <p>名前、所属、役割、タグから検索して、どんな条件で前向きな出会いが起きたのかを横断的に辿れます。</p>
+      <p class="eyebrow">Published Cases</p>
+      <h2><%= @published_case_count %> 事例</h2>
+      <p>出会い事例から、何が前進し、どんな条件が効いたのかを読めます。</p>
     </article>
     <article class="panel soft-panel">
-      <p class="eyebrow">Step 03</p>
+      <p class="eyebrow">How To Use</p>
       <h2>次の一歩に活かす</h2>
-      <p>人物単体ではなく、その出会いで何が良くなったのかを読み、自分や社会の次の前進に活かす土台にします。</p>
+      <p>人物、成果、再現条件を読み比べて、自分の次の挑戦に転用できるヒントを持ち帰れます。</p>
     </article>
+  </section>
+
+  <section class="results-grid">
+    <% @featured_cases.each do |encounter_case| %>
+      <article class="panel result-card">
+        <p class="eyebrow">Featured Case</p>
+        <h2><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></h2>
+        <p class="meta"><%= encounter_case.happened_on || "時期未設定" %> / <%= encounter_case.place.presence || "場所未設定" %></p>
+        <p><%= truncate(encounter_case.summary.presence || encounter_case.background.presence || "概要未設定", length: 120) %></p>
+      </article>
+    <% end %>
   </section>
 <% end %>

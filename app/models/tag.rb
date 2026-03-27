@@ -1,6 +1,9 @@
 class Tag < ApplicationRecord
-  has_many :profile_tags, dependent: :destroy
-  has_many :profiles, through: :profile_tags
+  has_many :person_tags, dependent: :destroy
+  has_many :people, through: :person_tags
+
+  has_many :case_tags, dependent: :destroy
+  has_many :encounter_cases, through: :case_tags
 
   before_validation :normalize_name_fields
 

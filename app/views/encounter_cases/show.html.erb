@@ -1,0 +1,144 @@
+<% content_for :title, @encounter_case.title %>
+
+<section class="profile-hero">
+  <div class="profile-badge">
+    <p class="ribbon-label">Encounter Case</p>
+    <h1><%= @encounter_case.title %></h1>
+    <p class="meta"><%= @encounter_case.happened_on || "時期未設定" %> / <%= @encounter_case.place.presence || "場所未設定" %></p>
+    <div class="status-petal"><%= publication_status_label(@encounter_case.publication_status) %></div>
+  </div>
+
+  <% if user_signed_in? %>
+    <%= link_to "編集", edit_encounter_case_path(@encounter_case), class: "primary-link" %>
+  <% end %>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Case Summary</p>
+    <h2>事例概要</h2>
+    <%= simple_format(@encounter_case.summary.presence || "要約未設定") %>
+    <p><strong>背景:</strong></p>
+    <%= simple_format(@encounter_case.background.presence || "背景未設定") %>
+
+    <div class="tag-cloud">
+      <% if @encounter_case.tags.any? %>
+        <% @encounter_case.tags.order(:name).each do |tag| %>
+          <span class="tag-pill"><%= tag.name %></span>
+        <% end %>
+      <% else %>
+        <span class="tag-pill muted">タグ未設定</span>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Participants</p>
+    <h2>関わった人物</h2>
+    <% if @encounter_case.case_participants.any? %>
+      <ul class="stack-list soft-list">
+        <% @encounter_case.case_participants.includes(:person).each do |participant| %>
+          <li>
+            <strong><%= link_to participant.person.display_name, person_path(participant.person) %></strong>
+            <span class="meta"><%= participant.participation_role %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">参加人物はまだ設定されていません。</p>
+    <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Outcomes</p>
+    <h2>何が良くなったか</h2>
+    <% if @encounter_case.case_outcomes.any? %>
+      <ul class="stack-list note-list">
+        <% @encounter_case.case_outcomes.each do |outcome| %>
+          <li class="timeline-card">
+            <strong><%= outcome.category %></strong>
+            <span class="meta"><%= outcome.impact_scope.presence || "影響範囲未設定" %> / <%= evidence_level_label(outcome.evidence_level.presence || "reported") %></span>
+            <div><%= simple_format(outcome.description) %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">成果はまだ整理されていません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Success Factors</p>
+    <h2>なぜ起きたか</h2>
+    <% if @encounter_case.success_factors.any? %>
+      <ul class="stack-list note-list">
+        <% @encounter_case.success_factors.each do |factor| %>
+          <li class="timeline-card">
+            <strong><%= factor.factor_type %></strong>
+            <div><%= simple_format(factor.description) %></div>
+            <% if factor.reproducibility_note.present? %>
+              <p class="meta">再現のヒント: <%= factor.reproducibility_note %></p>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">要因分析はまだ整理されていません。</p>
+    <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Sources</p>
+    <h2>出典</h2>
+    <% if @encounter_case.sources.any? %>
+      <ul class="stack-list soft-list">
+        <% @encounter_case.sources.each do |source| %>
+          <li>
+            <strong><%= link_to source.title, source.url, target: "_blank", rel: "noreferrer" %></strong>
+            <span class="meta"><%= source.source_type.presence || "種別未設定" %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">出典はまだ設定されていません。</p>
+    <% end %>
+  </article>
+
+  <% if user_signed_in? %>
+    <article class="panel soft-panel">
+      <p class="eyebrow">Research Notes</p>
+      <h2>編集メモ</h2>
+
+      <%= form_with url: research_notes_path do |form| %>
+        <%= form.hidden_field :encounter_case_id, value: @encounter_case.id, name: "research_note[encounter_case_id]" %>
+
+        <div class="field">
+          <%= form.label :note_kind, "メモ種別" %>
+          <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
+        </div>
+
+        <div class="field">
+          <%= form.label :body, "内容" %>
+          <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
+        </div>
+
+        <%= form.submit "メモを残す", class: "primary-button" %>
+      <% end %>
+
+      <% if @research_notes.any? %>
+        <ul class="stack-list note-list">
+          <% @research_notes.each do |note| %>
+            <li class="timeline-card">
+              <strong><%= note.note_kind.humanize %></strong>
+              <div><%= simple_format(note.body) %></div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </article>
+  <% end %>
+</section>

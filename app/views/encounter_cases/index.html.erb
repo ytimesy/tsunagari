@@ -1,0 +1,48 @@
+<% content_for :title, "出会い事例" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">Cases</p>
+    <h1>出会い事例</h1>
+    <p class="lede compact">どんな出会いが何を前進させたのかを、事例単位で辿ります。</p>
+  </div>
+  <% if user_signed_in? %>
+    <%= link_to "新規事例", new_encounter_case_path, class: "primary-link" %>
+  <% end %>
+</section>
+
+<section class="panel soft-panel">
+  <%= form_with url: encounter_cases_path, method: :get, class: "inline-form" do |form| %>
+    <%= form.search_field :q, value: @query, placeholder: "タイトル、背景、人物、タグで検索" %>
+    <%= form.submit "検索", class: "primary-button" %>
+  <% end %>
+</section>
+
+<section class="results-grid">
+  <% @encounter_cases.each do |encounter_case| %>
+    <article class="panel result-card">
+      <p class="eyebrow">Case</p>
+      <h2><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></h2>
+      <p class="meta"><%= encounter_case.happened_on || "時期未設定" %> / <%= encounter_case.place.presence || "場所未設定" %></p>
+      <% if user_signed_in? %>
+        <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
+      <% end %>
+      <p><%= truncate(encounter_case.summary.presence || encounter_case.background.presence || "概要未設定", length: 140) %></p>
+      <div class="tag-cloud">
+        <% if encounter_case.tags.any? %>
+          <% encounter_case.tags.order(:name).each do |tag| %>
+            <span class="tag-pill"><%= tag.name %></span>
+          <% end %>
+        <% else %>
+          <span class="tag-pill muted">タグ未設定</span>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+
+  <% if @encounter_cases.empty? %>
+    <article class="panel empty-state">
+      <p>条件に一致する事例は見つかりませんでした。別のキーワードで探してみてください。</p>
+    </article>
+  <% end %>
+</section>

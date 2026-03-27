@@ -1,0 +1,54 @@
+<% content_for :title, "人物録" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">People</p>
+    <h1>人物録</h1>
+    <p class="lede compact">出会いの起点になりそうな人物を、名前、所属、タグから探します。</p>
+  </div>
+  <% if user_signed_in? %>
+    <%= link_to "新規人物", new_person_path, class: "primary-link" %>
+  <% end %>
+</section>
+
+<section class="panel soft-panel">
+  <%= form_with url: people_path, method: :get, class: "inline-form" do |form| %>
+    <%= form.search_field :q, value: @query, placeholder: "名前、要約、所属、タグで検索" %>
+    <%= form.submit "検索", class: "primary-button" %>
+  <% end %>
+</section>
+
+<section class="results-grid">
+  <% @people.each do |person| %>
+    <article class="panel result-card">
+      <p class="eyebrow">Person</p>
+      <h2><%= link_to person.display_name, person_path(person) %></h2>
+      <% affiliation = person.primary_affiliation %>
+      <p class="meta">
+        <%= affiliation&.organization&.name.presence || "所属未設定" %>
+        <% if affiliation&.title.present? %>
+          / <%= affiliation.title %>
+        <% end %>
+      </p>
+      <% if user_signed_in? %>
+        <p class="meta"><%= publication_status_label(person.publication_status) %></p>
+      <% end %>
+      <p><%= truncate(person.summary.presence || person.bio.presence || "概要未設定", length: 120) %></p>
+      <div class="tag-cloud">
+        <% if person.tags.any? %>
+          <% person.tags.order(:name).each do |tag| %>
+            <span class="tag-pill"><%= tag.name %></span>
+          <% end %>
+        <% else %>
+          <span class="tag-pill muted">タグ未設定</span>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+
+  <% if @people.empty? %>
+    <article class="panel empty-state">
+      <p>条件に一致する人物は見つかりませんでした。別のキーワードで探してみてください。</p>
+    </article>
+  <% end %>
+</section>

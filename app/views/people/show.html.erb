@@ -1,0 +1,93 @@
+<% content_for :title, @person.display_name %>
+
+<section class="profile-hero">
+  <div class="profile-badge">
+    <p class="ribbon-label">Person</p>
+    <h1><%= @person.display_name %></h1>
+    <% affiliation = @person.primary_affiliation %>
+    <p class="meta">
+      <%= affiliation&.organization&.name.presence || "所属未設定" %>
+      <% if affiliation&.title.present? %>
+        / <%= affiliation.title %>
+      <% end %>
+    </p>
+    <div class="status-petal"><%= publication_status_label(@person.publication_status) %></div>
+  </div>
+
+  <% if user_signed_in? %>
+    <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
+  <% end %>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Summary</p>
+    <h2>人物概要</h2>
+    <%= simple_format(@person.summary.presence || "要約未設定") %>
+    <p><strong>本文:</strong></p>
+    <%= simple_format(@person.bio.presence || "本文未設定") %>
+
+    <div class="tag-cloud">
+      <% if @person.tags.any? %>
+        <% @person.tags.order(:name).each do |tag| %>
+          <span class="tag-pill"><%= tag.name %></span>
+        <% end %>
+      <% else %>
+        <span class="tag-pill muted">タグ未設定</span>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Related Cases</p>
+    <h2>関わる出会い事例</h2>
+    <% if @related_cases.any? %>
+      <ul class="stack-list soft-list">
+        <% @related_cases.each do |encounter_case| %>
+          <li>
+            <strong><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></strong>
+            <span class="meta"><%= encounter_case.happened_on || "時期未設定" %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ紐づく出会い事例はありません。</p>
+    <% end %>
+  </article>
+</section>
+
+<% if user_signed_in? %>
+  <section class="dashboard-grid">
+    <article class="panel soft-panel">
+      <p class="eyebrow">Research Notes</p>
+      <h2>編集メモ</h2>
+
+      <%= form_with url: research_notes_path do |form| %>
+        <%= form.hidden_field :person_id, value: @person.id, name: "research_note[person_id]" %>
+
+        <div class="field">
+          <%= form.label :note_kind, "メモ種別" %>
+          <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
+        </div>
+
+        <div class="field">
+          <%= form.label :body, "内容" %>
+          <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
+        </div>
+
+        <%= form.submit "メモを残す", class: "primary-button" %>
+      <% end %>
+
+      <% if @research_notes.any? %>
+        <ul class="stack-list note-list">
+          <% @research_notes.each do |note| %>
+            <li class="timeline-card">
+              <strong><%= note.note_kind.humanize %></strong>
+              <div><%= simple_format(note.body) %></div>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </article>
+  </section>
+<% end %>

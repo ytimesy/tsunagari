@@ -6,9 +6,9 @@ class SessionsController < ApplicationController
   def create
     @user = User.find_by(email: session_params[:email].to_s.strip.downcase)
 
-    if @user&.authenticate(session_params[:password])
+    if @user&.authenticate(session_params[:password]) && @user.active?
       session[:user_id] = @user.id
-      redirect_to profile_path, notice: "編集画面にログインしました。"
+      redirect_to root_path, notice: "編集画面にログインしました。"
     else
       flash.now[:alert] = "メールアドレスまたはパスワードが違います。"
       render :new, status: :unprocessable_entity

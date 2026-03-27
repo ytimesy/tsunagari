@@ -3,6 +3,8 @@ class CreateUsers < ActiveRecord::Migration[7.2]
     create_table :users do |t|
       t.string :email, null: false
       t.string :password_digest, null: false
+      t.string :role, null: false, default: "editor"
+      t.string :status, null: false, default: "active"
 
       t.timestamps
     end

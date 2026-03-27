@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "case_insights", force: :cascade do |t|
+    t.bigint "encounter_case_id", null: false
+    t.string "insight_type", null: false
+    t.text "description", null: false
+    t.text "application_note"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["encounter_case_id"], name: "index_case_insights_on_encounter_case_id"
+  end
 
   create_table "case_outcomes", force: :cascade do |t|
     t.bigint "encounter_case_id", null: false
@@ -22,6 +32,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
     t.string "evidence_level"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "outcome_direction", default: "positive", null: false
     t.index ["encounter_case_id"], name: "index_case_outcomes_on_encounter_case_id"
   end
 
@@ -147,16 +158,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
     t.index ["url"], name: "index_sources_on_url", unique: true
   end
 
-  create_table "success_factors", force: :cascade do |t|
-    t.bigint "encounter_case_id", null: false
-    t.string "factor_type", null: false
-    t.text "description", null: false
-    t.text "reproducibility_note"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["encounter_case_id"], name: "index_success_factors_on_encounter_case_id"
-  end
-
   create_table "tags", force: :cascade do |t|
     t.string "name", null: false
     t.string "normalized_name", null: false
@@ -175,6 +176,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  add_foreign_key "case_insights", "encounter_cases"
   add_foreign_key "case_outcomes", "encounter_cases"
   add_foreign_key "case_participants", "encounter_cases"
   add_foreign_key "case_participants", "people"
@@ -190,5 +192,4 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_100040) do
   add_foreign_key "research_notes", "encounter_cases"
   add_foreign_key "research_notes", "people"
   add_foreign_key "research_notes", "users", column: "author_user_id"
-  add_foreign_key "success_factors", "encounter_cases"
 end

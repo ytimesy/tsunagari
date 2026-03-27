@@ -53,39 +53,40 @@
 <section class="dashboard-grid">
   <article class="panel soft-panel">
     <p class="eyebrow">Outcomes</p>
-    <h2>何が良くなったか</h2>
+    <h2>何が起き、どう変化したか</h2>
     <% if @encounter_case.case_outcomes.any? %>
       <ul class="stack-list note-list">
         <% @encounter_case.case_outcomes.each do |outcome| %>
           <li class="timeline-card">
             <strong><%= outcome.category %></strong>
+            <span class="tag-pill"><%= outcome_direction_label(outcome.outcome_direction) %></span>
             <span class="meta"><%= outcome.impact_scope.presence || "影響範囲未設定" %> / <%= evidence_level_label(outcome.evidence_level.presence || "reported") %></span>
             <div><%= simple_format(outcome.description) %></div>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-note">成果はまだ整理されていません。</p>
+      <p class="empty-note">結果はまだ整理されていません。</p>
     <% end %>
   </article>
 
   <article class="panel soft-panel">
-    <p class="eyebrow">Success Factors</p>
-    <h2>なぜ起きたか</h2>
-    <% if @encounter_case.success_factors.any? %>
+    <p class="eyebrow">Insights</p>
+    <h2>学びと示唆</h2>
+    <% if @encounter_case.case_insights.any? %>
       <ul class="stack-list note-list">
-        <% @encounter_case.success_factors.each do |factor| %>
+        <% @encounter_case.case_insights.each do |insight| %>
           <li class="timeline-card">
-            <strong><%= factor.factor_type %></strong>
-            <div><%= simple_format(factor.description) %></div>
-            <% if factor.reproducibility_note.present? %>
-              <p class="meta">再現のヒント: <%= factor.reproducibility_note %></p>
+            <strong><%= insight_type_label(insight.insight_type) %></strong>
+            <div><%= simple_format(insight.description) %></div>
+            <% if insight.application_note.present? %>
+              <p class="meta">次に活かす視点: <%= insight.application_note %></p>
             <% end %>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-note">要因分析はまだ整理されていません。</p>
+      <p class="empty-note">学びや示唆はまだ整理されていません。</p>
     <% end %>
   </article>
 </section>

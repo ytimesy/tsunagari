@@ -10,7 +10,7 @@ class EncounterCase < ApplicationRecord
   has_many :tags, through: :case_tags
 
   has_many :case_outcomes, dependent: :destroy
-  has_many :success_factors, dependent: :destroy
+  has_many :case_insights, dependent: :destroy
 
   has_many :case_sources, dependent: :destroy
   has_many :sources, through: :case_sources

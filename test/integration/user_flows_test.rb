@@ -49,12 +49,13 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
         participant_names: "Ada Lovelace, Charles Babbage",
         participant_role: "participant",
         outcome_category: "innovation",
+        outcome_direction: "positive",
         outcome_description: "A new computational perspective emerged.",
         impact_scope: "field",
         evidence_level: "documented",
-        factor_type: "shared-interest",
-        factor_description: "They had a shared curiosity and technical depth.",
-        reproducibility_note: "Shared inquiry spaces matter.",
+        insight_type: "enabler",
+        insight_description: "They had a shared curiosity and technical depth.",
+        application_note: "Shared inquiry spaces matter.",
         source_title: "Biography",
         source_url: "https://example.com/ada-charles",
         source_type: "article",
@@ -66,8 +67,52 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_redirected_to encounter_case_path(encounter_case)
     assert_equal 2, encounter_case.people.count
     assert_equal 1, encounter_case.case_outcomes.count
-    assert_equal 1, encounter_case.success_factors.count
+    assert_equal "positive", encounter_case.case_outcomes.first.outcome_direction
+    assert_equal 1, encounter_case.case_insights.count
     assert_equal 1, encounter_case.sources.count
+  end
+
+  test "published case can show setbacks and lessons" do
+    editor = create_editor(email: "editor4@example.com")
+    sign_in_as(editor)
+
+    post encounter_cases_path, params: {
+      encounter_case: {
+        title: "A civic project stalled after an initial meeting",
+        summary: "The meeting created energy, but the collaboration later stalled.",
+        background: "Expectations and decision rights were not aligned.",
+        happened_on: Date.new(2025, 2, 1),
+        place: "Osaka",
+        publication_status: "published",
+        tag_list: "Civic, Collaboration",
+        participant_names: "Planner A, Researcher B",
+        participant_role: "participant",
+        outcome_category: "coordination",
+        outcome_direction: "negative",
+        outcome_description: "The project stalled because ownership stayed ambiguous.",
+        impact_scope: "team",
+        evidence_level: "reported",
+        insight_type: "barrier",
+        insight_description: "Ambiguous roles and delayed decisions weakened trust.",
+        application_note: "Set decision owners before the first collaborative sprint.",
+        source_title: "Postmortem interview",
+        source_url: "https://example.com/stalled-project",
+        source_type: "interview",
+        source_published_on: Date.new(2025, 3, 1)
+      }
+    }
+
+    encounter_case = EncounterCase.find_by!(title: "A civic project stalled after an initial meeting")
+    assert_equal "negative", encounter_case.case_outcomes.first.outcome_direction
+    assert_equal "barrier", encounter_case.case_insights.first.insight_type
+
+    delete sign_out_path
+
+    get encounter_case_path(encounter_case)
+    assert_response :success
+    assert_match "失敗・後退", response.body
+    assert_match "阻害要因", response.body
+    assert_match "ownership stayed ambiguous", response.body
   end
 
   test "guest sees only published people and encounter cases" do
@@ -101,7 +146,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
   end
 
   test "signed in editor can add research notes to person and encounter case" do
-    editor = create_editor(email: "editor3@example.com")
+    editor = create_editor(email: "editor5@example.com")
     person = Person.create!(display_name: "Grace Hopper", publication_status: "published")
     encounter_case = EncounterCase.create!(editor_user: editor, title: "Grace met a Navy team", publication_status: "published")
 

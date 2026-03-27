@@ -4,7 +4,7 @@
   <div>
     <p class="ribbon-label">Cases</p>
     <h1>出会い事例</h1>
-    <p class="lede compact">どんな出会いが何を前進させたのかを、事例単位で辿ります。</p>
+    <p class="lede compact">どんな出会いが前進や停滞、失敗を生み、そこから何を学べるかを辿ります。</p>
   </div>
   <% if user_signed_in? %>
     <%= link_to "新規事例", new_encounter_case_path, class: "primary-link" %>
@@ -26,6 +26,9 @@
       <p class="meta"><%= encounter_case.happened_on || "時期未設定" %> / <%= encounter_case.place.presence || "場所未設定" %></p>
       <% if user_signed_in? %>
         <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
+      <% end %>
+      <% if (primary_outcome = encounter_case.case_outcomes.first).present? %>
+        <p class="meta"><%= outcome_direction_label(primary_outcome.outcome_direction) %> / <%= primary_outcome.category %></p>
       <% end %>
       <p><%= truncate(encounter_case.summary.presence || encounter_case.background.presence || "概要未設定", length: 140) %></p>
       <div class="tag-cloud">

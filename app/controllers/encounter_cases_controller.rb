@@ -32,7 +32,7 @@ class EncounterCasesController < ApplicationController
       sync_tags(@encounter_case, @tag_list)
       sync_participants(@encounter_case)
       sync_outcomes(@encounter_case)
-      sync_success_factors(@encounter_case)
+      sync_case_insights(@encounter_case)
       sync_sources(@encounter_case)
     end
 
@@ -53,7 +53,7 @@ class EncounterCasesController < ApplicationController
       sync_tags(@encounter_case, @tag_list)
       sync_participants(@encounter_case)
       sync_outcomes(@encounter_case)
-      sync_success_factors(@encounter_case)
+      sync_case_insights(@encounter_case)
       sync_sources(@encounter_case)
     end
 
@@ -66,7 +66,7 @@ class EncounterCasesController < ApplicationController
   private
 
   def set_encounter_case
-    @encounter_case = EncounterCase.includes(:people, :case_outcomes, :success_factors, :sources, :tags).find_by!(slug: params[:slug])
+    @encounter_case = EncounterCase.includes(:people, :case_outcomes, :case_insights, :sources, :tags).find_by!(slug: params[:slug])
   end
 
   def base_scope
@@ -96,12 +96,13 @@ class EncounterCasesController < ApplicationController
       :participant_names,
       :participant_role,
       :outcome_category,
+      :outcome_direction,
       :outcome_description,
       :impact_scope,
       :evidence_level,
-      :factor_type,
-      :factor_description,
-      :reproducibility_note,
+      :insight_type,
+      :insight_description,
+      :application_note,
       :source_title,
       :source_url,
       :source_type,
@@ -118,12 +119,13 @@ class EncounterCasesController < ApplicationController
     @participant_names = encounter_case_params[:participant_names].to_s
     @participant_role = encounter_case_params[:participant_role].presence || "participant"
     @outcome_category = encounter_case_params[:outcome_category].to_s
+    @outcome_direction = encounter_case_params[:outcome_direction].presence || "positive"
     @outcome_description = encounter_case_params[:outcome_description].to_s
     @impact_scope = encounter_case_params[:impact_scope].to_s
     @evidence_level = encounter_case_params[:evidence_level].to_s
-    @factor_type = encounter_case_params[:factor_type].to_s
-    @factor_description = encounter_case_params[:factor_description].to_s
-    @reproducibility_note = encounter_case_params[:reproducibility_note].to_s
+    @insight_type = encounter_case_params[:insight_type].presence || "lesson"
+    @insight_description = encounter_case_params[:insight_description].to_s
+    @application_note = encounter_case_params[:application_note].to_s
     @source_title = encounter_case_params[:source_title].to_s
     @source_url = encounter_case_params[:source_url].to_s
     @source_type = encounter_case_params[:source_type].to_s
@@ -138,13 +140,14 @@ class EncounterCasesController < ApplicationController
     @participant_role ||= @encounter_case.case_participants.first&.participation_role.to_s.presence || "participant"
     primary_outcome = @encounter_case.case_outcomes.first
     @outcome_category ||= primary_outcome&.category.to_s
+    @outcome_direction ||= primary_outcome&.outcome_direction.to_s.presence || "positive"
     @outcome_description ||= primary_outcome&.description.to_s
     @impact_scope ||= primary_outcome&.impact_scope.to_s
     @evidence_level ||= primary_outcome&.evidence_level.to_s
-    primary_factor = @encounter_case.success_factors.first
-    @factor_type ||= primary_factor&.factor_type.to_s
-    @factor_description ||= primary_factor&.description.to_s
-    @reproducibility_note ||= primary_factor&.reproducibility_note.to_s
+    primary_insight = @encounter_case.case_insights.first
+    @insight_type ||= primary_insight&.insight_type.to_s.presence || "lesson"
+    @insight_description ||= primary_insight&.description.to_s
+    @application_note ||= primary_insight&.application_note.to_s
     primary_source = @encounter_case.sources.first
     @source_title ||= primary_source&.title.to_s
     @source_url ||= primary_source&.url.to_s
@@ -159,7 +162,7 @@ class EncounterCasesController < ApplicationController
       @encounter_case.errors.add(:base, "公開するには参加人物が必要です。")
     end
     if @outcome_description.blank?
-      @encounter_case.errors.add(:base, "公開するには成果が必要です。")
+      @encounter_case.errors.add(:base, "公開するには結果の記述が必要です。")
     end
     if @source_url.blank?
       @encounter_case.errors.add(:base, "公開するには出典が必要です。")
@@ -198,20 +201,21 @@ class EncounterCasesController < ApplicationController
 
     encounter_case.case_outcomes.create!(
       category: @outcome_category.presence || "general",
+      outcome_direction: @outcome_direction.presence || "positive",
       description: @outcome_description,
       impact_scope: @impact_scope.presence,
       evidence_level: @evidence_level.presence || "reported"
     )
   end
 
-  def sync_success_factors(encounter_case)
-    encounter_case.success_factors.destroy_all
-    return if @factor_description.blank?
+  def sync_case_insights(encounter_case)
+    encounter_case.case_insights.destroy_all
+    return if @insight_description.blank?
 
-    encounter_case.success_factors.create!(
-      factor_type: @factor_type.presence || "other",
-      description: @factor_description,
-      reproducibility_note: @reproducibility_note.presence
+    encounter_case.case_insights.create!(
+      insight_type: @insight_type.presence || "lesson",
+      description: @insight_description,
+      application_note: @application_note.presence
     )
   end
 

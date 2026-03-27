@@ -66,13 +66,18 @@
     </div>
 
     <div class="field">
-      <%= form.label :outcome_category, "成果カテゴリ" %>
-      <%= form.text_field :outcome_category, value: @outcome_category, placeholder: "innovation / learning / community" %>
+      <%= form.label :outcome_category, "結果カテゴリ" %>
+      <%= form.text_field :outcome_category, value: @outcome_category, placeholder: "innovation / learning / conflict / community" %>
     </div>
 
     <div class="field">
-      <%= form.label :outcome_description, "何が良くなったか" %>
-      <%= form.text_area :outcome_description, value: @outcome_description, rows: 4, placeholder: "出会いによって前進したことを書きます。" %>
+      <%= form.label :outcome_direction, "結果の向き" %>
+      <%= form.select :outcome_direction, CaseOutcome::OUTCOME_DIRECTIONS.map { |value| [ outcome_direction_label(value), value ] }, { selected: @outcome_direction } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :outcome_description, "何が起きたか" %>
+      <%= form.text_area :outcome_description, value: @outcome_description, rows: 4, placeholder: "前進、停滞、失敗、摩擦を含めて、出会いの結果を書きます。" %>
     </div>
 
     <div class="field">
@@ -82,22 +87,22 @@
 
     <div class="field">
       <%= form.label :evidence_level, "根拠レベル" %>
-      <%= form.select :evidence_level, CaseOutcome::EVIDENCE_LEVELS.map { |value| [ evidence_level_label(value), value ] }, { include_blank: "未設定" }, value: @evidence_level %>
+      <%= form.select :evidence_level, CaseOutcome::EVIDENCE_LEVELS.map { |value| [ evidence_level_label(value), value ] }, { include_blank: "未設定", selected: @evidence_level } %>
     </div>
 
     <div class="field">
-      <%= form.label :factor_type, "要因カテゴリ" %>
-      <%= form.text_field :factor_type, value: @factor_type, placeholder: "trust / timing / shared-interest" %>
+      <%= form.label :insight_type, "示唆カテゴリ" %>
+      <%= form.select :insight_type, CaseInsight::INSIGHT_TYPES.map { |value| [ insight_type_label(value), value ] }, { selected: @insight_type } %>
     </div>
 
     <div class="field">
-      <%= form.label :factor_description, "なぜ起きたか" %>
-      <%= form.text_area :factor_description, value: @factor_description, rows: 4, placeholder: "前進が起きた条件や要因を書きます。" %>
+      <%= form.label :insight_description, "学び・要因・阻害要因" %>
+      <%= form.text_area :insight_description, value: @insight_description, rows: 4, placeholder: "前進を支えたこと、失敗を招いたこと、次に残す教訓を書きます。" %>
     </div>
 
     <div class="field">
-      <%= form.label :reproducibility_note, "再現のヒント" %>
-      <%= form.text_area :reproducibility_note, value: @reproducibility_note, rows: 3, placeholder: "次に活かせる条件や示唆を書きます。" %>
+      <%= form.label :application_note, "次にどう活かすか" %>
+      <%= form.text_area :application_note, value: @application_note, rows: 3, placeholder: "再現、回避、改善のヒントを書きます。" %>
     </div>
 
     <div class="field">

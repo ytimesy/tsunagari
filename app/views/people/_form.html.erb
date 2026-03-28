@@ -20,12 +20,13 @@
     </div>
 
     <div class="field">
-      <%= form.label :summary, "要約" %>
+      <%= form.label :summary, "要約（ローカル補足）" %>
       <%= form.text_area :summary, rows: 3, placeholder: "何の文脈で重要な人物かを短くまとめます。" %>
+      <p class="field-hint">外部DBの内容をそのまま複製せず、必要な補足だけをローカルに残します。</p>
     </div>
 
     <div class="field">
-      <%= form.label :bio, "本文" %>
+      <%= form.label :bio, "本文（ローカル補足）" %>
       <%= form.text_area :bio, rows: 8, placeholder: "人物の背景、取り組み、強み、出会いの起点になりそうな要素を書きます。" %>
     </div>
 
@@ -40,13 +41,13 @@
     </div>
 
     <div class="field">
-      <%= form.label :tag_list, "タグ" %>
+      <%= form.label :tag_list, "タグ（ローカル補足）" %>
       <%= form.text_field :tag_list, value: @tag_list, placeholder: "research, community, mentorship" %>
-      <p class="field-hint">カンマ区切りで入力します。</p>
+      <p class="field-hint">カンマ区切りで入力します。外部DBのタグではなく、Tsunagari 内で補いたい観点だけを残します。</p>
     </div>
 
     <div class="field">
-      <%= form.label :primary_organization_name, "主な所属名" %>
+      <%= form.label :primary_organization_name, "主な所属名（ローカル補足）" %>
       <%= form.text_field :primary_organization_name, value: @primary_organization_name, placeholder: "OpenAI / Civic Tech Tokyo" %>
     </div>
 

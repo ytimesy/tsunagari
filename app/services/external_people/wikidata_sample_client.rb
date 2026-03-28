@@ -26,12 +26,7 @@ module ExternalPeople
           summary: summary,
           bio: build_bio(summary: summary, occupations: occupations, employers: employers),
           tags: occupations.first(6),
-          affiliations: employers.first(3).map { |name| { name: name, category: "organization" } },
-          raw_payload: {
-            description: summary,
-            occupations: occupations,
-            employers: employers
-          }
+          affiliations: employers.first(3).map { |name| { name: name, category: "organization" } }
         }
       end
     end

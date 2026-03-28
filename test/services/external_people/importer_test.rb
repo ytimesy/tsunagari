@@ -1,7 +1,7 @@
 require "test_helper"
 
 class ExternalPeople::ImporterTest < ActiveSupport::TestCase
-  test "creates a person, affiliation, tags, and external profile" do
+  test "creates a person and lightweight external reference without mirroring profile data" do
     profile = {
       source_name: "wikidata",
       external_id: "Q7259",
@@ -11,15 +11,16 @@ class ExternalPeople::ImporterTest < ActiveSupport::TestCase
       summary: "English mathematician",
       bio: "Known for early work on computation.",
       tags: [ "Mathematics", "Computing" ],
-      affiliations: [ { name: "Analytical Society", category: "community", title: "Member" } ],
-      raw_payload: { description: "English mathematician" }
+      affiliations: [ { name: "Analytical Society", category: "community", title: "Member" } ]
     }
 
     person = ExternalPeople::Importer.import!(profile: profile)
 
     assert_equal "Ada Lovelace", person.display_name
-    assert_equal [ "Analytical Society" ], person.organizations.pluck(:name)
-    assert_equal [ "Computing", "Mathematics" ], person.tags.order(:name).pluck(:name)
+    assert_empty person.organizations
+    assert_empty person.tags
+    assert_nil person.summary
+    assert_nil person.bio
     assert_equal "Q7259", person.person_external_profiles.first.external_id
   end
 
@@ -40,8 +41,7 @@ class ExternalPeople::ImporterTest < ActiveSupport::TestCase
       summary: "Imported summary",
       bio: "Imported bio",
       tags: [ "Computation" ],
-      affiliations: [],
-      raw_payload: {}
+      affiliations: []
     }
 
     imported_person = ExternalPeople::Importer.import!(profile: profile, target_person: person)
@@ -49,6 +49,6 @@ class ExternalPeople::ImporterTest < ActiveSupport::TestCase
     assert_equal person.id, imported_person.id
     assert_equal "Handwritten summary", imported_person.summary
     assert_equal "Handwritten bio", imported_person.bio
-    assert_equal [ "Computation" ], imported_person.tags.order(:name).pluck(:name)
+    assert_empty imported_person.tags
   end
 end

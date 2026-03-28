@@ -2,10 +2,11 @@ class RelationshipGraphBuilder
   SIMILAR_TONE = "similar".freeze
   DIVERSE_TONE = "diverse".freeze
 
-  def initialize(people:, encounter_cases:, focal_person: nil)
+  def initialize(people:, encounter_cases:, focal_person: nil, profile_metadata_by_person_id: {})
     @people = Array(people).compact.uniq { |person| person.id }
     @encounter_cases = Array(encounter_cases).compact
     @focal_person = focal_person
+    @profile_metadata_by_person_id = profile_metadata_by_person_id
   end
 
   def payload
@@ -73,11 +74,15 @@ class RelationshipGraphBuilder
   end
 
   def tag_names_for(person)
-    person.tags.map(&:name)
+    Array(metadata_for(person)[:tags]).presence || person.tags.map(&:name)
   end
 
   def organization_names_for(person)
-    person.organizations.map(&:name)
+    Array(metadata_for(person)[:organizations]).presence || person.organizations.map(&:name)
+  end
+
+  def metadata_for(person)
+    @profile_metadata_by_person_id.fetch(person.id, {})
   end
 
   def people_by_id

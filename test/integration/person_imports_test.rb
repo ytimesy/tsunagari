@@ -33,8 +33,7 @@ class PersonImportsTest < ActionDispatch::IntegrationTest
       summary: "English mathematician",
       bio: "Known for early work on computation.",
       tags: [ "Mathematics", "Computing" ],
-      affiliations: [ { name: "Analytical Society", category: "community" } ],
-      raw_payload: { description: "English mathematician" }
+      affiliations: [ { name: "Analytical Society", category: "community" } ]
     }
 
     with_stubbed_method(ExternalPeople::WikidataClient, :fetch_profile, profile) do
@@ -43,8 +42,8 @@ class PersonImportsTest < ActionDispatch::IntegrationTest
 
     person = Person.find_by!(display_name: "Ada Lovelace")
     assert_redirected_to person_path(person)
-    assert_equal [ "Computing", "Mathematics" ], person.tags.order(:name).pluck(:name)
-    assert_equal "Analytical Society", person.primary_affiliation.organization.name
+    assert_empty person.tags
+    assert_nil person.primary_affiliation
     assert_equal "Q7259", person.person_external_profiles.first.external_id
   end
 
@@ -59,8 +58,7 @@ class PersonImportsTest < ActionDispatch::IntegrationTest
       summary: "Research profile",
       bio: "Imported from OpenAlex",
       tags: [ "Computation" ],
-      affiliations: [ { name: "Royal Society", category: "institution" } ],
-      raw_payload: { works_count: 10 }
+      affiliations: [ { name: "Royal Society", category: "institution" } ]
     }
 
     with_stubbed_method(ExternalPeople::OpenAlexClient, :fetch_profile, profile) do
@@ -69,6 +67,36 @@ class PersonImportsTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to person_path(person)
     assert_equal person.id, PersonExternalProfile.find_by!(external_id: "A123").person_id
-    assert_equal [ "Computation" ], person.reload.tags.order(:name).pluck(:name)
+    assert_empty person.reload.tags
+  end
+
+  test "person detail resolves lightweight external profiles at render time" do
+    person = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    person.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current
+    )
+    remote_profile = {
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current,
+      display_name: "Ada Lovelace",
+      summary: "University of London / 120 works",
+      bio: "Imported biography",
+      tags: [ "Computing", "Mathematics" ],
+      affiliations: [ { name: "University of London", category: "institution", title: "Researcher" } ]
+    }
+
+    with_stubbed_method(ExternalPeople::OpenAlexClient, :fetch_profile, remote_profile) do
+      get person_path(person)
+    end
+
+    assert_response :success
+    assert_match "University of London", response.body
+    assert_match "Computing", response.body
+    assert_match "外部DBを都度参照中", response.body
   end
 end

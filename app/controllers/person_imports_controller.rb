@@ -1,5 +1,6 @@
 require_dependency Rails.root.join("app/services/external_people/error").to_s
 require_dependency Rails.root.join("app/services/external_people/base_client").to_s
+require_dependency Rails.root.join("app/services/external_people/provider_registry").to_s
 require_dependency Rails.root.join("app/services/external_people/wikidata_client").to_s
 require_dependency Rails.root.join("app/services/external_people/open_alex_client").to_s
 require_dependency Rails.root.join("app/services/external_people/importer").to_s
@@ -50,11 +51,6 @@ class PersonImportsController < ApplicationController
   end
 
   def provider_for(source_name)
-    case source_name
-    when "wikidata" then ExternalPeople::WikidataClient
-    when "openalex" then ExternalPeople::OpenAlexClient
-    else
-      raise ExternalPeople::Error, "未対応のデータソースです。"
-    end
+    ExternalPeople::ProviderRegistry.provider_for(source_name)
   end
 end

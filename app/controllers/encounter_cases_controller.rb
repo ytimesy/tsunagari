@@ -1,4 +1,5 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
+require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
 
 class EncounterCasesController < ApplicationController
   before_action :set_encounter_case, only: %i[show edit update]
@@ -13,9 +14,11 @@ class EncounterCasesController < ApplicationController
 
   def show
     @research_notes = @encounter_case.research_notes.order(created_at: :desc)
+    case_people = @encounter_case.people.to_a
     @relationship_graph = RelationshipGraphBuilder.new(
-      people: @encounter_case.people,
-      encounter_cases: [ @encounter_case ]
+      people: case_people,
+      encounter_cases: [ @encounter_case ],
+      profile_metadata_by_person_id: profile_resolver.metadata_index_for(case_people)
     ).payload
   end
 
@@ -240,5 +243,9 @@ class EncounterCasesController < ApplicationController
       source: source,
       citation_note: @source_title.presence
     )
+  end
+
+  def profile_resolver
+    @profile_resolver ||= ExternalPeople::ProfileResolver.new
   end
 end

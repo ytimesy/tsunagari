@@ -38,6 +38,15 @@ class Person < ApplicationRecord
     person_affiliations.find_by(primary_flag: true) || person_affiliations.first
   end
 
+  def primary_external_profile
+    person_external_profiles.min_by do |profile|
+      [
+        profile.source_name == "openalex" ? 0 : 1,
+        -profile.fetched_at.to_i
+      ]
+    end
+  end
+
   private
 
   def assign_slug

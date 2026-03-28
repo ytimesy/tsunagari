@@ -1,4 +1,5 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
+require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
 
 class PeopleController < ApplicationController
   before_action :set_person, only: %i[show edit update]
@@ -14,10 +15,13 @@ class PeopleController < ApplicationController
   def show
     @related_cases = related_cases_for(@person)
     @research_notes = @person.research_notes.order(created_at: :desc)
+    @resolved_person_profile = profile_resolver.resolve(@person)
+    graph_people = graph_people_for(@person, @related_cases)
     @relationship_graph = RelationshipGraphBuilder.new(
-      people: graph_people_for(@person, @related_cases),
+      people: graph_people,
       encounter_cases: @related_cases,
-      focal_person: @person
+      focal_person: @person,
+      profile_metadata_by_person_id: profile_resolver.metadata_index_for(graph_people)
     ).payload
   end
 
@@ -65,14 +69,14 @@ class PeopleController < ApplicationController
   end
 
   def base_scope
-    Person.includes(:tags, person_affiliations: :organization)
+    Person.includes(:person_external_profiles, :tags, person_affiliations: :organization)
   end
 
   def apply_search(scope, query)
     like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query.downcase)}%"
 
-    scope.left_joins(:tags, person_affiliations: :organization).where(
-      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query",
+    scope.left_joins(:person_external_profiles, :tags, person_affiliations: :organization).where(
+      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query OR LOWER(COALESCE(person_external_profiles.external_id, '')) LIKE :query",
       query: like_query
     ).distinct
   end
@@ -164,5 +168,9 @@ class PeopleController < ApplicationController
                                  .first(7)
 
     [ person, *collaborators ]
+  end
+
+  def profile_resolver
+    @profile_resolver ||= ExternalPeople::ProfileResolver.new
   end
 end

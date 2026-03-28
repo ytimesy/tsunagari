@@ -28,7 +28,9 @@ Rails.application.configure do
   else
     config.action_controller.perform_caching = false
 
-    config.cache_store = :null_store
+    # Keep Rails.cache available for short-lived external profile caching
+    # even when controller/view caching stays disabled in development.
+    config.cache_store = :memory_store
   end
 
   # Store uploaded files on the local file system (see config/storage.yml for options).

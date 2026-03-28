@@ -4,11 +4,11 @@
   <div class="profile-badge">
     <p class="ribbon-label">Person</p>
     <h1><%= @person.display_name %></h1>
-    <% affiliation = @person.primary_affiliation %>
+    <% affiliation = @resolved_person_profile[:affiliations].first %>
     <p class="meta">
-      <%= affiliation&.organization&.name.presence || "所属未設定" %>
-      <% if affiliation&.title.present? %>
-        / <%= affiliation.title %>
+      <%= affiliation&.dig(:name).presence || "所属未設定" %>
+      <% if affiliation&.dig(:title).present? %>
+        / <%= affiliation[:title] %>
       <% end %>
     </p>
     <div class="status-petal"><%= publication_status_label(@person.publication_status) %></div>
@@ -24,14 +24,14 @@
   <article class="panel soft-panel">
     <p class="eyebrow">Summary</p>
     <h2>人物概要</h2>
-    <%= simple_format(@person.summary.presence || "要約未設定") %>
+    <%= simple_format(@resolved_person_profile[:summary].presence || "要約未設定") %>
     <p><strong>本文:</strong></p>
-    <%= simple_format(@person.bio.presence || "本文未設定") %>
+    <%= simple_format(@resolved_person_profile[:bio].presence || "本文未設定") %>
 
     <div class="tag-cloud">
-      <% if @person.tags.any? %>
-        <% @person.tags.order(:name).each do |tag| %>
-          <span class="tag-pill"><%= tag.name %></span>
+      <% if @resolved_person_profile[:tags].any? %>
+        <% @resolved_person_profile[:tags].each do |tag| %>
+          <span class="tag-pill"><%= tag %></span>
         <% end %>
       <% else %>
         <span class="tag-pill muted">タグ未設定</span>
@@ -61,6 +61,12 @@
   <article class="panel soft-panel">
     <p class="eyebrow">External Sources</p>
     <h2>外部データ源</h2>
+    <p class="meta">
+      <%= external_profile_mode_label(@resolved_person_profile[:source_mode]) %>
+      <% if @resolved_person_profile[:source_error].present? %>
+        / 取得失敗: <%= @resolved_person_profile[:source_error] %>
+      <% end %>
+    </p>
     <% if @person.person_external_profiles.any? %>
       <ul class="stack-list soft-list">
         <% @person.person_external_profiles.order(:source_name).each do |profile| %>

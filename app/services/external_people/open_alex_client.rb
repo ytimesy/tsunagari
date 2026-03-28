@@ -67,16 +67,7 @@ module ExternalPeople
         summary: summary_parts.join(" / "),
         bio: bio_parts.join("\n"),
         tags: tags,
-        affiliations: affiliations,
-        raw_payload: {
-          display_name: display_name,
-          alternatives: alternatives,
-          works_count: json["works_count"],
-          cited_by_count: json["cited_by_count"],
-          orcid: json["orcid"],
-          affiliations: affiliations.map { |affiliation| affiliation.slice(:name, :website_url) },
-          tags: tags
-        }
+        affiliations: affiliations
       }
     end
 

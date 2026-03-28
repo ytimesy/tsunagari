@@ -49,6 +49,14 @@ module ApplicationHelper
     }.fetch(source_name, source_name)
   end
 
+  def external_profile_mode_label(mode)
+    {
+      "live" => "外部DBを都度参照中",
+      "linked" => "外部DBに紐付いていますが、今回はローカル情報で表示中",
+      "local" => "ローカル編集情報のみ"
+    }.fetch(mode, mode)
+  end
+
   def role_label(role)
     {
       "editor" => "編集者",

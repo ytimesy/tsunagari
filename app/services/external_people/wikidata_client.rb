@@ -75,15 +75,7 @@ module ExternalPeople
         summary: description,
         bio: bio_parts.join("\n"),
         tags: (occupations + fields).first(6),
-        affiliations: organizations.first(3).map { |name| { name: name, category: "organization" } },
-        raw_payload: {
-          label: display_name,
-          description: description,
-          aliases: aliases,
-          occupations: occupations,
-          fields: fields,
-          organizations: organizations
-        }
+        affiliations: organizations.first(3).map { |name| { name: name, category: "organization" } }
       }
     end
 

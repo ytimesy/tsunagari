@@ -4,7 +4,7 @@
   <div>
     <p class="ribbon-label">People</p>
     <h1>人物録</h1>
-    <p class="lede compact">誰でも加筆できる人物録です。名前、所属、タグから人物を探し、その場で更新できます。</p>
+    <p class="lede compact">外部DBを正本にしつつ、ローカルでは参照情報と独自メモだけを持つ人物録です。</p>
   </div>
   <div class="hero-actions">
     <%= link_to "外部DBから取り込む", new_person_import_path, class: "secondary-link" %>
@@ -14,7 +14,7 @@
 
 <section class="panel soft-panel">
   <%= form_with url: people_path, method: :get, class: "inline-form" do |form| %>
-    <%= form.search_field :q, value: @query, placeholder: "名前、要約、所属、タグで検索" %>
+    <%= form.search_field :q, value: @query, placeholder: "名前、要約、外部ID、ローカル補足で検索" %>
     <%= form.submit "検索", class: "primary-button" %>
   <% end %>
 </section>
@@ -25,19 +25,22 @@
       <p class="eyebrow">Person</p>
       <h2><%= link_to person.display_name, person_path(person) %></h2>
       <% affiliation = person.primary_affiliation %>
+      <% external_profile = person.primary_external_profile %>
       <p class="meta">
-        <%= affiliation&.organization&.name.presence || "所属未設定" %>
+        <%= affiliation&.organization&.name.presence || (external_profile.present? ? "#{external_source_label(external_profile.source_name)} / #{external_profile.external_id}" : "ローカル情報のみ") %>
         <% if affiliation&.title.present? %>
           / <%= affiliation.title %>
         <% end %>
       </p>
       <p class="meta"><%= publication_status_label(person.publication_status) %></p>
-      <p><%= truncate(person.summary.presence || person.bio.presence || "概要未設定", length: 120) %></p>
+      <p><%= truncate(person.summary.presence || person.bio.presence || "詳細は人物ページで外部DBから都度参照します。", length: 120) %></p>
       <div class="tag-cloud">
         <% if person.tags.any? %>
           <% person.tags.order(:name).each do |tag| %>
             <span class="tag-pill"><%= tag.name %></span>
           <% end %>
+        <% elsif external_profile.present? %>
+          <span class="tag-pill muted">タグは外部DBを参照</span>
         <% else %>
           <span class="tag-pill muted">タグ未設定</span>
         <% end %>

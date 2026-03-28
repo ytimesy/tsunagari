@@ -17,10 +17,11 @@ class ClusteredPeopleGraphBuilder
     end
   end
 
-  def initialize(people:, selected_cluster_slug: nil, query: nil)
+  def initialize(people:, selected_cluster_slug: nil, query: nil, profile_metadata_by_person_id: {})
     @people = Array(people).compact.uniq { |person| person.id }
     @selected_cluster_slug = selected_cluster_slug.to_s.presence
     @query = query.to_s.strip.presence
+    @profile_metadata_by_person_id = profile_metadata_by_person_id || {}
   end
 
   def payload
@@ -487,9 +488,19 @@ class ClusteredPeopleGraphBuilder
 
   def metadata_index
     @metadata_index ||= @people.each_with_object({}) do |person, index|
+      resolved_metadata = @profile_metadata_by_person_id.fetch(person.id, {})
+
       index[person.id] = {
-        tags: normalized_terms(person.tags.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_tags)),
-        organizations: normalized_terms(person.organizations.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_organizations)),
+        tags: normalized_terms(
+          person.tags.map(&:name) +
+          person.person_external_profiles.flat_map(&:cached_graph_tags) +
+          Array(resolved_metadata[:tags])
+        ),
+        organizations: normalized_terms(
+          person.organizations.map(&:name) +
+          person.person_external_profiles.flat_map(&:cached_graph_organizations) +
+          Array(resolved_metadata[:organizations])
+        ),
         source_names: person.person_external_profiles.map(&:source_name).compact.uniq
       }
     end

@@ -103,6 +103,40 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     assert_not_includes labels, "その他"
   end
 
+  test "builds cluster overview from resolved metadata when lightweight cache is empty" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+    helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
+
+    [ [ ada, "A1" ], [ babbage, "A2" ], [ grace, "A3" ], [ helper, "A4" ] ].each do |person, external_id|
+      person.person_external_profiles.create!(
+        source_name: "openalex",
+        external_id: external_id,
+        source_url: "https://openalex.org/#{external_id}",
+        fetched_at: Time.current
+      )
+    end
+
+    builder = ClusteredPeopleGraphBuilder.new(
+      people: [ ada, babbage, grace, helper ],
+      profile_metadata_by_person_id: {
+        ada.id => { tags: [ "Computing" ], organizations: [ "Analytical Society" ] },
+        babbage.id => { tags: [ "Computing" ], organizations: [ "Analytical Society" ] },
+        grace.id => { tags: [ "Computing" ], organizations: [ "Civic Lab" ] },
+        helper.id => { tags: [ "Computing", "Civic Design" ], organizations: [ "Civic Lab" ] }
+      }
+    )
+
+    payload = builder.payload
+    summary = builder.summary
+
+    assert_equal 2, summary[:cluster_count]
+    assert_equal 1, summary[:edge_count]
+    assert_includes payload[:nodes].map { |node| node[:label] }, "Analytical Society"
+    assert_includes payload[:nodes].map { |node| node[:label] }, "Civic Lab"
+  end
+
   test "keeps a person graph for large clusters by selecting the most connected members" do
     61.times do |index|
       person = Person.create!(display_name: format("Researcher %02d", index), publication_status: "published")

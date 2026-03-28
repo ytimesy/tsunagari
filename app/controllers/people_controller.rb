@@ -32,11 +32,13 @@ class PeopleController < ApplicationController
     @people = imported_scope
     @people = apply_search(@people, @query) if @query.present?
     @people = @people.order(:display_name).load
+    @graph_profile_metadata_index = graph_profile_metadata_index_for(@people)
 
     builder = ClusteredPeopleGraphBuilder.new(
       people: @people,
       selected_cluster_slug: @selected_cluster_slug,
-      query: @query
+      query: @query,
+      profile_metadata_by_person_id: @graph_profile_metadata_index
     )
     @relationship_graph = builder.payload
     @graph_summary = builder.summary
@@ -44,7 +46,7 @@ class PeopleController < ApplicationController
     @selected_cluster_graph = if @selected_cluster.present?
       ImportedPeopleGraphBuilder.new(
         people: @selected_cluster.fetch(:graph_people),
-        profile_metadata_by_person_id: profile_resolver.metadata_index_for(@selected_cluster.fetch(:graph_people))
+        profile_metadata_by_person_id: @graph_profile_metadata_index.slice(*@selected_cluster.fetch(:graph_people).map(&:id))
       ).payload
     end
     decorate_graph_with_cluster_context!(@selected_cluster_graph, @selected_cluster&.fetch(:graph_people, []), @selected_cluster&.dig(:slug))
@@ -320,6 +322,22 @@ class PeopleController < ApplicationController
     end
 
     base_scope.where.not(id: @person.id).limit(600).to_a
+  end
+
+  def graph_profile_metadata_index_for(people)
+    target_people = Array(people).compact.uniq { |person| person.id }.select do |person|
+      next false unless person.person_external_profiles.any?
+
+      person.tags.empty? &&
+        person.organizations.empty? &&
+        person.person_external_profiles.all? do |profile|
+          profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
+        end
+    end
+
+    return {} if target_people.empty?
+
+    profile_resolver.metadata_index_for(target_people)
   end
 
   def cluster_context

@@ -42,7 +42,10 @@ class PeopleController < ApplicationController
     @graph_summary = builder.summary
     @selected_cluster = builder.selected_cluster
     @selected_cluster_graph = if @selected_cluster.present?
-      ImportedPeopleGraphBuilder.new(people: @selected_cluster.fetch(:graph_people)).payload
+      ImportedPeopleGraphBuilder.new(
+        people: @selected_cluster.fetch(:graph_people),
+        profile_metadata_by_person_id: profile_resolver.metadata_index_for(@selected_cluster.fetch(:graph_people))
+      ).payload
     end
     decorate_graph_with_cluster_context!(@selected_cluster_graph, @selected_cluster&.fetch(:graph_people, []), @selected_cluster&.dig(:slug))
     @selected_cluster_graph[:labelMode] = "all" if @selected_cluster_graph.present?
@@ -288,11 +291,18 @@ class PeopleController < ApplicationController
     ).payload
 
     if graph[:edges].empty?
+      fallback_metadata_index = if @cluster_context_slug.present?
+        profile_resolver.metadata_index_for(candidate_people + [ @person ])
+      else
+        {}
+      end
+
       graph = PersonNeighborhoodGraphBuilder.new(
         focal_person: @person,
         candidates: candidate_people,
         focal_metadata:,
-        depth:
+        depth:,
+        profile_metadata_by_person_id: fallback_metadata_index
       ).payload
     end
 

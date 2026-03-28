@@ -10,11 +10,12 @@ class PersonNeighborhoodGraphBuilder
     3 => 28
   }.freeze
 
-  def initialize(focal_person:, candidates:, focal_metadata: {}, depth: 1)
+  def initialize(focal_person:, candidates:, focal_metadata: {}, depth: 1, profile_metadata_by_person_id: {})
     @focal_person = focal_person
     @candidates = Array(candidates).compact.reject { |person| person.id == focal_person.id }.uniq { |person| person.id }
     @focal_metadata = normalize_metadata(focal_metadata)
     @depth = depth.to_i.clamp(1, 3)
+    @profile_metadata_by_person_id = profile_metadata_by_person_id || {}
   end
 
   def payload
@@ -157,9 +158,19 @@ class PersonNeighborhoodGraphBuilder
   def metadata_for(person)
     return @focal_metadata if person.id == @focal_person.id && (@focal_metadata[:tags].any? || @focal_metadata[:organizations].any?)
 
+    resolved_metadata = @profile_metadata_by_person_id.fetch(person.id, {})
+
     {
-      tags: normalized_terms(person.tags.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_tags)),
-      organizations: normalized_terms(person.organizations.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_organizations))
+      tags: normalized_terms(
+        person.tags.map(&:name) +
+        person.person_external_profiles.flat_map(&:cached_graph_tags) +
+        Array(resolved_metadata[:tags])
+      ),
+      organizations: normalized_terms(
+        person.organizations.map(&:name) +
+        person.person_external_profiles.flat_map(&:cached_graph_organizations) +
+        Array(resolved_metadata[:organizations])
+      )
     }
   end
 

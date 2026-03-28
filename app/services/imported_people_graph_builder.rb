@@ -4,8 +4,9 @@ class ImportedPeopleGraphBuilder
   MAX_EDGES_PER_PERSON = 4
   MAX_TOTAL_EDGES = 220
 
-  def initialize(people:)
+  def initialize(people:, profile_metadata_by_person_id: {})
     @people = Array(people).compact.uniq { |person| person.id }
+    @profile_metadata_by_person_id = profile_metadata_by_person_id || {}
   end
 
   def payload
@@ -151,9 +152,19 @@ class ImportedPeopleGraphBuilder
 
   def metadata_index
     @metadata_index ||= @people.each_with_object({}) do |person, index|
+      resolved_metadata = @profile_metadata_by_person_id.fetch(person.id, {})
+
       index[person.id] = {
-        tags: normalized_terms(person.tags.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_tags)),
-        organizations: normalized_terms(person.organizations.map(&:name) + person.person_external_profiles.flat_map(&:cached_graph_organizations)),
+        tags: normalized_terms(
+          person.tags.map(&:name) +
+          person.person_external_profiles.flat_map(&:cached_graph_tags) +
+          Array(resolved_metadata[:tags])
+        ),
+        organizations: normalized_terms(
+          person.organizations.map(&:name) +
+          person.person_external_profiles.flat_map(&:cached_graph_organizations) +
+          Array(resolved_metadata[:organizations])
+        ),
         source_names: person.person_external_profiles.map(&:source_name).compact.uniq
       }
     end

@@ -6,7 +6,10 @@
     <h1>人物録</h1>
     <p class="lede compact">誰でも加筆できる人物録です。名前、所属、タグから人物を探し、その場で更新できます。</p>
   </div>
-  <%= link_to "新規人物", new_person_path, class: "primary-link" %>
+  <div class="hero-actions">
+    <%= link_to "外部DBから取り込む", new_person_import_path, class: "secondary-link" %>
+    <%= link_to "新規人物", new_person_path, class: "primary-link" %>
+  </div>
 </section>
 
 <section class="panel soft-panel">

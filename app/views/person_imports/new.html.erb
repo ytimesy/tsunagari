@@ -1,0 +1,77 @@
+<% content_for :title, "外部データから人物を取り込む" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">External Sources</p>
+    <h1>外部データから人物を取り込む</h1>
+    <% if @target_person.present? %>
+      <p class="lede compact">「<%= @target_person.display_name %>」を土台に、Wikidata または OpenAlex の公開データを紐付けて補強します。</p>
+    <% else %>
+      <p class="lede compact">Wikidata と OpenAlex の公開データベースから人物候補を探し、人物録に取り込みます。</p>
+    <% end %>
+  </div>
+  <%= link_to "人物録へ戻る", people_path, class: "secondary-link" %>
+</section>
+
+<section class="form-panel cute-frame">
+  <p class="ribbon-label">Import Search</p>
+  <h2>候補を検索</h2>
+
+  <%= form_with url: new_person_import_path, method: :get, class: "page-stack" do |form| %>
+    <%= form.hidden_field :person_id, value: @target_person&.id %>
+
+    <div class="field">
+      <%= form.label :source_name, "データソース" %>
+      <%= form.select :source_name, PersonExternalProfile::SOURCES.map { |source_name| [ external_source_label(source_name), source_name ] }, { selected: @source_name } %>
+    </div>
+
+    <div class="field">
+      <%= form.label :q, "検索語" %>
+      <%= form.search_field :q, value: @query, placeholder: "Ada Lovelace / Geoffrey Hinton / 村上春樹" %>
+    </div>
+
+    <%= form.submit "候補を探す", class: "primary-button" %>
+  <% end %>
+</section>
+
+<% if @query.present? %>
+  <section class="results-grid">
+    <% @results.each do |result| %>
+      <% existing_profile = @existing_profiles[result[:external_id]] %>
+      <article class="panel result-card">
+        <p class="eyebrow"><%= external_source_label(result[:source_name]) %></p>
+        <h2><%= result[:display_name] %></h2>
+        <p class="meta"><%= result[:subtitle] %></p>
+
+        <div class="tag-cloud">
+          <% Array(result[:badges]).each do |badge| %>
+            <span class="tag-pill"><%= badge %></span>
+          <% end %>
+        </div>
+
+        <p class="meta"><%= link_to "元データを見る", result[:source_url], target: "_blank", rel: "noreferrer" %></p>
+
+        <% if existing_profile.present? && @target_person.blank? %>
+          <p class="field-hint">すでに人物録へ取り込み済みです。</p>
+          <%= link_to "既存の人物を見る", person_path(existing_profile.person), class: "secondary-link" %>
+        <% else %>
+          <%= button_to(@target_person.present? ? "この人物へ取り込む" : "人物録へ取り込む",
+                        person_imports_path(
+                          source_name: result[:source_name],
+                          external_id: result[:external_id],
+                          q: @query,
+                          person_id: @target_person&.id
+                        ),
+                        method: :post,
+                        class: "primary-button") %>
+        <% end %>
+      </article>
+    <% end %>
+
+    <% if @results.empty? %>
+      <article class="panel empty-state">
+        <p>候補が見つかりませんでした。別の表記や英語名でも試してみてください。</p>
+      </article>
+    <% end %>
+  </section>
+<% end %>

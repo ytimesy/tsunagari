@@ -7,6 +7,8 @@ class Person < ApplicationRecord
   has_many :person_tags, dependent: :destroy
   has_many :tags, through: :person_tags
 
+  has_many :person_external_profiles, dependent: :destroy
+
   has_many :case_participants, dependent: :destroy
   has_many :encounter_cases, through: :case_participants
 

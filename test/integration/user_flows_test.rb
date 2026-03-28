@@ -73,6 +73,12 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_equal 2, encounter_case.people.count
     assert_equal "positive", encounter_case.case_outcomes.first.outcome_direction
 
+    get encounter_case_path(encounter_case)
+    assert_response :success
+    assert_match "人物関係図", response.body
+    assert_match "似たもの同士", response.body
+    assert_match "Ada Lovelace × Charles Babbage", response.body
+
     patch encounter_case_path(encounter_case), params: {
       encounter_case: {
         title: "Ada and Charles started a new line of inquiry",
@@ -184,5 +190,25 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "阻害要因", response.body
     assert_match "ownership stayed ambiguous", response.body
     assert_match "メモを残す", response.body
+  end
+
+  test "person detail shows relationship map around the focal person" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
+    computing = Tag.create!(name: "Computing")
+    ada.tags << computing
+    babbage.tags << computing
+
+    encounter_case = EncounterCase.create!(title: "Analytical exchange", publication_status: "published")
+    encounter_case.case_participants.create!(person: ada, participation_role: "participant")
+    encounter_case.case_participants.create!(person: babbage, participation_role: "participant")
+    encounter_case.case_participants.create!(person: helper, participation_role: "participant")
+
+    get person_path(ada)
+    assert_response :success
+    assert_match "人物関係図", response.body
+    assert_match "Ada Lovelace × Charles Babbage", response.body
+    assert_match "Ada Lovelace × Community Organizer", response.body
   end
 end

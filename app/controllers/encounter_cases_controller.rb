@@ -11,6 +11,10 @@ class EncounterCasesController < ApplicationController
 
   def show
     @research_notes = @encounter_case.research_notes.order(created_at: :desc)
+    @relationship_graph = RelationshipGraphBuilder.new(
+      people: @encounter_case.people,
+      encounter_cases: [ @encounter_case ]
+    ).payload
   end
 
   def new
@@ -61,7 +65,14 @@ class EncounterCasesController < ApplicationController
   private
 
   def set_encounter_case
-    @encounter_case = EncounterCase.includes(:people, :case_outcomes, :case_insights, :sources, :tags).find_by!(slug: params[:slug])
+    @encounter_case = EncounterCase.includes(
+      :case_outcomes,
+      :case_insights,
+      :sources,
+      :tags,
+      case_participants: :person,
+      people: [ :tags, { person_affiliations: :organization } ]
+    ).find_by!(slug: params[:slug])
   end
 
   def base_scope

@@ -14,7 +14,10 @@
     <div class="status-petal"><%= publication_status_label(@person.publication_status) %></div>
   </div>
 
-  <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
+  <div class="hero-actions">
+    <%= link_to "外部DBで補強", new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
+    <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
+  </div>
 </section>
 
 <section class="dashboard-grid">
@@ -51,6 +54,35 @@
     <% else %>
       <p class="empty-note">まだ紐づく出会い事例はありません。</p>
     <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">External Sources</p>
+    <h2>外部データ源</h2>
+    <% if @person.person_external_profiles.any? %>
+      <ul class="stack-list soft-list">
+        <% @person.person_external_profiles.order(:source_name).each do |profile| %>
+          <li>
+            <strong><%= external_source_label(profile.source_name) %></strong>
+            <span class="meta"><%= profile.external_id %> / <%= l(profile.fetched_at, format: :short) %></span>
+            <div><%= link_to profile.source_url, profile.source_url, target: "_blank", rel: "noreferrer" %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ外部データとは紐付いていません。必要なら外部DBから補強できます。</p>
+    <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide">
+    <p class="eyebrow">Relationship Map</p>
+    <h2>人物関係図</h2>
+    <p class="meta">この人物を中心に、共通タグや所属が近い相手は青、異質な相手は黄で表示します。</p>
+    <%= render "shared/relationship_graph", graph: @relationship_graph, empty_message: "この人物に関連する別の人物が増えると関係図を表示できます。" %>
   </article>
 </section>
 

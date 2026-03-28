@@ -386,6 +386,10 @@ a {
   gap: 20px;
 }
 
+.relationship-panel--wide {
+  grid-column: 1 / -1;
+}
+
 .soft-panel,
 .result-card,
 .empty-state,
@@ -400,6 +404,11 @@ a {
 .form-panel h1 {
   margin-top: 0;
   margin-bottom: 14px;
+}
+
+.panel h3 {
+  margin: 22px 0 12px;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
 }
 
 .empty-state {
@@ -426,6 +435,75 @@ a {
 
 .compact-stats {
   margin-top: 20px;
+}
+
+.relationship-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 18px 0 14px;
+}
+
+.relationship-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 144, 112, 0.22);
+  background: rgba(255, 255, 255, 0.78);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.relationship-chip--similar {
+  color: #365f89;
+  background: rgba(220, 235, 248, 0.92);
+}
+
+.relationship-chip--diverse {
+  color: #8b6a1f;
+  background: rgba(246, 233, 188, 0.92);
+}
+
+.relationship-canvas {
+  margin-bottom: 18px;
+  border: 1px solid rgba(124, 144, 112, 0.2);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.88), transparent 22%),
+    linear-gradient(180deg, rgba(246, 244, 236, 0.82), rgba(232, 239, 228, 0.76));
+  overflow: hidden;
+}
+
+.relationship-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.relationship-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.relationship-summary {
+  padding: 14px 16px;
+  border: 1px solid rgba(124, 144, 112, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.relationship-summary--similar {
+  border-color: rgba(75, 132, 182, 0.28);
+  background: rgba(232, 242, 251, 0.72);
+}
+
+.relationship-summary--diverse {
+  border-color: rgba(205, 164, 61, 0.32);
+  background: rgba(248, 241, 214, 0.74);
 }
 
 .stat-chip {
@@ -576,6 +654,12 @@ a {
   .hero-stage,
   .entry-layout {
     grid-template-columns: 1fr;
+  }
+
+  .relationship-canvas {
+    margin-left: -8px;
+    margin-right: -8px;
+    border-radius: 20px;
   }
 }
 

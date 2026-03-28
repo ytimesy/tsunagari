@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_28_122000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_133000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -121,6 +121,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_122000) do
     t.index ["person_id"], name: "index_person_affiliations_on_person_id"
   end
 
+  create_table "person_external_profiles", force: :cascade do |t|
+    t.bigint "person_id", null: false
+    t.string "source_name", null: false
+    t.string "external_id", null: false
+    t.string "source_url", null: false
+    t.jsonb "raw_payload", default: {}, null: false
+    t.datetime "fetched_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["person_id"], name: "index_person_external_profiles_on_person_id"
+    t.index ["source_name", "external_id"], name: "index_person_external_profiles_on_source_name_and_external_id", unique: true
+  end
+
   create_table "person_tags", force: :cascade do |t|
     t.bigint "person_id", null: false
     t.bigint "tag_id", null: false
@@ -172,6 +185,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_122000) do
   add_foreign_key "case_tags", "tags"
   add_foreign_key "person_affiliations", "organizations"
   add_foreign_key "person_affiliations", "people"
+  add_foreign_key "person_external_profiles", "people"
   add_foreign_key "person_tags", "people"
   add_foreign_key "person_tags", "tags"
   add_foreign_key "research_notes", "encounter_cases"

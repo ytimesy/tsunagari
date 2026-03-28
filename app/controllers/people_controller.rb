@@ -12,6 +12,11 @@ class PeopleController < ApplicationController
   def show
     @related_cases = related_cases_for(@person)
     @research_notes = @person.research_notes.order(created_at: :desc)
+    @relationship_graph = RelationshipGraphBuilder.new(
+      people: graph_people_for(@person, @related_cases),
+      encounter_cases: @related_cases,
+      focal_person: @person
+    ).payload
   end
 
   def new
@@ -54,7 +59,7 @@ class PeopleController < ApplicationController
   private
 
   def set_person
-    @person = Person.includes(:tags, person_affiliations: :organization).find_by!(slug: params[:slug])
+    @person = Person.includes(:person_external_profiles, :tags, person_affiliations: :organization).find_by!(slug: params[:slug])
   end
 
   def base_scope
@@ -133,6 +138,29 @@ class PeopleController < ApplicationController
   end
 
   def related_cases_for(person)
-    person.encounter_cases.includes(:case_outcomes).order(happened_on: :desc, published_at: :desc).distinct
+    person.encounter_cases.includes(
+      :case_outcomes,
+      case_participants: :person,
+      people: [ :tags, { person_affiliations: :organization } ]
+    ).order(happened_on: :desc, published_at: :desc).distinct
+  end
+
+  def graph_people_for(person, related_cases)
+    related_people = related_cases.flat_map(&:people).uniq { |related_person| related_person.id }
+    collaborator_counts = Hash.new(0)
+
+    related_cases.each do |encounter_case|
+      encounter_case.people.each do |related_person|
+        next if related_person.id == person.id
+
+        collaborator_counts[related_person.id] += 1
+      end
+    end
+
+    collaborators = related_people.reject { |related_person| related_person.id == person.id }
+                                 .sort_by { |related_person| [ -collaborator_counts[related_person.id], related_person.display_name ] }
+                                 .first(7)
+
+    [ person, *collaborators ]
   end
 end

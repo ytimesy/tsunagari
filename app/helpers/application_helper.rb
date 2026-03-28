@@ -35,6 +35,20 @@ module ApplicationHelper
     }.fetch(insight_type, insight_type)
   end
 
+  def relationship_tone_label(tone)
+    {
+      "similar" => "似たもの同士",
+      "diverse" => "異質な組み合わせ"
+    }.fetch(tone, tone)
+  end
+
+  def external_source_label(source_name)
+    {
+      "wikidata" => "Wikidata",
+      "openalex" => "OpenAlex"
+    }.fetch(source_name, source_name)
+  end
+
   def role_label(role)
     {
       "editor" => "編集者",

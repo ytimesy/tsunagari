@@ -69,6 +69,25 @@ module ApplicationHelper
     RELATIONSHIP_KIND_PALETTE
   end
 
+  def browser_asset_version
+    @browser_asset_version ||= begin
+      asset_paths = %w[public/icon.png public/icon.svg].map { |path| Rails.root.join(path) }
+      asset_paths.filter(&:exist?).map { |path| path.mtime.to_i }.max.to_s
+    end
+  end
+
+  def manifest_href
+    "/manifest.json?v=#{browser_asset_version}"
+  end
+
+  def icon_png_href
+    "/icon.png?v=#{browser_asset_version}"
+  end
+
+  def icon_svg_href
+    "/icon.svg?v=#{browser_asset_version}"
+  end
+
   def relationship_kind_css_vars(kind)
     palette = relationship_kind_palette.fetch(kind.to_s, relationship_kind_palette.fetch("same_field"))
 

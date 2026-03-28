@@ -6,6 +6,7 @@ class ClusteredPeopleGraphBuilder
   MAX_CLUSTER_EDGES = 48
   MIN_ORGANIZATION_CLUSTER_SIZE = 2
   MIN_TAG_CLUSTER_SIZE = 3
+  MIN_NETWORK_CLUSTER_SIZE = 2
   PEOPLE_PREVIEW_LIMIT = 24
   LARGE_CLUSTER_GRAPH_LIMIT = 60
   OTHER_CLUSTER_SLUG = "other"
@@ -205,7 +206,7 @@ class ClusteredPeopleGraphBuilder
 
   def clusters
     @clusters ||= begin
-      buckets = candidate_clusters.each_with_object({}) do |candidate, hash|
+      buckets = all_cluster_candidates.each_with_object({}) do |candidate, hash|
         hash[candidate[:slug]] = Cluster.new(
           slug: candidate[:slug],
           label: candidate[:label],
@@ -222,7 +223,7 @@ class ClusteredPeopleGraphBuilder
       )
 
       @people.each do |person|
-        cluster_slug = preferred_cluster_slug_for(person) || OTHER_CLUSTER_SLUG
+        cluster_slug = preferred_cluster_slug_for(person) || network_cluster_slug_for(person) || OTHER_CLUSTER_SLUG
         buckets.fetch(cluster_slug).people << person
       end
 
@@ -254,6 +255,10 @@ class ClusteredPeopleGraphBuilder
     end
   end
 
+  def all_cluster_candidates
+    @all_cluster_candidates ||= candidate_clusters + network_component_clusters
+  end
+
   def cluster_candidate_for(term:, category:, people_count:)
     prefix = category == "organization" ? "org" : "tag"
     {
@@ -271,6 +276,120 @@ class ClusteredPeopleGraphBuilder
     end
 
     matched_candidates.max_by { |candidate| [ candidate[:score], candidate[:people_count], candidate[:label] ] }&.dig(:slug)
+  end
+
+  def network_cluster_slug_for(person)
+    network_cluster_slug_by_person_id[person.id]
+  end
+
+  def network_cluster_slug_by_person_id
+    @network_cluster_slug_by_person_id ||= network_component_clusters.each_with_object({}) do |candidate, index|
+      candidate.fetch(:person_ids).each { |person_id| index[person_id] = candidate[:slug] }
+    end
+  end
+
+  def network_component_clusters
+    @network_component_clusters ||= begin
+      available_slots = [ MAX_CLUSTERS - 1 - candidate_clusters.length, 0 ].max
+      if available_slots.zero?
+        []
+      else
+        network_components
+          .first(available_slots)
+          .map { |component_person_ids| network_cluster_candidate_for(component_person_ids) }
+      end
+    end
+  end
+
+  def network_components
+    @network_components ||= begin
+      remaining_ids = @people.map(&:id) - directly_clustered_person_ids
+      if remaining_ids.empty?
+        []
+      else
+        remaining_set = remaining_ids.to_set
+        adjacency = remaining_ids.each_with_object({}) { |person_id, hash| hash[person_id] = Set.new }
+
+        person_relationship_pairs.each do |pair, values|
+          left_id, right_id = pair
+          next unless remaining_set.include?(left_id) && remaining_set.include?(right_id)
+          next if values[:shared_tags].empty? && values[:shared_organizations].empty?
+
+          adjacency[left_id] << right_id
+          adjacency[right_id] << left_id
+        end
+
+        visited = Set.new
+
+        remaining_ids.filter_map do |person_id|
+          next if visited.include?(person_id)
+
+          queue = [ person_id ]
+          component = []
+          visited << person_id
+
+          until queue.empty?
+            current_id = queue.shift
+            component << current_id
+
+            adjacency.fetch(current_id).each do |neighbor_id|
+              next if visited.include?(neighbor_id)
+
+              visited << neighbor_id
+              queue << neighbor_id
+            end
+          end
+
+          next if component.length < MIN_NETWORK_CLUSTER_SIZE
+
+          component
+        end.sort_by do |component|
+          [ -component.length, component.map { |person_id| people_by_id.fetch(person_id).display_name }.min.to_s ]
+        end
+      end
+    end
+  end
+
+  def network_cluster_candidate_for(component_person_ids)
+    organization_counts = Hash.new(0)
+    tag_counts = Hash.new(0)
+
+    component_person_ids.each do |person_id|
+      metadata = metadata_index.fetch(person_id)
+      metadata[:organizations].each { |term| organization_counts[term] += 1 }
+      metadata[:tags].each { |term| tag_counts[term] += 1 }
+    end
+
+    label, basis = dominant_network_label(organization_counts, tag_counts, component_person_ids.length)
+
+    {
+      slug: "net-#{label.parameterize.presence || Zlib.crc32(component_person_ids.join('-')).to_s(36)}-#{component_person_ids.first}",
+      label: label,
+      category: "network",
+      people_count: component_person_ids.length,
+      score: component_person_ids.length * 3,
+      basis: basis,
+      person_ids: component_person_ids
+    }
+  end
+
+  def dominant_network_label(organization_counts, tag_counts, component_size)
+    top_org = organization_counts.max_by { |term, count| [ count, term ] }
+    top_tag = tag_counts.max_by { |term, count| [ count, term ] }
+
+    if top_org && (!top_tag || top_org.last >= top_tag.last)
+      [ top_org.first, "organization" ]
+    elsif top_tag
+      [ top_tag.first, "tag" ]
+    else
+      [ "近縁人物群 #{component_size}", "network" ]
+    end
+  end
+
+  def directly_clustered_person_ids
+    @directly_clustered_person_ids ||= @people.filter_map do |person|
+      person.id if preferred_cluster_slug_for(person).present?
+    end
   end
 
   def candidate_term_bucket(candidate)
@@ -368,7 +487,12 @@ class ClusteredPeopleGraphBuilder
     {
       "organization" => "所属クラスタ",
       "tag" => "分野クラスタ",
+      "network" => "近縁クラスタ",
       "other" => "補助クラスタ"
     }.fetch(category, category)
+  end
+
+  def people_by_id
+    @people_by_id ||= @people.index_by(&:id)
   end
 end

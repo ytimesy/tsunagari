@@ -53,4 +53,53 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     assert_equal 2, selected_cluster[:people_count]
     assert_equal [ "Ada Lovelace", "Charles Babbage" ], selected_cluster[:people].map(&:display_name)
   end
+
+  test "builds fallback network clusters for nearby people when dominant tags are too small for main clusters" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+    helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
+
+    ada.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A1",
+      source_url: "https://openalex.org/A1",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
+      graph_organizations: [ "Analytical Society" ]
+    )
+    babbage.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A2",
+      source_url: "https://openalex.org/A2",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
+      graph_organizations: [ "Difference Engine Circle" ]
+    )
+    grace.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q1",
+      source_url: "https://www.wikidata.org/wiki/Q1",
+      fetched_at: Time.current,
+      graph_tags: [ "Compiler Design" ],
+      graph_organizations: [ "US Navy" ]
+    )
+    helper.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q2",
+      source_url: "https://www.wikidata.org/wiki/Q2",
+      fetched_at: Time.current,
+      graph_tags: [ "Compiler Design" ],
+      graph_organizations: [ "Civic Lab" ]
+    )
+
+    builder = ClusteredPeopleGraphBuilder.new(people: [ ada, babbage, grace, helper ])
+    summary = builder.summary
+    labels = builder.payload[:nodes].map { |node| node[:label] }
+
+    assert_equal 2, summary[:cluster_count]
+    assert_includes labels, "Computing"
+    assert_includes labels, "Compiler Design"
+    assert_not_includes labels, "その他"
+  end
 end

@@ -1,4 +1,4 @@
-<% if graph[:edges].any? %>
+<% if graph[:nodes].any? %>
   <% kind_counts = graph[:edges].each_with_object(Hash.new(0)) { |edge, counts| counts[edge[:kind].presence || "same_field"] += 1 } %>
   <% ordered_kinds = relationship_kind_options.map(&:first).select { |kind| kind_counts.key?(kind) } %>
   <section
@@ -6,22 +6,24 @@
     data-controller="relationship-graph"
     data-relationship-graph-graph-value="<%= json_escape(graph.to_json) %>"
     data-relationship-graph-palette-value="<%= json_escape(relationship_kind_palette.to_json) %>">
-    <div class="relationship-filter-bar">
-      <button type="button" class="relationship-filter relationship-filter--reset is-active" data-action="relationship-graph#showAllKinds" data-relationship-graph-target="reset">全表示</button>
-      <% ordered_kinds.each do |kind| %>
-        <button
-          type="button"
-          class="relationship-filter is-active"
-          style="<%= relationship_kind_css_vars(kind) %>"
-          data-action="relationship-graph#toggleKind"
-          data-relationship-graph-target="filter"
-          data-kind="<%= kind %>">
-          <span class="relationship-filter-swatch" aria-hidden="true"></span>
-          <span><%= relationship_kind_label(kind) %></span>
-          <span class="relationship-filter-count"><%= kind_counts[kind] %></span>
-        </button>
-      <% end %>
-    </div>
+    <% if ordered_kinds.any? %>
+      <div class="relationship-filter-bar">
+        <button type="button" class="relationship-filter relationship-filter--reset is-active" data-action="relationship-graph#showAllKinds" data-relationship-graph-target="reset">全表示</button>
+        <% ordered_kinds.each do |kind| %>
+          <button
+            type="button"
+            class="relationship-filter is-active"
+            style="<%= relationship_kind_css_vars(kind) %>"
+            data-action="relationship-graph#toggleKind"
+            data-relationship-graph-target="filter"
+            data-kind="<%= kind %>">
+            <span class="relationship-filter-swatch" aria-hidden="true"></span>
+            <span><%= relationship_kind_label(kind) %></span>
+            <span class="relationship-filter-count"><%= kind_counts[kind] %></span>
+          </button>
+        <% end %>
+      </div>
+    <% end %>
 
     <div class="relationship-canvas" data-relationship-graph-target="canvas"></div>
   </section>

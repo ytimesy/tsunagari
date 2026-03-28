@@ -300,4 +300,31 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "charles-babbage", response.body
     assert_match "Analytical Society", response.body
   end
+
+  test "global people graph still renders imported nodes when lightweight graph cache is empty" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    curie = Person.create!(display_name: "Marie Curie", publication_status: "published")
+
+    ada.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current
+    )
+    curie.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q7186",
+      source_url: "https://www.wikidata.org/wiki/Q7186",
+      fetched_at: Time.current
+    )
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match "全体人物関係図", response.body
+    assert_match 'data-controller="relationship-graph"', response.body
+    assert_match "ada-lovelace", response.body
+    assert_match "marie-curie", response.body
+    assert_no_match "共通タグや所属が増えると全体ネットワークを描画できます。", response.body
+  end
 end

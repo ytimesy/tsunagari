@@ -50,18 +50,19 @@ export default class extends Controller {
     const graph = this.graphValue
     const visibleEdges = this.visibleEdges(graph)
     const showAllLabels = this.showAllLabels(graph)
+    const hasAnyEdges = !!(graph && graph.edges && graph.edges.length > 0)
 
-    if (!graph || !graph.nodes || graph.nodes.length === 0 || !graph.edges || graph.edges.length === 0) {
+    if (!graph || !graph.nodes || graph.nodes.length === 0) {
       this.canvasTarget.innerHTML = "<p class=\"empty-note\">図にできる関係はまだありません。</p>"
       return
     }
 
-    if (visibleEdges.length === 0) {
+    if (hasAnyEdges && visibleEdges.length === 0) {
       this.canvasTarget.innerHTML = "<p class=\"empty-note\">選択中の関係タイプでは図にできる線がありません。</p>"
       return
     }
 
-    const visibleNodes = this.visibleNodes(graph, visibleEdges)
+    const visibleNodes = hasAnyEdges ? this.visibleNodes(graph, visibleEdges) : graph.nodes
     const degreeByNodeId = this.degreeByNodeId(visibleNodes, visibleEdges)
     const { width, height } = this.dimensionsFor(visibleNodes.length)
     const positions = this.buildPositions(visibleNodes, graph.centerId, width, height)

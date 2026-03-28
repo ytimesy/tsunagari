@@ -53,6 +53,7 @@ class ClusteredPeopleGraphBuilder
       cluster = cluster_index[@selected_cluster_slug]
       if cluster
         people = cluster.people.sort_by(&:display_name)
+        graph_people = graph_people_for(cluster)
 
         {
           slug: cluster.slug,
@@ -66,8 +67,8 @@ class ClusteredPeopleGraphBuilder
           top_organizations: top_terms_for_cluster(cluster, :organizations),
           top_tags: top_terms_for_cluster(cluster, :tags),
           source_breakdown: source_breakdown_for_cluster(cluster),
-          graph_people: people.first(LARGE_CLUSTER_GRAPH_LIMIT),
-          graph_allowed: people.length <= LARGE_CLUSTER_GRAPH_LIMIT
+          graph_people: graph_people,
+          graph_truncated: people.length > graph_people.length
         }
       end
     end
@@ -428,6 +429,32 @@ class ClusteredPeopleGraphBuilder
     cluster.people.each_with_object(Hash.new(0)) do |person, counts|
       metadata_index.fetch(person.id).fetch(key).each { |term| counts[term] += 1 }
     end.sort_by { |term, count| [ -count, term ] }.first(6)
+  end
+
+  def graph_people_for(cluster)
+    people = cluster.people
+    return people.sort_by(&:display_name) if people.length <= LARGE_CLUSTER_GRAPH_LIMIT
+
+    cluster_person_ids = people.map(&:id).to_set
+    connection_scores = people.each_with_object(Hash.new(0)) do |person, scores|
+      metadata = metadata_index.fetch(person.id)
+      scores[person.id] += metadata[:organizations].length * 5
+      scores[person.id] += metadata[:tags].length * 3
+    end
+
+    person_relationship_pairs.each do |pair, values|
+      left_id, right_id = pair
+      next unless cluster_person_ids.include?(left_id) && cluster_person_ids.include?(right_id)
+
+      weight = (values[:shared_organizations].length * 5) + (values[:shared_tags].length * 3)
+      connection_scores[left_id] += weight
+      connection_scores[right_id] += weight
+    end
+
+    people
+      .sort_by { |person| [ -connection_scores.fetch(person.id, 0), person.display_name ] }
+      .first(LARGE_CLUSTER_GRAPH_LIMIT)
+      .sort_by(&:display_name)
   end
 
   def source_breakdown_for_cluster(cluster)

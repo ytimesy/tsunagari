@@ -386,4 +386,26 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "Charles Babbage", response.body
     assert_match "この集団の人物関係図", response.body
   end
+
+  test "selected cluster still shows a relationship graph when the cluster is large" do
+    61.times do |index|
+      person = Person.create!(display_name: format("Researcher %02d", index), publication_status: "published")
+
+      person.person_external_profiles.create!(
+        source_name: "openalex",
+        external_id: "A#{index}",
+        source_url: "https://openalex.org/A#{index}",
+        fetched_at: Time.current,
+        graph_tags: [ "Computing", ("Mathematics" if index < 40), ("Systems" if index.even?) ].compact,
+        graph_organizations: [ "Analytical Society", ("Logic Lab" if index < 20) ].compact
+      )
+    end
+
+    get graph_people_path(cluster: "org-analytical-society")
+
+    assert_response :success
+    assert_match "この集団の人物関係図", response.body
+    assert_match "接点が多い 60 人を選んで描画しています", response.body
+    assert_no_match "人数が多いため、部分関係図は省略しています", response.body
+  end
 end

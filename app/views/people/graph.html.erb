@@ -80,9 +80,10 @@
 
       <% if @selected_cluster_graph.present? %>
         <h3>この集団の人物関係図</h3>
+        <% if @selected_cluster[:graph_truncated] %>
+          <p class="meta">見やすさのため、この集団の中で接点が多い <%= @selected_cluster[:graph_people].length %> 人を選んで描画しています。</p>
+        <% end %>
         <%= render "shared/relationship_graph", graph: @selected_cluster_graph, empty_message: "この集団内で図にできる関係はまだありません。" %>
-      <% else %>
-        <p class="meta">この集団は人数が多いため、部分関係図は省略しています。下の人物一覧から探索してください。</p>
       <% end %>
     </article>
   </section>

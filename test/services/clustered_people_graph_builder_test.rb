@@ -102,4 +102,29 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     assert_includes labels, "Compiler Design"
     assert_not_includes labels, "その他"
   end
+
+  test "keeps a person graph for large clusters by selecting the most connected members" do
+    61.times do |index|
+      person = Person.create!(display_name: format("Researcher %02d", index), publication_status: "published")
+
+      person.person_external_profiles.create!(
+        source_name: "openalex",
+        external_id: "A#{index}",
+        source_url: "https://openalex.org/A#{index}",
+        fetched_at: Time.current,
+        graph_tags: [ "Computing", ("Mathematics" if index < 40), ("Systems" if index.even?) ].compact,
+        graph_organizations: [ "Analytical Society", ("Logic Lab" if index < 20) ].compact
+      )
+    end
+
+    builder = ClusteredPeopleGraphBuilder.new(
+      people: Person.order(:display_name).to_a,
+      selected_cluster_slug: "org-analytical-society"
+    )
+    selected_cluster = builder.selected_cluster
+
+    assert_equal 61, selected_cluster[:people_count]
+    assert_equal 60, selected_cluster[:graph_people].length
+    assert selected_cluster[:graph_truncated]
+  end
 end

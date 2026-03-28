@@ -40,7 +40,7 @@ class PeopleController < ApplicationController
     @relationship_graph = builder.payload
     @graph_summary = builder.summary
     @selected_cluster = builder.selected_cluster
-    @selected_cluster_graph = if @selected_cluster&.dig(:graph_allowed)
+    @selected_cluster_graph = if @selected_cluster.present?
       ImportedPeopleGraphBuilder.new(people: @selected_cluster.fetch(:graph_people)).payload
     end
   end

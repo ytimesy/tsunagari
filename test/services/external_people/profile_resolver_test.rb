@@ -39,4 +39,51 @@ class ExternalPeople::ProfileResolverTest < ActiveSupport::TestCase
       assert_equal "live", resolved[:source_mode]
     end
   end
+
+  test "builds metadata index keyed by person id" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+
+    ada.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current
+    )
+    grace.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q11641",
+      source_url: "https://www.wikidata.org/wiki/Q11641",
+      fetched_at: Time.current
+    )
+
+    resolver = ExternalPeople::ProfileResolver.new
+
+    with_stubbed_method(ExternalPeople::OpenAlexClient, :fetch_profile, {
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current,
+      display_name: "Ada Lovelace",
+      tags: [ "Computing" ],
+      affiliations: [ { name: "Analytical Society", category: "institution" } ]
+    }) do
+      with_stubbed_method(ExternalPeople::WikidataClient, :fetch_profile, {
+        source_name: "wikidata",
+        external_id: "Q11641",
+        source_url: "https://www.wikidata.org/wiki/Q11641",
+        fetched_at: Time.current,
+        display_name: "Grace Hopper",
+        tags: [ "Programming Languages" ],
+        affiliations: [ { name: "US Navy", category: "organization" } ]
+      }) do
+        metadata_index = resolver.metadata_index_for([ ada, grace ])
+
+        assert_equal [ "Computing" ], metadata_index.fetch(ada.id)[:tags]
+        assert_equal [ "Analytical Society" ], metadata_index.fetch(ada.id)[:organizations]
+        assert_equal [ "Programming Languages" ], metadata_index.fetch(grace.id)[:tags]
+        assert_equal [ "US Navy" ], metadata_index.fetch(grace.id)[:organizations]
+      end
+    end
+  end
 end

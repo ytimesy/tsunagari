@@ -4,6 +4,9 @@ require "uri"
 
 module ExternalPeople
   class BaseClient
+    OPEN_TIMEOUT_SECONDS = 2
+    READ_TIMEOUT_SECONDS = 3
+
     private
 
     def fetch_json(url, params: nil)
@@ -11,6 +14,8 @@ module ExternalPeople
       uri.query = URI.encode_www_form(params) if params.present?
 
       response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
+        http.open_timeout = OPEN_TIMEOUT_SECONDS
+        http.read_timeout = READ_TIMEOUT_SECONDS
         request = Net::HTTP::Get.new(uri)
         request["Accept"] = "application/json"
         request["User-Agent"] = "Tsunagari/1.0"

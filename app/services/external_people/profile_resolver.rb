@@ -18,8 +18,10 @@ module ExternalPeople
     end
 
     def metadata_index_for(people)
-      resolve_many(people).transform_values do |profile|
-        {
+      Array(people).compact.each_with_object({}) do |person, index|
+        profile = resolve(person)
+
+        index[person.id] = {
           tags: profile[:tags],
           organizations: profile[:affiliations].map { |affiliation| affiliation[:name] }
         }

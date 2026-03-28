@@ -7,9 +7,6 @@ require_dependency Rails.root.join("app/services/external_people/profile_resolve
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class PeopleController < ApplicationController
-  GLOBAL_GRAPH_LIVE_METADATA_PEOPLE_LIMIT = 60
-  GLOBAL_GRAPH_LIVE_METADATA_RESOLUTION_LIMIT = 16
-
   before_action :set_person, only: %i[show edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
@@ -339,9 +336,8 @@ class PeopleController < ApplicationController
     end
 
     return {} if target_people.empty?
-    return {} if @query.blank? && Array(people).length > GLOBAL_GRAPH_LIVE_METADATA_PEOPLE_LIMIT
 
-    profile_resolver.metadata_index_for(target_people.first(GLOBAL_GRAPH_LIVE_METADATA_RESOLUTION_LIMIT))
+    profile_resolver.metadata_index_for(target_people)
   rescue ExternalPeople::Error, StandardError
     {}
   end

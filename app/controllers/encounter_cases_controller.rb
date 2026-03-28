@@ -1,5 +1,6 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
+require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class EncounterCasesController < ApplicationController
   before_action :set_encounter_case, only: %i[show edit update]
@@ -14,6 +15,7 @@ class EncounterCasesController < ApplicationController
 
   def show
     @research_notes = @encounter_case.research_notes.order(created_at: :desc)
+    @edit_histories = @encounter_case.edit_histories.recent.limit(5)
     case_people = @encounter_case.people.to_a
     @relationship_graph = RelationshipGraphBuilder.new(
       people: case_people,
@@ -38,6 +40,7 @@ class EncounterCasesController < ApplicationController
       sync_outcomes(@encounter_case)
       sync_case_insights(@encounter_case)
       sync_sources(@encounter_case)
+      record_encounter_case_edit_history(@encounter_case, action: "created")
     end
 
     redirect_to @encounter_case, notice: "出会い事例を作成しました。"
@@ -49,6 +52,7 @@ class EncounterCasesController < ApplicationController
   def edit; end
 
   def update
+    before_snapshot = encounter_case_snapshot(@encounter_case)
     assign_form_values_from_params
     validate_publish_requirements!
 
@@ -59,6 +63,7 @@ class EncounterCasesController < ApplicationController
       sync_outcomes(@encounter_case)
       sync_case_insights(@encounter_case)
       sync_sources(@encounter_case)
+      record_encounter_case_edit_history(@encounter_case, action: "updated", before_snapshot:)
     end
 
     redirect_to @encounter_case, notice: "出会い事例を更新しました。"
@@ -247,5 +252,128 @@ class EncounterCasesController < ApplicationController
 
   def profile_resolver
     @profile_resolver ||= ExternalPeople::ProfileResolver.new
+  end
+
+  def encounter_case_snapshot(encounter_case)
+    primary_outcome = encounter_case.case_outcomes.first
+    primary_insight = encounter_case.case_insights.first
+    primary_source = encounter_case.sources.first
+
+    {
+      attributes: {
+        title: encounter_case.title.to_s,
+        summary: encounter_case.summary.to_s,
+        background: encounter_case.background.to_s,
+        happened_on: encounter_case.happened_on&.iso8601.to_s,
+        place: encounter_case.place.to_s,
+        publication_status: encounter_case.publication_status.to_s,
+        published_at: encounter_case.published_at&.iso8601.to_s
+      },
+      tags: encounter_case.tags.order(:name).pluck(:name),
+      participants: encounter_case.case_participants.order(:person_id).map { |participant| [ participant.person.display_name, participant.participation_role.to_s ] },
+      outcome: {
+        category: primary_outcome&.category.to_s,
+        direction: primary_outcome&.outcome_direction.to_s,
+        description: primary_outcome&.description.to_s,
+        impact_scope: primary_outcome&.impact_scope.to_s,
+        evidence_level: primary_outcome&.evidence_level.to_s
+      },
+      insight: {
+        insight_type: primary_insight&.insight_type.to_s,
+        description: primary_insight&.description.to_s,
+        application_note: primary_insight&.application_note.to_s
+      },
+      source: {
+        title: primary_source&.title.to_s,
+        url: primary_source&.url.to_s,
+        source_type: primary_source&.source_type.to_s,
+        published_on: primary_source&.published_on&.iso8601.to_s
+      }
+    }
+  end
+
+  def requested_encounter_case_snapshot
+    participants = @participant_names.split(",").map { |name| name.strip.squish }.reject(&:blank?).uniq.sort.map do |name|
+      [ name, @participant_role.to_s ]
+    end
+
+    {
+      attributes: {
+        title: encounter_case_attributes[:title].to_s,
+        summary: encounter_case_attributes[:summary].to_s,
+        background: encounter_case_attributes[:background].to_s,
+        happened_on: encounter_case_attributes[:happened_on].to_s,
+        place: encounter_case_attributes[:place].to_s,
+        publication_status: encounter_case_attributes[:publication_status].to_s,
+        published_at: encounter_case_attributes[:published_at].to_s
+      },
+      tags: normalized_case_tag_names(@tag_list),
+      participants: participants,
+      outcome: {
+        category: @outcome_category.to_s,
+        direction: @outcome_direction.to_s,
+        description: @outcome_description.to_s,
+        impact_scope: @impact_scope.to_s,
+        evidence_level: @evidence_level.to_s
+      },
+      insight: {
+        insight_type: @insight_type.to_s,
+        description: @insight_description.to_s,
+        application_note: @application_note.to_s
+      },
+      source: {
+        title: @source_title.to_s,
+        url: @source_url.to_s,
+        source_type: @source_type.to_s,
+        published_on: @source_published_on.to_s
+      }
+    }
+  end
+
+  def record_encounter_case_edit_history(encounter_case, action:, before_snapshot: nil)
+    sections = if action == "created"
+      created_encounter_case_sections
+    else
+      changed_encounter_case_sections(before_snapshot, requested_encounter_case_snapshot)
+    end
+
+    return if action == "updated" && sections.empty?
+
+    EditHistoryRecorder.record!(
+      item: encounter_case,
+      action: action,
+      summary: history_summary_for(action, sections, fallback: "事例情報"),
+      details: { sections: sections }
+    )
+  end
+
+  def created_encounter_case_sections
+    sections = [ "事例情報" ]
+    sections << "タグ" if normalized_case_tag_names(@tag_list).any?
+    sections << "参加人物" if @participant_names.present?
+    sections << "結果" if @outcome_description.present?
+    sections << "学び" if @insight_description.present?
+    sections << "出典" if @source_url.present?
+    sections
+  end
+
+  def changed_encounter_case_sections(before_snapshot, after_snapshot)
+    sections = []
+    sections << "事例情報" if before_snapshot[:attributes] != after_snapshot[:attributes]
+    sections << "タグ" if before_snapshot[:tags] != after_snapshot[:tags]
+    sections << "参加人物" if before_snapshot[:participants] != after_snapshot[:participants]
+    sections << "結果" if before_snapshot[:outcome] != after_snapshot[:outcome]
+    sections << "学び" if before_snapshot[:insight] != after_snapshot[:insight]
+    sections << "出典" if before_snapshot[:source] != after_snapshot[:source]
+    sections
+  end
+
+  def normalized_case_tag_names(raw_tag_list)
+    raw_tag_list.to_s.split(",").map { |name| name.strip.squish }.reject(&:blank?).uniq.sort
+  end
+
+  def history_summary_for(action, sections, fallback:)
+    target = sections.any? ? sections.join("・") : fallback
+    action == "created" ? "#{target}を追加" : "#{target}を更新"
   end
 end

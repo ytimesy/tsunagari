@@ -4,6 +4,46 @@ module ExternalPeople
       new(profile: profile, target_person: target_person).import!
     end
 
+    def self.graph_tags_from(profile)
+      self.normalize_terms(Array(self.extract_value(profile, :tags)), limit: 8)
+    end
+
+    def self.graph_organizations_from(profile)
+      organizations = Array(self.extract_value(profile, :affiliations)).filter_map do |affiliation|
+        next self.normalize_term(affiliation) unless affiliation.respond_to?(:[])
+
+        self.normalize_term(affiliation[:name] || affiliation["name"])
+      end
+
+      self.normalize_terms(organizations, limit: 6)
+    end
+
+    def self.extract_value(profile, key)
+      return profile[key] if profile.respond_to?(:[]) && profile[key].present?
+
+      profile[key.to_s] if profile.respond_to?(:[])
+    end
+
+    def self.normalize_terms(values, limit:)
+      seen = {}
+
+      Array(values).filter_map do |value|
+        normalized = normalize_term(value)
+        next if normalized.blank?
+
+        key = normalized.downcase
+        next if seen[key]
+
+        seen[key] = true
+        normalized
+      end.first(limit)
+    end
+
+    def self.normalize_term(value)
+      term = value.to_s.squish
+      term.presence
+    end
+
     def initialize(profile:, target_person: nil)
       @profile = profile.deep_symbolize_keys
       @target_person = target_person
@@ -41,7 +81,10 @@ module ExternalPeople
       external_profile.person = person
       external_profile.source_url = @profile[:source_url]
       external_profile.fetched_at = @profile[:fetched_at] || Time.current
+      external_profile.graph_tags = self.class.graph_tags_from(@profile)
+      external_profile.graph_organizations = self.class.graph_organizations_from(@profile)
       external_profile.save!
     end
+
   end
 end

@@ -1,5 +1,9 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
+require_dependency Rails.root.join("app/services/imported_people_graph_builder").to_s
+require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
+require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
+require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class PeopleController < ApplicationController
   before_action :set_person, only: %i[show edit update]
@@ -13,16 +17,22 @@ class PeopleController < ApplicationController
   end
 
   def show
-    @related_cases = related_cases_for(@person)
+    @graph_depth = graph_depth_param
     @research_notes = @person.research_notes.order(created_at: :desc)
     @resolved_person_profile = profile_resolver.resolve(@person)
-    graph_people = graph_people_for(@person, @related_cases)
-    @relationship_graph = RelationshipGraphBuilder.new(
-      people: graph_people,
-      encounter_cases: @related_cases,
-      focal_person: @person,
-      profile_metadata_by_person_id: profile_resolver.metadata_index_for(graph_people)
-    ).payload
+    @relationship_graphs = build_relationship_graphs
+    @edit_histories = @person.edit_histories.recent.limit(5)
+  end
+
+  def graph
+    @query = params[:q].to_s.strip
+    @people = imported_scope
+    @people = apply_search(@people, @query) if @query.present?
+    @people = @people.order(:display_name).load
+
+    builder = ImportedPeopleGraphBuilder.new(people: @people)
+    @relationship_graph = builder.payload
+    @graph_summary = builder.summary
   end
 
   def new
@@ -37,6 +47,7 @@ class PeopleController < ApplicationController
       @person.save!
       sync_tags(@person, @tag_list)
       sync_primary_affiliation(@person)
+      record_person_edit_history(@person, action: "created")
     end
 
     redirect_to @person, notice: "人物を作成しました。"
@@ -48,12 +59,14 @@ class PeopleController < ApplicationController
   def edit; end
 
   def update
+    before_snapshot = person_snapshot(@person)
     assign_form_values_from_params
 
     ActiveRecord::Base.transaction do
       @person.update!(person_attributes)
       sync_tags(@person, @tag_list)
       sync_primary_affiliation(@person)
+      record_person_edit_history(@person, action: "updated", before_snapshot:)
     end
 
     redirect_to @person, notice: "人物を更新しました。"
@@ -72,11 +85,15 @@ class PeopleController < ApplicationController
     Person.includes(:person_external_profiles, :tags, person_affiliations: :organization)
   end
 
+  def imported_scope
+    base_scope.joins(:person_external_profiles).distinct
+  end
+
   def apply_search(scope, query)
     like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query.downcase)}%"
 
     scope.left_joins(:person_external_profiles, :tags, person_affiliations: :organization).where(
-      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query OR LOWER(COALESCE(person_external_profiles.external_id, '')) LIKE :query",
+      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query OR LOWER(COALESCE(person_external_profiles.external_id, '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_tags, ' '), '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_organizations, ' '), '')) LIKE :query",
       query: like_query
     ).distinct
   end
@@ -143,34 +160,130 @@ class PeopleController < ApplicationController
     )
   end
 
-  def related_cases_for(person)
-    person.encounter_cases.includes(
-      :case_outcomes,
-      case_participants: :person,
-      people: [ :tags, { person_affiliations: :organization } ]
-    ).order(happened_on: :desc, published_at: :desc).distinct
+  def graph_depth_param
+    requested_depth = params[:graph_depth].to_i
+    return 1 if requested_depth <= 0
+
+    requested_depth.clamp(1, 3)
   end
 
-  def graph_people_for(person, related_cases)
-    related_people = related_cases.flat_map(&:people).uniq { |related_person| related_person.id }
-    collaborator_counts = Hash.new(0)
+  def person_snapshot(person)
+    affiliation = person.primary_affiliation
 
-    related_cases.each do |encounter_case|
-      encounter_case.people.each do |related_person|
-        next if related_person.id == person.id
+    {
+      attributes: {
+        display_name: person.display_name.to_s,
+        summary: person.summary.to_s,
+        bio: person.bio.to_s,
+        publication_status: person.publication_status.to_s,
+        published_at: person.published_at&.iso8601.to_s
+      },
+      tags: person.tags.order(:name).pluck(:name),
+      affiliation: {
+        name: affiliation&.organization&.name.to_s,
+        category: affiliation&.organization&.category.to_s,
+        website_url: affiliation&.organization&.website_url.to_s,
+        title: affiliation&.title.to_s
+      }
+    }
+  end
 
-        collaborator_counts[related_person.id] += 1
-      end
+  def requested_person_snapshot
+    {
+      attributes: {
+        display_name: person_attributes[:display_name].to_s,
+        summary: person_attributes[:summary].to_s,
+        bio: person_attributes[:bio].to_s,
+        publication_status: person_attributes[:publication_status].to_s,
+        published_at: person_attributes[:published_at].to_s
+      },
+      tags: normalized_tag_names(@tag_list),
+      affiliation: {
+        name: @primary_organization_name.to_s,
+        category: @primary_organization_category.to_s,
+        website_url: @primary_organization_website_url.to_s,
+        title: @primary_affiliation_title.to_s
+      }
+    }
+  end
+
+  def record_person_edit_history(person, action:, before_snapshot: nil)
+    changes = if action == "created"
+      created_person_sections
+    else
+      changed_person_sections(before_snapshot, requested_person_snapshot)
     end
 
-    collaborators = related_people.reject { |related_person| related_person.id == person.id }
-                                 .sort_by { |related_person| [ -collaborator_counts[related_person.id], related_person.display_name ] }
-                                 .first(7)
+    return if action == "updated" && changes.empty?
 
-    [ person, *collaborators ]
+    EditHistoryRecorder.record!(
+      item: person,
+      action: action,
+      summary: history_summary_for(action, changes, fallback: "人物情報を更新"),
+      details: { sections: changes }
+    )
+  end
+
+  def created_person_sections
+    sections = [ "人物情報" ]
+    sections << "タグ" if normalized_tag_names(@tag_list).any?
+    sections << "所属" if @primary_organization_name.present?
+    sections
+  end
+
+  def changed_person_sections(before_snapshot, after_snapshot)
+    sections = []
+    sections << "人物情報" if before_snapshot[:attributes] != after_snapshot[:attributes]
+    sections << "タグ" if before_snapshot[:tags] != after_snapshot[:tags]
+    sections << "所属" if before_snapshot[:affiliation] != after_snapshot[:affiliation]
+    sections
+  end
+
+  def normalized_tag_names(raw_tag_list)
+    raw_tag_list.to_s.split(",").map { |name| name.strip.squish }.reject(&:blank?).uniq.sort
+  end
+
+  def history_summary_for(action, sections, fallback:)
+    target = sections.any? ? sections.join("・") : fallback
+    action == "created" ? "#{target}を追加" : "#{target}を更新"
   end
 
   def profile_resolver
     @profile_resolver ||= ExternalPeople::ProfileResolver.new
+  end
+
+  def build_relationship_graphs
+    candidate_people = base_scope.where.not(id: @person.id).limit(600).to_a
+    focal_metadata = {
+      tags: @resolved_person_profile[:tags],
+      organizations: Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
+    }
+
+    1.upto(3).each_with_object({}) do |depth, graphs|
+      graphs[depth] = relationship_graph_for(depth, candidate_people:, focal_metadata:)
+    end
+  end
+
+  def relationship_graph_for(depth, candidate_people:, focal_metadata:)
+    graph_scope = PersonCaseGraphScope.new(focal_person: @person, depth:).build
+    graph_people = graph_scope[:people]
+    graph = RelationshipGraphBuilder.new(
+      people: graph_people,
+      encounter_cases: graph_scope[:encounter_cases],
+      focal_person: @person,
+      profile_metadata_by_person_id: profile_resolver.metadata_index_for(graph_people)
+    ).payload
+
+    if graph[:edges].empty?
+      graph = PersonNeighborhoodGraphBuilder.new(
+        focal_person: @person,
+        candidates: candidate_people,
+        focal_metadata:,
+        depth:
+      ).payload
+    end
+
+    graph[:labelMode] = "all"
+    graph
   end
 end

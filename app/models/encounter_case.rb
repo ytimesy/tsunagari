@@ -14,6 +14,7 @@ class EncounterCase < ApplicationRecord
   has_many :sources, through: :case_sources
 
   has_many :research_notes, dependent: :nullify
+  has_many :edit_histories, as: :item, dependent: :destroy
 
   before_validation :assign_slug
 

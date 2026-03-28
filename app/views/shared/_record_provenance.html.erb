@@ -1,0 +1,31 @@
+<section class="record-provenance">
+  <div class="record-provenance-block">
+    <p class="record-provenance-label">情報源</p>
+    <div class="record-provenance-pills">
+      <% source_entries.first(3).each do |entry| %>
+        <% if entry[:href].present? %>
+          <%= link_to entry[:label], entry[:href], class: "status-petal status-petal--link", target: "_blank", rel: "noreferrer" %>
+        <% else %>
+          <span class="status-petal"><%= entry[:label] %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="record-provenance-block">
+    <p class="record-provenance-label">編集履歴</p>
+    <% if edit_histories.any? %>
+      <ul class="record-history-list">
+        <% edit_histories.each do |history| %>
+          <li>
+            <strong><%= edit_history_action_label(history.action) %></strong>
+            <span><%= history.summary %></span>
+            <span class="meta"><%= l(history.created_at, format: :short) %></span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="meta">まだ編集履歴はありません。</p>
+    <% end %>
+  </div>
+</section>

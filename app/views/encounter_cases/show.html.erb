@@ -5,7 +5,7 @@
     <p class="ribbon-label">Encounter Case</p>
     <h1><%= @encounter_case.title %></h1>
     <p class="meta"><%= @encounter_case.happened_on || "時期未設定" %> / <%= @encounter_case.place.presence || "場所未設定" %></p>
-    <div class="status-petal"><%= publication_status_label(@encounter_case.publication_status) %></div>
+    <%= render "shared/record_provenance", source_entries: encounter_case_source_entries(@encounter_case), edit_histories: @edit_histories %>
   </div>
 
   <%= link_to "編集", edit_encounter_case_path(@encounter_case), class: "primary-link" %>
@@ -33,7 +33,7 @@
   <article class="panel soft-panel">
     <p class="eyebrow">Relationship Map</p>
     <h2>人物関係図</h2>
-    <p class="meta">参加人物どうしの近さを図にしています。共通タグや同じ所属がある組み合わせは青、異質な組み合わせは黄です。</p>
+    <p class="meta">参加人物どうしの関係を8種類に色分けして図にしています。色ボタンで、見たい関係タイプだけを表示できます。</p>
     <%= render "shared/relationship_graph", graph: @relationship_graph, empty_message: "参加人物が2人以上になると関係図を表示できます。" %>
 
     <h3>関わった人物</h3>

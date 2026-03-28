@@ -25,9 +25,10 @@ class RelationshipGraphBuilderTest < ActiveSupport::TestCase
     diverse_edge = graph[:edges].find { |edge| edge[:sourceLabel] == "Ada Lovelace" && edge[:targetLabel] == "Community Organizer" }
 
     assert_equal "similar", similar_edge[:tone]
+    assert_equal "same_field", similar_edge[:kind]
     assert_match "共通タグ: Computing", similar_edge[:reason]
     assert_equal "diverse", diverse_edge[:tone]
-    assert_equal "所属やタグが異なる組み合わせ", diverse_edge[:reason]
+    assert_equal "crossing", diverse_edge[:kind]
     assert_equal ada.id, graph[:centerId]
   end
 
@@ -55,7 +56,9 @@ class RelationshipGraphBuilderTest < ActiveSupport::TestCase
     diverse_edge = graph[:edges].find { |edge| edge[:sourceLabel] == "Ada Lovelace" && edge[:targetLabel] == "Community Organizer" }
 
     assert_equal "similar", similar_edge[:tone]
-    assert_match "共通タグ: Computing", similar_edge[:reason]
+    assert_equal "same_organization", similar_edge[:kind]
+    assert_match "共通所属: Analytical Society", similar_edge[:reason]
     assert_equal "diverse", diverse_edge[:tone]
+    assert_equal "crossing", diverse_edge[:kind]
   end
 end

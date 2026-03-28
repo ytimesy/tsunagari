@@ -21,6 +21,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     person = Person.find_by!(display_name: "Ada Lovelace")
     assert_redirected_to person_path(person)
     assert_equal [ "Computing", "Math" ], person.tags.order(:name).pluck(:name)
+    assert_equal [ "created" ], person.edit_histories.pluck(:action)
+    assert_match "人物情報", person.edit_histories.last.summary
 
     patch person_path(person), params: {
       person: {
@@ -38,6 +40,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_redirected_to person_path(person)
     assert_equal "review", person.reload.publication_status
     assert_equal [ "Computing", "Math", "Writing" ], person.tags.order(:name).pluck(:name)
+    assert_equal %w[created updated], person.edit_histories.order(:created_at).pluck(:action)
+    assert_match "タグ", person.edit_histories.recent.first.summary
 
     get new_encounter_case_path
     assert_response :success
@@ -72,12 +76,17 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_redirected_to encounter_case_path(encounter_case)
     assert_equal 2, encounter_case.people.count
     assert_equal "positive", encounter_case.case_outcomes.first.outcome_direction
+    assert_equal [ "created" ], encounter_case.edit_histories.pluck(:action)
 
     get encounter_case_path(encounter_case)
     assert_response :success
     assert_match "人物関係図", response.body
-    assert_match "似たもの同士", response.body
-    assert_match "Ada Lovelace × Charles Babbage", response.body
+    assert_match "共創", response.body
+    assert_match "情報源", response.body
+    assert_match "編集履歴", response.body
+    assert_match "Biography", response.body
+    assert_match %r{href="/people/ada-lovelace"}, response.body
+    assert_match %r{href="/people/charles-babbage"}, response.body
 
     patch encounter_case_path(encounter_case), params: {
       encounter_case: {
@@ -108,6 +117,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_redirected_to encounter_case_path(encounter_case)
     assert_equal "review", encounter_case.reload.publication_status
     assert_equal "mixed", encounter_case.case_outcomes.first.outcome_direction
+    assert_equal %w[created updated], encounter_case.edit_histories.order(:created_at).pluck(:action)
+    assert_match "結果", encounter_case.edit_histories.recent.first.summary
   end
 
   test "wiki shows draft and published people and cases to every visitor" do
@@ -208,7 +219,85 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get person_path(ada)
     assert_response :success
     assert_match "人物関係図", response.body
-    assert_match "Ada Lovelace × Charles Babbage", response.body
-    assert_match "Ada Lovelace × Community Organizer", response.body
+    assert_match "ada-lovelace", response.body
+    assert_match "charles-babbage", response.body
+    assert_match "community-organizer", response.body
+  end
+
+  test "person detail can expand the relationship map to second and third hop" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+    kay = Person.create!(display_name: "Alan Kay", publication_status: "published")
+
+    direct_case = EncounterCase.create!(title: "Analytical exchange", publication_status: "published")
+    direct_case.case_participants.create!(person: ada, participation_role: "participant")
+    direct_case.case_participants.create!(person: babbage, participation_role: "participant")
+
+    second_hop_case = EncounterCase.create!(title: "Compiler dialogue", publication_status: "published")
+    second_hop_case.case_participants.create!(person: babbage, participation_role: "participant")
+    second_hop_case.case_participants.create!(person: grace, participation_role: "participant")
+
+    third_hop_case = EncounterCase.create!(title: "Object systems forum", publication_status: "published")
+    third_hop_case.case_participants.create!(person: grace, participation_role: "participant")
+    third_hop_case.case_participants.create!(person: kay, participation_role: "participant")
+
+    get person_path(ada)
+    assert_response :success
+    assert_match "charles-babbage", response.body
+    assert_match "grace-hopper", response.body
+    assert_match "alan-kay", response.body
+    assert_match 'data-relationship-depth-active-depth-value="1"', response.body
+    assert_match(/data-depth="2"\s+hidden/, response.body)
+
+    get person_path(ada, graph_depth: 2)
+    assert_response :success
+    assert_match 'data-relationship-depth-active-depth-value="2"', response.body
+    assert_match "grace-hopper", response.body
+
+    get person_path(ada, graph_depth: 3)
+    assert_response :success
+    assert_match 'data-relationship-depth-active-depth-value="3"', response.body
+    assert_match "alan-kay", response.body
+  end
+
+  test "global people graph shows imported network" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
+
+    ada.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing", "Mathematics" ],
+      graph_organizations: [ "Analytical Society" ]
+    )
+    babbage.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A456",
+      source_url: "https://openalex.org/A456",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
+      graph_organizations: [ "Analytical Society" ]
+    )
+    helper.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q789",
+      source_url: "https://www.wikidata.org/wiki/Q789",
+      fetched_at: Time.current,
+      graph_tags: [ "Civic Design" ],
+      graph_organizations: [ "Civic Lab" ]
+    )
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match "全体人物関係図", response.body
+    assert_match "取り込み済み人物の全体ネットワーク", response.body
+    assert_match "ada-lovelace", response.body
+    assert_match "charles-babbage", response.body
+    assert_match "Analytical Society", response.body
   end
 end

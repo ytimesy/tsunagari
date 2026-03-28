@@ -5,7 +5,11 @@ Rails.application.routes.draw do
 
   root "home#show"
 
-  resources :people, param: :slug
+  resources :people, param: :slug do
+    collection do
+      get :graph
+    end
+  end
   resources :person_imports, only: %i[new create]
   resources :encounter_cases, path: "cases", param: :slug
   resources :research_notes, only: :create

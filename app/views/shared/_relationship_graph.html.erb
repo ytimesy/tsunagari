@@ -1,24 +1,30 @@
 <% if graph[:edges].any? %>
-  <div class="relationship-legend">
-    <span class="relationship-chip relationship-chip--similar">青: 似たもの同士</span>
-    <span class="relationship-chip relationship-chip--diverse">黄: 異質な組み合わせ</span>
-  </div>
-
-  <div
-    class="relationship-canvas"
+  <% kind_counts = graph[:edges].each_with_object(Hash.new(0)) { |edge, counts| counts[edge[:kind].presence || "same_field"] += 1 } %>
+  <% ordered_kinds = relationship_kind_options.map(&:first).select { |kind| kind_counts.key?(kind) } %>
+  <section
+    class="relationship-graph-shell"
     data-controller="relationship-graph"
-    data-relationship-graph-graph-value="<%= json_escape(graph.to_json) %>">
-  </div>
+    data-relationship-graph-graph-value="<%= json_escape(graph.to_json) %>"
+    data-relationship-graph-palette-value="<%= json_escape(relationship_kind_palette.to_json) %>">
+    <div class="relationship-filter-bar">
+      <button type="button" class="relationship-filter relationship-filter--reset is-active" data-action="relationship-graph#showAllKinds" data-relationship-graph-target="reset">全表示</button>
+      <% ordered_kinds.each do |kind| %>
+        <button
+          type="button"
+          class="relationship-filter is-active"
+          style="<%= relationship_kind_css_vars(kind) %>"
+          data-action="relationship-graph#toggleKind"
+          data-relationship-graph-target="filter"
+          data-kind="<%= kind %>">
+          <span class="relationship-filter-swatch" aria-hidden="true"></span>
+          <span><%= relationship_kind_label(kind) %></span>
+          <span class="relationship-filter-count"><%= kind_counts[kind] %></span>
+        </button>
+      <% end %>
+    </div>
 
-  <ul class="stack-list relationship-summary-list">
-    <% graph[:edges].each do |edge| %>
-      <li class="relationship-summary relationship-summary--<%= edge[:tone] %>">
-        <strong><%= edge[:sourceLabel] %> × <%= edge[:targetLabel] %></strong>
-        <span class="meta"><%= relationship_tone_label(edge[:tone]) %></span>
-        <div class="meta"><%= edge[:reason] %></div>
-      </li>
-    <% end %>
-  </ul>
+    <div class="relationship-canvas" data-relationship-graph-target="canvas"></div>
+  </section>
 <% else %>
   <p class="empty-note"><%= empty_message %></p>
 <% end %>

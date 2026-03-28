@@ -1,0 +1,115 @@
+<% content_for :title, "全体人物関係図" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">People Graph</p>
+    <h1>全体人物関係図</h1>
+    <p class="lede compact">取り込み済み人物の軽量プロフィール要約から、所属や専門の近さを全体ネットワークとして可視化します。</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to "人物録へ戻る", people_path, class: "secondary-link" %>
+    <%= link_to "外部DBから取り込む", new_person_import_path, class: "primary-link" %>
+  </div>
+</section>
+
+<section class="panel soft-panel">
+  <%= form_with url: graph_people_path, method: :get, class: "inline-form" do |form| %>
+    <%= form.search_field :q, value: @query, placeholder: "名前、所属、タグ、外部IDで全体図を絞り込む" %>
+    <%= form.submit "全体図を更新", class: "primary-button" %>
+  <% end %>
+</section>
+
+<section class="panel soft-panel">
+  <div class="compact-stats">
+    <div class="stat-chip">
+      <span class="meta">対象人物</span>
+      <strong><%= @graph_summary[:people_count] %></strong>
+    </div>
+    <div class="stat-chip">
+      <span class="meta">つながりあり</span>
+      <strong><%= @graph_summary[:connected_people_count] %></strong>
+    </div>
+    <div class="stat-chip">
+      <span class="meta">孤立ノード</span>
+      <strong><%= @graph_summary[:isolated_people_count] %></strong>
+    </div>
+    <div class="stat-chip">
+      <span class="meta">描画した関係線</span>
+      <strong><%= @graph_summary[:edge_count] %></strong>
+    </div>
+  </div>
+  <% if @graph_summary[:missing_cache_count].positive? %>
+    <p class="meta">軽量キャッシュ未生成の人物が <%= @graph_summary[:missing_cache_count] %> 人います。既存インポート分は `bundle exec rake "people:refresh_graph_cache"` で補完できます。</p>
+  <% end %>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide">
+    <p class="eyebrow">Network</p>
+    <h2>取り込み済み人物の全体ネットワーク</h2>
+    <p class="meta">線は8種類の関係タイプごとに色分けしています。色ボタンで表示対象を切り替えながら、全人物のネットワークを読み解けます。</p>
+    <%= render "shared/relationship_graph", graph: @relationship_graph, empty_message: "共通タグや所属が増えると全体ネットワークを描画できます。" %>
+  </article>
+</section>
+
+<section class="panel soft-panel">
+  <p class="eyebrow">Relationship Types</p>
+  <h2>8種類の関係タイプ</h2>
+  <div class="relationship-kind-grid">
+    <% relationship_kind_options.each do |kind, label, description| %>
+      <article class="relationship-kind-card" style="<%= relationship_kind_css_vars(kind) %>">
+        <strong><%= label %></strong>
+        <p class="meta"><%= description %></p>
+      </article>
+    <% end %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Organizations</p>
+    <h2>接点が多い所属</h2>
+    <div class="tag-cloud">
+      <% if @graph_summary[:top_organizations].any? %>
+        <% @graph_summary[:top_organizations].each do |organization_name, count| %>
+          <span class="tag-pill"><%= "#{organization_name} (#{count})" %></span>
+        <% end %>
+      <% else %>
+        <span class="tag-pill muted">所属情報はまだ少ないです</span>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Tags</p>
+    <h2>接点が多い専門タグ</h2>
+    <div class="tag-cloud">
+      <% if @graph_summary[:top_tags].any? %>
+        <% @graph_summary[:top_tags].each do |tag_name, count| %>
+          <span class="tag-pill"><%= "#{tag_name} (#{count})" %></span>
+        <% end %>
+      <% else %>
+        <span class="tag-pill muted">タグ情報はまだ少ないです</span>
+      <% end %>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Sources</p>
+    <h2>参照元の内訳</h2>
+    <% if @graph_summary[:source_breakdown].any? %>
+      <ul class="stack-list soft-list">
+        <% @graph_summary[:source_breakdown].each do |source_name, count| %>
+          <li>
+            <strong><%= external_source_label(source_name) %></strong>
+            <span class="meta"><%= count %> 人</span>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ外部DBから取り込まれた人物はいません。</p>
+    <% end %>
+  </article>
+</section>

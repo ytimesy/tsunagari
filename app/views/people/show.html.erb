@@ -11,13 +11,58 @@
         / <%= affiliation[:title] %>
       <% end %>
     </p>
-    <div class="status-petal"><%= publication_status_label(@person.publication_status) %></div>
+    <%= render "shared/record_provenance", source_entries: person_source_entries(@person), edit_histories: @edit_histories %>
   </div>
 
   <div class="hero-actions">
-    <%= link_to "外部DBで補強", new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
+    <%= link_to "Wikidata / OpenAlexで補う", new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
     <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
   </div>
+</section>
+
+<section class="dashboard-grid">
+  <article
+    class="panel soft-panel relationship-panel relationship-panel--wide"
+    data-controller="relationship-depth"
+    data-relationship-depth-active-depth-value="<%= @graph_depth %>">
+    <% depth_options = [
+      { value: 1, title: "1階層" },
+      { value: 2, title: "2階層" },
+      { value: 3, title: "3階層" }
+    ] %>
+    <p class="eyebrow">Relationship Map</p>
+    <h2>人物関係図</h2>
+    <div class="relationship-map-layout">
+      <div class="relationship-depth-rail">
+        <div class="relationship-depth-picker" role="navigation" aria-label="人物関係図の表示範囲">
+          <% depth_options.each do |option| %>
+            <% active = @graph_depth == option[:value] %>
+            <button
+              type="button"
+              class="relationship-depth-option<%= ' is-active' if active %>"
+              data-action="relationship-depth#switch"
+              data-relationship-depth-target="option"
+              data-depth="<%= option[:value] %>"
+              aria-pressed="<%= active ? "true" : "false" %>">
+              <strong class="relationship-depth-label"><%= option[:title] %></strong>
+            </button>
+          <% end %>
+        </div>
+      </div>
+      <div class="relationship-depth-panels">
+        <% depth_options.each do |option| %>
+          <% active = @graph_depth == option[:value] %>
+          <section
+            class="relationship-depth-panel<%= ' is-active' if active %>"
+            data-relationship-depth-target="panel"
+            data-depth="<%= option[:value] %>"
+            <%= "hidden" unless active %>>
+            <%= render "shared/relationship_graph", graph: @relationship_graphs.fetch(option[:value]), empty_message: "この人物に関連する別の人物が増えると関係図を表示できます。" %>
+          </section>
+        <% end %>
+      </div>
+    </div>
+  </article>
 </section>
 
 <section class="dashboard-grid">
@@ -37,58 +82,6 @@
         <span class="tag-pill muted">タグ未設定</span>
       <% end %>
     </div>
-  </article>
-
-  <article class="panel soft-panel">
-    <p class="eyebrow">Related Cases</p>
-    <h2>関わる出会い事例</h2>
-    <% if @related_cases.any? %>
-      <ul class="stack-list soft-list">
-        <% @related_cases.each do |encounter_case| %>
-          <li>
-            <strong><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></strong>
-            <span class="meta"><%= encounter_case.happened_on || "時期未設定" %></span>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="empty-note">まだ紐づく出会い事例はありません。</p>
-    <% end %>
-  </article>
-</section>
-
-<section class="dashboard-grid">
-  <article class="panel soft-panel">
-    <p class="eyebrow">External Sources</p>
-    <h2>外部データ源</h2>
-    <p class="meta">
-      <%= external_profile_mode_label(@resolved_person_profile[:source_mode]) %>
-      <% if @resolved_person_profile[:source_error].present? %>
-        / 取得失敗: <%= @resolved_person_profile[:source_error] %>
-      <% end %>
-    </p>
-    <% if @person.person_external_profiles.any? %>
-      <ul class="stack-list soft-list">
-        <% @person.person_external_profiles.order(:source_name).each do |profile| %>
-          <li>
-            <strong><%= external_source_label(profile.source_name) %></strong>
-            <span class="meta"><%= profile.external_id %> / <%= l(profile.fetched_at, format: :short) %></span>
-            <div><%= link_to profile.source_url, profile.source_url, target: "_blank", rel: "noreferrer" %></div>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="empty-note">まだ外部データとは紐付いていません。必要なら外部DBから補強できます。</p>
-    <% end %>
-  </article>
-</section>
-
-<section class="dashboard-grid">
-  <article class="panel soft-panel relationship-panel relationship-panel--wide">
-    <p class="eyebrow">Relationship Map</p>
-    <h2>人物関係図</h2>
-    <p class="meta">この人物を中心に、共通タグや所属が近い相手は青、異質な相手は黄で表示します。</p>
-    <%= render "shared/relationship_graph", graph: @relationship_graph, empty_message: "この人物に関連する別の人物が増えると関係図を表示できます。" %>
   </article>
 </section>
 
@@ -124,6 +117,32 @@
       </ul>
     <% else %>
       <p class="empty-note">まだ追記メモはありません。補足や仮説を残してください。</p>
+    <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">External Sources</p>
+    <h2>外部データ源</h2>
+    <p class="meta">
+      <%= external_profile_mode_label(@resolved_person_profile[:source_mode]) %>
+      <% if @resolved_person_profile[:source_error].present? %>
+        / 取得失敗: <%= @resolved_person_profile[:source_error] %>
+      <% end %>
+    </p>
+    <% if @person.person_external_profiles.any? %>
+      <ul class="stack-list soft-list">
+        <% @person.person_external_profiles.order(:source_name).each do |profile| %>
+          <li>
+            <strong><%= external_source_label(profile.source_name) %></strong>
+            <span class="meta"><%= profile.external_id %> / <%= l(profile.fetched_at, format: :short) %></span>
+            <div><%= link_to profile.source_url, profile.source_url, target: "_blank", rel: "noreferrer" %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ外部データとは紐付いていません。必要なら外部DBから補強できます。</p>
     <% end %>
   </article>
 </section>

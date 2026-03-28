@@ -31,46 +31,66 @@ class RelationshipGraphBuilder
   end
 
   def edges
-    shared_pairs.map do |pair, shared_case_count|
+    shared_pairs.map do |pair, pair_data|
       left = people_by_id.fetch(pair.first)
       right = people_by_id.fetch(pair.last)
-      tone, reason = classify_relationship(left, right, shared_case_count)
+      shared_tags = tag_names_for(left) & tag_names_for(right)
+      shared_organizations = organization_names_for(left) & organization_names_for(right)
+      classification = RelationshipKindClassifier.classify(
+        shared_tags: shared_tags,
+        shared_organizations: shared_organizations,
+        shared_case_count: pair_data[:cases].length,
+        shared_outcome_directions: pair_data[:cases].flat_map { |encounter_case| encounter_case.case_outcomes.map(&:outcome_direction) },
+        shared_insight_types: pair_data[:cases].flat_map { |encounter_case| encounter_case.case_insights.map(&:insight_type) },
+        role_pairs: role_pairs_for(pair_data[:cases], left, right),
+        text_fragments: text_fragments_for(pair_data[:cases])
+      )
 
       {
         source: left.id,
         target: right.id,
         sourceLabel: left.display_name,
         targetLabel: right.display_name,
-        tone: tone,
-        reason: reason,
-        sharedCaseCount: shared_case_count
+        tone: classification[:tone],
+        kind: classification[:kind],
+        kindLabel: classification[:kind_label],
+        kindDescription: classification[:kind_description],
+        reason: classification[:reason],
+        sharedCaseCount: pair_data[:cases].length
       }
     end
   end
 
   def shared_pairs
-    @encounter_cases.each_with_object(Hash.new(0)) do |encounter_case, pairs|
+    @encounter_cases.each_with_object(Hash.new { |hash, key| hash[key] = { cases: [] } }) do |encounter_case, pairs|
       participant_ids = encounter_case.people.map(&:id).compact & people_by_id.keys
       participant_ids.combination(2) do |left_id, right_id|
-        pairs[[left_id, right_id].sort] += 1
+        pairs[[left_id, right_id].sort][:cases] << encounter_case
       end
     end
   end
 
-  def classify_relationship(left, right, shared_case_count)
-    shared_tags = tag_names_for(left) & tag_names_for(right)
-    shared_organizations = organization_names_for(left) & organization_names_for(right)
+  def role_pairs_for(encounter_cases, left, right)
+    encounter_cases.filter_map do |encounter_case|
+      left_role = encounter_case.case_participants.find { |participant| participant.person_id == left.id }&.participation_role
+      right_role = encounter_case.case_participants.find { |participant| participant.person_id == right.id }&.participation_role
+      next if left_role.blank? || right_role.blank?
 
-    reasons = []
-    reasons << "共通タグ: #{shared_tags.first(2).join(', ')}" if shared_tags.any?
-    reasons << "同じ所属: #{shared_organizations.first(2).join(', ')}" if shared_organizations.any?
-    reasons << "#{shared_case_count}件の事例で接点" if shared_case_count > 1
-
-    if shared_tags.any? || shared_organizations.any?
-      [SIMILAR_TONE, reasons.join(" / ")]
-    else
-      [DIVERSE_TONE, "所属やタグが異なる組み合わせ"]
+      [ left_role, right_role ]
     end
+  end
+
+  def text_fragments_for(encounter_cases)
+    encounter_cases.flat_map do |encounter_case|
+      [
+        encounter_case.title,
+        encounter_case.summary,
+        encounter_case.background,
+        encounter_case.case_outcomes.map(&:description),
+        encounter_case.case_insights.map(&:description),
+        encounter_case.case_insights.map(&:application_note)
+      ]
+    end.flatten.compact
   end
 
   def tag_names_for(person)

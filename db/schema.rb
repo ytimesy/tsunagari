@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_28_152000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_170000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -67,6 +67,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_152000) do
     t.index ["encounter_case_id", "tag_id"], name: "index_case_tags_on_encounter_case_id_and_tag_id", unique: true
     t.index ["encounter_case_id"], name: "index_case_tags_on_encounter_case_id"
     t.index ["tag_id"], name: "index_case_tags_on_tag_id"
+  end
+
+  create_table "edit_histories", force: :cascade do |t|
+    t.string "item_type", null: false
+    t.bigint "item_id", null: false
+    t.string "action", null: false
+    t.string "summary", null: false
+    t.jsonb "details", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_type", "item_id", "created_at"], name: "index_edit_histories_on_item_type_and_item_id_and_created_at"
   end
 
   create_table "encounter_cases", force: :cascade do |t|
@@ -129,6 +140,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_152000) do
     t.datetime "fetched_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "graph_tags", default: [], null: false, array: true
+    t.text "graph_organizations", default: [], null: false, array: true
     t.index ["person_id"], name: "index_person_external_profiles_on_person_id"
     t.index ["source_name", "external_id"], name: "index_person_external_profiles_on_source_name_and_external_id", unique: true
   end

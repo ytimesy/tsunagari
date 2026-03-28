@@ -1,6 +1,7 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
 require_dependency Rails.root.join("app/services/imported_people_graph_builder").to_s
 require_dependency Rails.root.join("app/services/clustered_people_graph_builder").to_s
+require_dependency Rails.root.join("app/services/people_graph_snapshot").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
 require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
@@ -32,23 +33,17 @@ class PeopleController < ApplicationController
     @people = imported_scope
     @people = apply_search(@people, @query) if @query.present?
     @people = @people.order(:display_name).load
-    @graph_profile_metadata_index = graph_profile_metadata_index_for(@people)
-
-    builder = ClusteredPeopleGraphBuilder.new(
+    snapshot = PeopleGraphSnapshot.new(
       people: @people,
       selected_cluster_slug: @selected_cluster_slug,
       query: @query,
-      profile_metadata_by_person_id: @graph_profile_metadata_index
-    )
-    @relationship_graph = builder.payload
-    @graph_summary = builder.summary
-    @selected_cluster = builder.selected_cluster
-    @selected_cluster_graph = if @selected_cluster.present?
-      ImportedPeopleGraphBuilder.new(
-        people: @selected_cluster.fetch(:graph_people),
-        profile_metadata_by_person_id: @graph_profile_metadata_index.slice(*@selected_cluster.fetch(:graph_people).map(&:id))
-      ).payload
-    end
+      profile_resolver: profile_resolver
+    ).fetch
+
+    @relationship_graph = snapshot.fetch(:relationship_graph)
+    @graph_summary = snapshot.fetch(:graph_summary)
+    @selected_cluster = hydrate_selected_cluster(snapshot[:selected_cluster])
+    @selected_cluster_graph = snapshot[:selected_cluster_graph]
     decorate_graph_with_cluster_context!(@selected_cluster_graph, @selected_cluster&.fetch(:graph_people, []), @selected_cluster&.dig(:slug))
     @selected_cluster_graph[:labelMode] = "all" if @selected_cluster_graph.present?
   end
@@ -324,24 +319,6 @@ class PeopleController < ApplicationController
     base_scope.where.not(id: @person.id).limit(600).to_a
   end
 
-  def graph_profile_metadata_index_for(people)
-    target_people = Array(people).compact.uniq { |person| person.id }.select do |person|
-      next false unless person.person_external_profiles.any?
-
-      person.tags.empty? &&
-        person.organizations.empty? &&
-        person.person_external_profiles.all? do |profile|
-          profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
-        end
-    end
-
-    return {} if target_people.empty?
-
-    profile_resolver.metadata_index_for(target_people)
-  rescue ExternalPeople::Error, StandardError
-    {}
-  end
-
   def cluster_context
     @cluster_context ||= begin
       people = imported_scope.order(:display_name).load
@@ -362,5 +339,31 @@ class PeopleController < ApplicationController
 
       node[:href] = person_path(person, cluster: cluster_slug)
     end
+  end
+
+  def hydrate_selected_cluster(snapshot)
+    return unless snapshot
+
+    people_by_id = @people.index_by(&:id)
+
+    {
+      slug: snapshot[:slug],
+      label: snapshot[:label],
+      category: snapshot[:category],
+      category_label: snapshot[:category_label],
+      people_count: snapshot[:people_count],
+      people: hydrate_people(snapshot[:people_ids], people_by_id),
+      people_preview: hydrate_people(snapshot[:people_preview_ids], people_by_id),
+      preview_truncated: snapshot[:preview_truncated],
+      top_organizations: snapshot[:top_organizations],
+      top_tags: snapshot[:top_tags],
+      source_breakdown: snapshot[:source_breakdown],
+      graph_people: hydrate_people(snapshot[:graph_person_ids], people_by_id),
+      graph_truncated: snapshot[:graph_truncated]
+    }
+  end
+
+  def hydrate_people(ids, people_by_id)
+    Array(ids).filter_map { |person_id| people_by_id[person_id] }
   end
 end

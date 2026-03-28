@@ -65,4 +65,31 @@ namespace :people do
     puts "Updated #{updated_count} external profiles."
     puts "Failed #{failed_count} external profiles."
   end
+
+  desc "Warm cached global people graph pages"
+  task :warm_graph_cache, [:clusters] => :environment do |_task, args|
+    people = Person.includes(:person_external_profiles, :tags, person_affiliations: :organization)
+                 .joins(:person_external_profiles)
+                 .distinct
+                 .order(:display_name)
+                 .load
+
+    snapshot = PeopleGraphSnapshot.new(people: people).fetch
+    warmed_count = 1
+    cluster_limit = args[:clusters].presence&.to_i || 6
+
+    Array(snapshot.dig(:graph_summary, :largest_clusters))
+      .reject { |cluster| cluster[:slug] == ClusteredPeopleGraphBuilder::OTHER_CLUSTER_SLUG }
+      .first(cluster_limit)
+      .each do |cluster|
+        PeopleGraphSnapshot.new(
+          people: people,
+          selected_cluster_slug: cluster[:slug]
+        ).fetch
+        warmed_count += 1
+        puts "Warmed cluster #{cluster[:label]} (#{cluster[:slug]})"
+      end
+
+    puts "Warmed #{warmed_count} graph cache entries."
+  end
 end

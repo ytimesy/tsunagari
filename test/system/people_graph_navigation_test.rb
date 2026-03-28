@@ -1,7 +1,7 @@
 require "application_system_test_case"
 
 class PeopleGraphNavigationTest < ApplicationSystemTestCase
-  test "clicking a cluster node in the global graph opens the cluster detail and person links" do
+  test "clicking a cluster node in the global graph opens the cluster detail and preserves context into person graphs" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
     grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
@@ -49,11 +49,13 @@ class PeopleGraphNavigationTest < ApplicationSystemTestCase
 
     assert_current_path graph_people_path(cluster: "org-analytical-society"), ignore_query: false
     assert_text "この集団の人物"
+    assert_selector "[data-node-href='#{person_path(ada, cluster: "org-analytical-society")}']", wait: 5
 
-    click_link "Ada Lovelace"
+    find("[data-node-href='#{person_path(ada, cluster: "org-analytical-society")}']", visible: :all).click
 
-    assert_current_path person_path(ada)
+    assert_current_path person_path(ada, cluster: "org-analytical-society"), ignore_query: false
     assert_text "人物概要"
     assert_text "Ada Lovelace"
+    assert_selector ".relationship-depth-panel.is-active .relationship-canvas svg g.relationship-node", minimum: 2, wait: 5
   end
 end

@@ -385,6 +385,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "Ada Lovelace", response.body
     assert_match "Charles Babbage", response.body
     assert_match "この集団の人物関係図", response.body
+    assert_match 'labelMode&quot;:&quot;all', response.body
+    assert_match person_path(ada, cluster: "org-analytical-society"), response.body
   end
 
   test "selected cluster still shows a relationship graph when the cluster is large" do

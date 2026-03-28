@@ -18,6 +18,7 @@ class PeopleController < ApplicationController
   end
 
   def show
+    @cluster_context_slug = params[:cluster].to_s.presence
     @graph_depth = graph_depth_param
     @research_notes = @person.research_notes.order(created_at: :desc)
     @resolved_person_profile = profile_resolver.resolve(@person)
@@ -43,6 +44,8 @@ class PeopleController < ApplicationController
     @selected_cluster_graph = if @selected_cluster.present?
       ImportedPeopleGraphBuilder.new(people: @selected_cluster.fetch(:graph_people)).payload
     end
+    decorate_graph_with_cluster_context!(@selected_cluster_graph, @selected_cluster&.fetch(:graph_people, []), @selected_cluster&.dig(:slug))
+    @selected_cluster_graph[:labelMode] = "all" if @selected_cluster_graph.present?
   end
 
   def new
@@ -263,7 +266,7 @@ class PeopleController < ApplicationController
   end
 
   def build_relationship_graphs
-    candidate_people = base_scope.where.not(id: @person.id).limit(600).to_a
+    candidate_people = graph_candidate_people
     focal_metadata = {
       tags: @resolved_person_profile[:tags],
       organizations: Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
@@ -294,6 +297,40 @@ class PeopleController < ApplicationController
     end
 
     graph[:labelMode] = "all"
+    decorate_graph_with_cluster_context!(graph, graph_people + candidate_people + [ @person ], @cluster_context_slug)
     graph
+  end
+
+  def graph_candidate_people
+    if @cluster_context_slug.present?
+      cluster = cluster_context
+      if cluster.present?
+        return cluster.fetch(:people).reject { |person| person.id == @person.id }
+      end
+    end
+
+    base_scope.where.not(id: @person.id).limit(600).to_a
+  end
+
+  def cluster_context
+    @cluster_context ||= begin
+      people = imported_scope.order(:display_name).load
+      ClusteredPeopleGraphBuilder.new(
+        people: people,
+        selected_cluster_slug: @cluster_context_slug
+      ).selected_cluster
+    end
+  end
+
+  def decorate_graph_with_cluster_context!(graph, people, cluster_slug)
+    return if graph.blank? || cluster_slug.blank?
+
+    people_by_id = Array(people).compact.uniq { |person| person.id }.index_by(&:id)
+    graph[:nodes].each do |node|
+      person = people_by_id[node[:id]]
+      next unless person
+
+      node[:href] = person_path(person, cluster: cluster_slug)
+    end
   end
 end

@@ -80,6 +80,9 @@
 
       <% if @selected_cluster_graph.present? %>
         <h3>この集団の人物関係図</h3>
+        <% if @selected_cluster_graph[:labelMode] == "all" %>
+          <p class="meta">人物名を読み取りやすいように、各ノードに名前を表示しています。</p>
+        <% end %>
         <% if @selected_cluster[:graph_truncated] %>
           <p class="meta">見やすさのため、この集団の中で接点が多い <%= @selected_cluster[:graph_people].length %> 人を選んで描画しています。</p>
         <% end %>
@@ -95,7 +98,7 @@
       <ul class="stack-list soft-list">
         <% @selected_cluster[:people_preview].each do |person| %>
           <li>
-            <%= link_to person.display_name, person_path(person) %>
+            <%= link_to person.display_name, person_path(person, cluster: @selected_cluster[:slug]) %>
             <% if person.primary_affiliation.present? %>
               <span class="meta"><%= person.primary_affiliation.organization.name %></span>
             <% end %>

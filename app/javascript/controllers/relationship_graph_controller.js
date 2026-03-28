@@ -261,6 +261,13 @@ export default class extends Controller {
   }
 
   nodeRadius(node, nodeCount) {
+    if (node.population) {
+      const scaled = Math.sqrt(node.population)
+      const base = node.role === "focus" ? 18 : 14
+      const radius = base + (scaled * 1.8)
+      return Math.max(base, Math.min(node.role === "focus" ? 42 : 34, radius))
+    }
+
     if (node.role === "focus") return nodeCount > 80 ? 18 : 26
     if (nodeCount > 180) return node.degree >= 3 ? 8 : 6
     if (nodeCount > 80) return node.degree >= 3 ? 10 : 8

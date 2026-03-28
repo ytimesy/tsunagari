@@ -264,6 +264,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
   test "global people graph shows imported network" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
     helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
 
     ada.person_external_profiles.create!(
@@ -287,7 +288,15 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
       external_id: "Q789",
       source_url: "https://www.wikidata.org/wiki/Q789",
       fetched_at: Time.current,
-      graph_tags: [ "Civic Design" ],
+      graph_tags: [ "Computing", "Civic Design" ],
+      graph_organizations: [ "Civic Lab" ]
+    )
+    grace.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q111",
+      source_url: "https://www.wikidata.org/wiki/Q111",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
       graph_organizations: [ "Civic Lab" ]
     )
 
@@ -295,10 +304,12 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "全体人物関係図", response.body
-    assert_match "取り込み済み人物の全体ネットワーク", response.body
-    assert_match "ada-lovelace", response.body
-    assert_match "charles-babbage", response.body
+    assert_match "人物群どうしの全体構造", response.body
+    assert_match "主要クラスタ", response.body
+    assert_match "org-analytical-society", response.body
+    assert_match "org-civic-lab", response.body
     assert_match "Analytical Society", response.body
+    assert_match "Civic Lab", response.body
   end
 
   test "global people graph still renders imported nodes when lightweight graph cache is empty" do
@@ -323,8 +334,56 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "全体人物関係図", response.body
     assert_match 'data-controller="relationship-graph"', response.body
-    assert_match "ada-lovelace", response.body
-    assert_match "marie-curie", response.body
+    assert_match "cluster=other", response.body
+    assert_match "その他", response.body
     assert_no_match "共通タグや所属が増えると全体ネットワークを描画できます。", response.body
+  end
+
+  test "selected cluster shows member details" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+    helper = Person.create!(display_name: "Community Organizer", publication_status: "published")
+
+    ada.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A123",
+      source_url: "https://openalex.org/A123",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing", "Mathematics" ],
+      graph_organizations: [ "Analytical Society" ]
+    )
+    babbage.person_external_profiles.create!(
+      source_name: "openalex",
+      external_id: "A456",
+      source_url: "https://openalex.org/A456",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
+      graph_organizations: [ "Analytical Society" ]
+    )
+    grace.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q111",
+      source_url: "https://www.wikidata.org/wiki/Q111",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing" ],
+      graph_organizations: [ "Civic Lab" ]
+    )
+    helper.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q789",
+      source_url: "https://www.wikidata.org/wiki/Q789",
+      fetched_at: Time.current,
+      graph_tags: [ "Computing", "Civic Design" ],
+      graph_organizations: [ "Civic Lab" ]
+    )
+
+    get graph_people_path(cluster: "org-analytical-society")
+
+    assert_response :success
+    assert_match "この集団の人物", response.body
+    assert_match "Ada Lovelace", response.body
+    assert_match "Charles Babbage", response.body
+    assert_match "この集団の人物関係図", response.body
   end
 end

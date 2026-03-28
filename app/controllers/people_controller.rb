@@ -1,5 +1,6 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
 require_dependency Rails.root.join("app/services/imported_people_graph_builder").to_s
+require_dependency Rails.root.join("app/services/clustered_people_graph_builder").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
 require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
@@ -26,13 +27,22 @@ class PeopleController < ApplicationController
 
   def graph
     @query = params[:q].to_s.strip
+    @selected_cluster_slug = params[:cluster].to_s.presence
     @people = imported_scope
     @people = apply_search(@people, @query) if @query.present?
     @people = @people.order(:display_name).load
 
-    builder = ImportedPeopleGraphBuilder.new(people: @people)
+    builder = ClusteredPeopleGraphBuilder.new(
+      people: @people,
+      selected_cluster_slug: @selected_cluster_slug,
+      query: @query
+    )
     @relationship_graph = builder.payload
     @graph_summary = builder.summary
+    @selected_cluster = builder.selected_cluster
+    @selected_cluster_graph = if @selected_cluster&.dig(:graph_allowed)
+      ImportedPeopleGraphBuilder.new(people: @selected_cluster.fetch(:graph_people)).payload
+    end
   end
 
   def new

@@ -339,6 +339,30 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_no_match "共通タグや所属が増えると全体ネットワークを描画できます。", response.body
   end
 
+  test "global people graph skips live metadata resolution for large overview requests" do
+    80.times do |index|
+      person = Person.create!(display_name: "Imported Person #{index}", publication_status: "published")
+      person.person_external_profiles.create!(
+        source_name: "openalex",
+        external_id: "A#{index}",
+        source_url: "https://openalex.org/A#{index}",
+        fetched_at: Time.current
+      )
+    end
+
+    resolver = Object.new
+    resolver.define_singleton_method(:metadata_index_for) do |_people|
+      raise "metadata resolution should be skipped for large overview requests"
+    end
+
+    with_stubbed_method(ExternalPeople::ProfileResolver, :new, resolver) do
+      get graph_people_path
+    end
+
+    assert_response :success
+    assert_match "全体人物関係図", response.body
+  end
+
   test "selected cluster shows member details" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")

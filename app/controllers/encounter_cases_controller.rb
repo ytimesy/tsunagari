@@ -1,3 +1,5 @@
+require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
+
 class EncounterCasesController < ApplicationController
   before_action :set_encounter_case, only: %i[show edit update]
   before_action :prepare_form_fields, only: %i[new edit]

@@ -1,3 +1,9 @@
+require_dependency Rails.root.join("app/services/external_people/error").to_s
+require_dependency Rails.root.join("app/services/external_people/base_client").to_s
+require_dependency Rails.root.join("app/services/external_people/wikidata_client").to_s
+require_dependency Rails.root.join("app/services/external_people/open_alex_client").to_s
+require_dependency Rails.root.join("app/services/external_people/importer").to_s
+
 class PersonImportsController < ApplicationController
   def new
     @source_name = normalized_source_name(params[:source_name])

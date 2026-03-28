@@ -3,7 +3,7 @@ module ExternalPeople
     AUTHORS_ENDPOINT = "https://api.openalex.org/authors".freeze
 
     class << self
-      delegate :search, :fetch_profile, to: :new
+      delegate :search, :fetch_profile, :fetch_top_people, to: :new
     end
 
     def search(query)
@@ -26,13 +26,27 @@ module ExternalPeople
 
     def fetch_profile(external_id)
       json = fetch_json("#{AUTHORS_ENDPOINT}/#{external_id}")
+      normalize_profile(json, external_id: external_id)
+    end
 
+    def fetch_top_people(limit: 100)
+      json = fetch_json(AUTHORS_ENDPOINT, params: {
+        sort: "cited_by_count:desc",
+        "per-page": limit.to_i.clamp(1, 200)
+      })
+
+      Array(json["results"]).map do |result|
+        normalize_profile(result, external_id: extract_openalex_id(result["id"]))
+      end
+    end
+
+    private
+
+    def normalize_profile(json, external_id:)
       display_name = json["display_name"].to_s
       alternatives = Array(json["display_name_alternatives"]).first(4)
       affiliations = extract_affiliations(json)
-      tags = Array(json["x_concepts"]).sort_by { |concept| -concept["score"].to_f }
-                                      .filter_map { |concept| concept["display_name"].presence }
-                                      .first(6)
+      tags = extract_tags(json)
 
       summary_parts = []
       summary_parts << affiliations.first[:name] if affiliations.first
@@ -66,8 +80,6 @@ module ExternalPeople
       }
     end
 
-    private
-
     def extract_openalex_id(identifier)
       identifier.to_s.split("/").last
     end
@@ -81,6 +93,12 @@ module ExternalPeople
       return if count.blank?
 
       "#{count} works"
+    end
+
+    def extract_tags(json)
+      Array(json["x_concepts"]).sort_by { |concept| -concept["score"].to_f }
+                              .filter_map { |concept| concept["display_name"].presence }
+                              .first(6)
     end
 
     def extract_affiliations(json)

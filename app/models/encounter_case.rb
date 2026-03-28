@@ -1,8 +1,6 @@
 class EncounterCase < ApplicationRecord
   PUBLICATION_STATUSES = %w[draft review published archived].freeze
 
-  belongs_to :editor_user, class_name: "User", inverse_of: :edited_encounter_cases
-
   has_many :case_participants, dependent: :destroy
   has_many :people, through: :case_participants
 
@@ -33,8 +31,8 @@ class EncounterCase < ApplicationRecord
     slug
   end
 
-  def visible_to?(viewer)
-    publication_status == "published" || viewer.present?
+  def visible_to?(_viewer = nil)
+    true
   end
 
   private

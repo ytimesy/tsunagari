@@ -1,22 +1,9 @@
 require "test_helper"
 
 class UserFlowsTest < ActionDispatch::IntegrationTest
-  test "editor can sign up and create a person and encounter case" do
-    get sign_up_path
+  test "visitor can create and update a person and encounter case" do
+    get new_person_path
     assert_response :success
-
-    post sign_up_path, params: {
-      user: {
-        email: "editor@example.com",
-        password: "password",
-        password_confirmation: "password"
-      }
-    }
-
-    assert_redirected_to root_path
-    follow_redirect!
-    assert_response :success
-    assert_equal "editor@example.com", User.last.email
 
     post people_path, params: {
       person: {
@@ -33,9 +20,27 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     person = Person.find_by!(display_name: "Ada Lovelace")
     assert_redirected_to person_path(person)
-    assert_equal "published", person.publication_status
     assert_equal [ "Computing", "Math" ], person.tags.order(:name).pluck(:name)
-    assert_equal "Analytical Society", person.primary_affiliation.organization.name
+
+    patch person_path(person), params: {
+      person: {
+        display_name: "Ada Lovelace",
+        summary: "Poetical science pioneer and editor",
+        bio: "Known for linking imagination and computation.",
+        publication_status: "review",
+        tag_list: "Math, Computing, Writing",
+        primary_organization_name: "Analytical Society",
+        primary_organization_category: "community",
+        primary_affiliation_title: "Member"
+      }
+    }
+
+    assert_redirected_to person_path(person)
+    assert_equal "review", person.reload.publication_status
+    assert_equal [ "Computing", "Math", "Writing" ], person.tags.order(:name).pluck(:name)
+
+    get new_encounter_case_path
+    assert_response :success
 
     post encounter_cases_path, params: {
       encounter_case: {
@@ -66,91 +71,71 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     encounter_case = EncounterCase.find_by!(title: "Ada and Charles started a new line of inquiry")
     assert_redirected_to encounter_case_path(encounter_case)
     assert_equal 2, encounter_case.people.count
-    assert_equal 1, encounter_case.case_outcomes.count
     assert_equal "positive", encounter_case.case_outcomes.first.outcome_direction
-    assert_equal 1, encounter_case.case_insights.count
-    assert_equal 1, encounter_case.sources.count
-  end
 
-  test "published case can show setbacks and lessons" do
-    editor = create_editor(email: "editor4@example.com")
-    sign_in_as(editor)
-
-    post encounter_cases_path, params: {
+    patch encounter_case_path(encounter_case), params: {
       encounter_case: {
-        title: "A civic project stalled after an initial meeting",
-        summary: "The meeting created energy, but the collaboration later stalled.",
-        background: "Expectations and decision rights were not aligned.",
-        happened_on: Date.new(2025, 2, 1),
-        place: "Osaka",
-        publication_status: "published",
-        tag_list: "Civic, Collaboration",
-        participant_names: "Planner A, Researcher B",
+        title: "Ada and Charles started a new line of inquiry",
+        summary: "The meeting led to a more explicit computational framing.",
+        background: "They met around shared interest in machines.",
+        happened_on: Date.new(1843, 1, 1),
+        place: "London / correspondence",
+        publication_status: "review",
+        tag_list: "Collaboration, Innovation",
+        participant_names: "Ada Lovelace, Charles Babbage",
         participant_role: "participant",
-        outcome_category: "coordination",
-        outcome_direction: "negative",
-        outcome_description: "The project stalled because ownership stayed ambiguous.",
-        impact_scope: "team",
-        evidence_level: "reported",
-        insight_type: "barrier",
-        insight_description: "Ambiguous roles and delayed decisions weakened trust.",
-        application_note: "Set decision owners before the first collaborative sprint.",
-        source_title: "Postmortem interview",
-        source_url: "https://example.com/stalled-project",
-        source_type: "interview",
-        source_published_on: Date.new(2025, 3, 1)
+        outcome_category: "innovation",
+        outcome_direction: "mixed",
+        outcome_description: "A new computational perspective emerged, but adoption remained limited.",
+        impact_scope: "field",
+        evidence_level: "documented",
+        insight_type: "lesson",
+        insight_description: "Strong ideas still need translation into institutions.",
+        application_note: "Pair original thinkers with implementers earlier.",
+        source_title: "Biography",
+        source_url: "https://example.com/ada-charles",
+        source_type: "article",
+        source_published_on: Date.new(2024, 1, 1)
       }
     }
 
-    encounter_case = EncounterCase.find_by!(title: "A civic project stalled after an initial meeting")
-    assert_equal "negative", encounter_case.case_outcomes.first.outcome_direction
-    assert_equal "barrier", encounter_case.case_insights.first.insight_type
-
-    delete sign_out_path
-
-    get encounter_case_path(encounter_case)
-    assert_response :success
-    assert_match "失敗・後退", response.body
-    assert_match "阻害要因", response.body
-    assert_match "ownership stayed ambiguous", response.body
+    assert_redirected_to encounter_case_path(encounter_case)
+    assert_equal "review", encounter_case.reload.publication_status
+    assert_equal "mixed", encounter_case.case_outcomes.first.outcome_direction
   end
 
-  test "guest sees only published people and encounter cases" do
-    editor = create_editor(email: "editor2@example.com")
+  test "wiki shows draft and published people and cases to every visitor" do
     public_person = Person.create!(display_name: "Public Person", publication_status: "published")
     draft_person = Person.create!(display_name: "Draft Person", publication_status: "draft")
-    public_case = EncounterCase.create!(editor_user: editor, title: "Public Case", publication_status: "published")
-    draft_case = EncounterCase.create!(editor_user: editor, title: "Draft Case", publication_status: "draft")
+    public_case = EncounterCase.create!(title: "Public Case", publication_status: "published")
+    draft_case = EncounterCase.create!(title: "Draft Case", publication_status: "draft")
 
     get people_path
     assert_response :success
     assert_match "Public Person", response.body
-    refute_match "Draft Person", response.body
+    assert_match "Draft Person", response.body
 
     get encounter_cases_path
     assert_response :success
     assert_match "Public Case", response.body
-    refute_match "Draft Case", response.body
+    assert_match "Draft Case", response.body
 
     get person_path(public_person)
     assert_response :success
 
     get person_path(draft_person)
-    assert_redirected_to people_path
+    assert_response :success
 
     get encounter_case_path(public_case)
     assert_response :success
 
     get encounter_case_path(draft_case)
-    assert_redirected_to encounter_cases_path
+    assert_response :success
   end
 
-  test "signed in editor can add research notes to person and encounter case" do
-    editor = create_editor(email: "editor5@example.com")
+  test "visitor can add research notes to person and encounter case" do
     person = Person.create!(display_name: "Grace Hopper", publication_status: "published")
-    encounter_case = EncounterCase.create!(editor_user: editor, title: "Grace met a Navy team", publication_status: "published")
-
-    sign_in_as(editor)
+    encounter_case = EncounterCase.create!(title: "Grace met a Navy team", publication_status: "published")
 
     post research_notes_path, params: {
       research_note: {
@@ -161,7 +146,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to person_path(person)
-    assert_equal 1, editor.research_notes.where(person: person).count
+    assert_equal 1, person.research_notes.count
 
     post research_notes_path, params: {
       research_note: {
@@ -172,27 +157,32 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     }
 
     assert_redirected_to encounter_case_path(encounter_case)
-    assert_equal 1, editor.research_notes.where(encounter_case: encounter_case).count
+    assert_equal 1, encounter_case.research_notes.count
   end
 
-  private
-
-  def create_editor(email:)
-    User.create!(
-      email: email,
-      password: "password",
-      password_confirmation: "password",
-      role: "editor",
-      status: "active"
+  test "case detail shows setbacks and lessons without login" do
+    encounter_case = EncounterCase.create!(
+      title: "A civic project stalled after an initial meeting",
+      summary: "The meeting created energy, but the collaboration later stalled.",
+      publication_status: "published"
     )
-  end
+    encounter_case.case_outcomes.create!(
+      category: "coordination",
+      outcome_direction: "negative",
+      description: "The project stalled because ownership stayed ambiguous.",
+      evidence_level: "reported"
+    )
+    encounter_case.case_insights.create!(
+      insight_type: "barrier",
+      description: "Ambiguous roles and delayed decisions weakened trust.",
+      application_note: "Set decision owners before the first collaborative sprint."
+    )
 
-  def sign_in_as(user)
-    post sign_in_path, params: {
-      session: {
-        email: user.email,
-        password: "password"
-      }
-    }
+    get encounter_case_path(encounter_case)
+    assert_response :success
+    assert_match "失敗・後退", response.body
+    assert_match "阻害要因", response.body
+    assert_match "ownership stayed ambiguous", response.body
+    assert_match "メモを残す", response.body
   end
 end

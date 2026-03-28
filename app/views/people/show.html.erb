@@ -14,9 +14,7 @@
     <div class="status-petal"><%= publication_status_label(@person.publication_status) %></div>
   </div>
 
-  <% if user_signed_in? %>
-    <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
-  <% end %>
+  <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
 </section>
 
 <section class="dashboard-grid">
@@ -56,38 +54,38 @@
   </article>
 </section>
 
-<% if user_signed_in? %>
-  <section class="dashboard-grid">
-    <article class="panel soft-panel">
-      <p class="eyebrow">Research Notes</p>
-      <h2>編集メモ</h2>
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Wiki Notes</p>
+    <h2>追記メモ</h2>
 
-      <%= form_with url: research_notes_path do |form| %>
-        <%= form.hidden_field :person_id, value: @person.id, name: "research_note[person_id]" %>
+    <%= form_with url: research_notes_path do |form| %>
+      <%= form.hidden_field :person_id, value: @person.id, name: "research_note[person_id]" %>
 
-        <div class="field">
-          <%= form.label :note_kind, "メモ種別" %>
-          <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
-        </div>
+      <div class="field">
+        <%= form.label :note_kind, "メモ種別" %>
+        <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
+      </div>
 
-        <div class="field">
-          <%= form.label :body, "内容" %>
-          <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
-        </div>
+      <div class="field">
+        <%= form.label :body, "内容" %>
+        <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
+      </div>
 
-        <%= form.submit "メモを残す", class: "primary-button" %>
-      <% end %>
+      <%= form.submit "メモを残す", class: "primary-button" %>
+    <% end %>
 
-      <% if @research_notes.any? %>
-        <ul class="stack-list note-list">
-          <% @research_notes.each do |note| %>
-            <li class="timeline-card">
-              <strong><%= note.note_kind.humanize %></strong>
-              <div><%= simple_format(note.body) %></div>
-            </li>
-          <% end %>
-        </ul>
-      <% end %>
-    </article>
-  </section>
-<% end %>
+    <% if @research_notes.any? %>
+      <ul class="stack-list note-list">
+        <% @research_notes.each do |note| %>
+          <li class="timeline-card">
+            <strong><%= note.note_kind.humanize %></strong>
+            <div><%= simple_format(note.body) %></div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ追記メモはありません。補足や仮説を残してください。</p>
+    <% end %>
+  </article>
+</section>

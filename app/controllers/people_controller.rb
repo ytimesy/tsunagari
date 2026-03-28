@@ -1,5 +1,4 @@
 class PeopleController < ApplicationController
-  before_action :require_authentication, only: %i[new create edit update]
   before_action :set_person, only: %i[show edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
@@ -12,11 +11,7 @@ class PeopleController < ApplicationController
 
   def show
     @related_cases = related_cases_for(@person)
-    @research_notes = current_user&.research_notes&.where(person: @person)&.order(created_at: :desc) || []
-
-    return if @person.visible_to?(current_user)
-
-    redirect_to people_path, alert: "この人物はまだ公開されていません。"
+    @research_notes = @person.research_notes.order(created_at: :desc)
   end
 
   def new
@@ -63,8 +58,7 @@ class PeopleController < ApplicationController
   end
 
   def base_scope
-    scope = Person.includes(:tags, person_affiliations: :organization)
-    user_signed_in? ? scope : scope.published
+    Person.includes(:tags, person_affiliations: :organization)
   end
 
   def apply_search(scope, query)
@@ -139,8 +133,6 @@ class PeopleController < ApplicationController
   end
 
   def related_cases_for(person)
-    scope = person.encounter_cases.includes(:case_outcomes)
-    scope = scope.published unless user_signed_in?
-    scope.order(happened_on: :desc, published_at: :desc).distinct
+    person.encounter_cases.includes(:case_outcomes).order(happened_on: :desc, published_at: :desc).distinct
   end
 end

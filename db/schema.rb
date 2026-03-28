@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_122000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -78,10 +78,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
     t.string "place"
     t.string "publication_status", default: "draft", null: false
     t.datetime "published_at"
-    t.bigint "editor_user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["editor_user_id"], name: "index_encounter_cases_on_editor_user_id"
     t.index ["publication_status"], name: "index_encounter_cases_on_publication_status"
     t.index ["slug"], name: "index_encounter_cases_on_slug", unique: true
   end
@@ -134,7 +132,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
   end
 
   create_table "research_notes", force: :cascade do |t|
-    t.bigint "author_user_id", null: false
     t.bigint "person_id"
     t.bigint "encounter_case_id"
     t.string "note_kind", default: "research", null: false
@@ -142,7 +139,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
     t.string "status", default: "open", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["author_user_id"], name: "index_research_notes_on_author_user_id"
     t.index ["encounter_case_id"], name: "index_research_notes_on_encounter_case_id"
     t.index ["person_id"], name: "index_research_notes_on_person_id"
     t.index ["status"], name: "index_research_notes_on_status"
@@ -166,16 +162,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
     t.index ["normalized_name"], name: "index_tags_on_normalized_name", unique: true
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string "email", null: false
-    t.string "password_digest", null: false
-    t.string "role", default: "editor", null: false
-    t.string "status", default: "active", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_users_on_email", unique: true
-  end
-
   add_foreign_key "case_insights", "encounter_cases"
   add_foreign_key "case_outcomes", "encounter_cases"
   add_foreign_key "case_participants", "encounter_cases"
@@ -184,12 +170,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_28_113000) do
   add_foreign_key "case_sources", "sources"
   add_foreign_key "case_tags", "encounter_cases"
   add_foreign_key "case_tags", "tags"
-  add_foreign_key "encounter_cases", "users", column: "editor_user_id"
   add_foreign_key "person_affiliations", "organizations"
   add_foreign_key "person_affiliations", "people"
   add_foreign_key "person_tags", "people"
   add_foreign_key "person_tags", "tags"
   add_foreign_key "research_notes", "encounter_cases"
   add_foreign_key "research_notes", "people"
-  add_foreign_key "research_notes", "users", column: "author_user_id"
 end

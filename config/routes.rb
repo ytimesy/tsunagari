@@ -5,13 +5,6 @@ Rails.application.routes.draw do
 
   root "home#show"
 
-  get "sign_in", to: "sessions#new"
-  post "sign_in", to: "sessions#create"
-  delete "sign_out", to: "sessions#destroy"
-
-  get "sign_up", to: "registrations#new"
-  post "sign_up", to: "registrations#create"
-
   resources :people, param: :slug
   resources :encounter_cases, path: "cases", param: :slug
   resources :research_notes, only: :create

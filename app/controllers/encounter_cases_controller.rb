@@ -1,5 +1,4 @@
 class EncounterCasesController < ApplicationController
-  before_action :require_authentication, only: %i[new create edit update]
   before_action :set_encounter_case, only: %i[show edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
@@ -11,19 +10,15 @@ class EncounterCasesController < ApplicationController
   end
 
   def show
-    @research_notes = current_user&.research_notes&.where(encounter_case: @encounter_case)&.order(created_at: :desc) || []
-
-    return if @encounter_case.visible_to?(current_user)
-
-    redirect_to encounter_cases_path, alert: "この事例はまだ公開されていません。"
+    @research_notes = @encounter_case.research_notes.order(created_at: :desc)
   end
 
   def new
-    @encounter_case = current_user.edited_encounter_cases.build(publication_status: "draft")
+    @encounter_case = EncounterCase.new(publication_status: "draft")
   end
 
   def create
-    @encounter_case = current_user.edited_encounter_cases.build(encounter_case_attributes)
+    @encounter_case = EncounterCase.new(encounter_case_attributes)
     assign_form_values_from_params
     validate_publish_requirements!
 
@@ -70,8 +65,7 @@ class EncounterCasesController < ApplicationController
   end
 
   def base_scope
-    scope = EncounterCase.includes(:people, :case_outcomes, :sources, :tags)
-    user_signed_in? ? scope : scope.published
+    EncounterCase.includes(:people, :case_outcomes, :sources, :tags)
   end
 
   def apply_search(scope, query)

@@ -28,8 +28,8 @@ class Person < ApplicationRecord
     slug
   end
 
-  def visible_to?(viewer)
-    publication_status == "published" || viewer.present?
+  def visible_to?(_viewer = nil)
+    true
   end
 
   def primary_affiliation

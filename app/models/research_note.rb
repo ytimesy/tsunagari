@@ -2,7 +2,6 @@ class ResearchNote < ApplicationRecord
   NOTE_KINDS = %w[research hypothesis source_check draft_outline].freeze
   STATUSES = %w[open reviewed archived].freeze
 
-  belongs_to :author_user, class_name: "User", inverse_of: :research_notes
   belongs_to :person, optional: true
   belongs_to :encounter_case, optional: true
 

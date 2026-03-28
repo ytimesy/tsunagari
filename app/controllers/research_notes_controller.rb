@@ -1,8 +1,6 @@
 class ResearchNotesController < ApplicationController
-  before_action :require_authentication
-
   def create
-    @research_note = current_user.research_notes.build(research_note_params)
+    @research_note = ResearchNote.new(research_note_params)
 
     if @research_note.save
       redirect_to target_path_for(@research_note), notice: "編集メモを保存しました。"

@@ -4,11 +4,9 @@
   <div>
     <p class="ribbon-label">Cases</p>
     <h1>出会い事例</h1>
-    <p class="lede compact">どんな出会いが前進や停滞、失敗を生み、そこから何を学べるかを辿ります。</p>
+    <p class="lede compact">誰でも追記できる出会い事例集です。前進、停滞、失敗を含めて事例単位で辿れます。</p>
   </div>
-  <% if user_signed_in? %>
-    <%= link_to "新規事例", new_encounter_case_path, class: "primary-link" %>
-  <% end %>
+  <%= link_to "新規事例", new_encounter_case_path, class: "primary-link" %>
 </section>
 
 <section class="panel soft-panel">
@@ -24,9 +22,7 @@
       <p class="eyebrow">Case</p>
       <h2><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></h2>
       <p class="meta"><%= encounter_case.happened_on || "時期未設定" %> / <%= encounter_case.place.presence || "場所未設定" %></p>
-      <% if user_signed_in? %>
-        <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
-      <% end %>
+      <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
       <% if (primary_outcome = encounter_case.case_outcomes.first).present? %>
         <p class="meta"><%= outcome_direction_label(primary_outcome.outcome_direction) %> / <%= primary_outcome.category %></p>
       <% end %>

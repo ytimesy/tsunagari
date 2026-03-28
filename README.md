@@ -7,7 +7,7 @@ Tsunagari は、「出会いからより良くなる」を第一方針にした 
 
 この README は、開発序盤における仕様書兼セットアップ手順です。
 詳細設計よりも、MVP の判断と初期実装の現実性を優先しています。
-公開面は情報サイト、ログイン後は編集メンバー向けの管理画面として構成し、
+公開面と編集面を分けず、wiki のように誰でもその場で追記・編集できる構成で、
 「出会い」「結果」「学び」を主役にした実装で進めます。
 
 ## 0. 北極星
@@ -30,7 +30,7 @@ Tsunagari の北極星は次の 1 文です。
 - 人物そのものより、出会いが生んだ変化と学びを読めるようにする
 - 誰と誰がどう出会い、何が前進し、どこでつまずいたのかを辿れるようにする
 - 良い出会いの条件と、避けるべき失敗の条件を再利用しやすい形で残せるようにする
-- 公開人物録と出会い事例を編集メンバーが蓄積できるようにする
+- 公開人物録と出会い事例を、参加者全員で蓄積できるようにする
 
 ## 2. 解決したい課題
 
@@ -51,12 +51,12 @@ Tsunagari の北極星は次の 1 文です。
 ## 3. 想定ユーザー
 
 初期ターゲットは、出会いがもたらした変化と学びを知りたい読者と、その情報を
-整備する編集メンバーです。
+その場で補っていきたい参加者です。
 
 - 出会いの事例から学びや勇気を得たい読者
 - 協働、紹介、伴走のような前向きな関係の背景を知りたい人
 - 次の挑戦を起こすヒントを探している人
-- 人物録と出会いの事例を整備、更新、蓄積したい編集メンバー
+- 人物録と出会いの事例を整備、更新、蓄積したい参加者
 
 ## 4. 提供価値
 
@@ -70,9 +70,9 @@ Tsunagari の北極星は次の 1 文です。
 - 読んだ人が次の一歩のヒントを得られる
 - 良い出会いの構造と、避けたい失敗の構造を知見として蓄積できる
 
-### 4.2 編集面の価値
+### 4.2 Wiki 面の価値
 
-ログイン後は、出会いの背景や変化を整理するための編集画面として使います。
+Tsunagari は wiki 方式で、誰でも出会いの背景や変化を整理できます。
 
 - `people` を編集して公開人物録を整えられる
 - `encounter_cases` を編集して事例を蓄積できる
@@ -81,7 +81,7 @@ Tsunagari の北極星は次の 1 文です。
 
 ## 5. MVP の範囲
 
-初期版では「人物を入口に出会い事例を読む」「人物を探す」「編集メモを蓄積する」までを成立させます。
+初期版では「人物を入口に出会い事例を読む」「人物を探す」「追記メモを蓄積する」までを成立させます。
 あわせて、事例ごとに結果の向きと学びを残せる構造を最初から持ちます。
 
 ### 5.1 実装対象
@@ -92,7 +92,6 @@ Tsunagari の北極星は次の 1 文です。
 - 公開事例一覧
 - 公開事例詳細
 - 名前、タグ、所属などによる検索
-- 編集メンバー登録 / ログイン
 - 人物作成・編集
 - 出会い事例作成・編集
 - 編集メモの保存
@@ -115,10 +114,9 @@ Tsunagari の北極星は次の 1 文です。
 
 ### 5.3 仕様上の判断
 
-- `users` は編集アカウントとしてのみ扱う
-- `people` と `encounter_cases` は `publication_status` で公開状態を管理する
-- `research_notes` は編集メンバー本人だけが見える private memo とする
-- 公開面に出すのは `published` のみとする
+- 認証は置かず、誰でも人物・事例・メモを作成更新できる
+- `people` と `encounter_cases` の `publication_status` は閲覧制御ではなく編集上の状態を表す
+- `research_notes` は公開の追記メモとして扱う
 - 人物録は入口であり、主役は出会い事例とその結果・学びである
 
 ## 6. 主要ユースケース
@@ -131,14 +129,14 @@ Tsunagari の北極星は次の 1 文です。
 4. その人物がどんな出会いの起点になり得るかを掴む
 5. 次の挑戦に転用できるヒントを持ち帰る
 
-### 6.2 編集メンバーとして公開情報を整える
+### 6.2 参加者として公開情報を整える
 
-1. 編集メンバー登録またはログインする
+1. 人物または事例ページをそのまま開く
 2. 人物を作成・編集する
 3. 出会い事例を作成・編集する
-4. 公開状態を設定する
+4. 必要に応じて公開状態を更新する
 
-### 6.3 編集メモを蓄積する
+### 6.3 追記メモを蓄積する
 
 1. 人物詳細または事例詳細を開く
 2. `research_notes` に仮説や調査メモを残す
@@ -151,7 +149,6 @@ Tsunagari の北極星は次の 1 文です。
 | 画面 | 目的 |
 | --- | --- |
 | トップ | 「出会いからより良くなる」という価値と導線を出す |
-| 編集ログイン / 編集メンバー登録 | 編集用認証を行う |
 | 人物録一覧 | 名前、所属、タグで人物を探す |
 | 人物詳細 | 公開されている人物情報と出会いの背景を読む入口にする |
 | 出会い事例一覧 | 何が起き、何を学べるのかを事例単位で読む |
@@ -167,7 +164,7 @@ Tsunagari の北極星は次の 1 文です。
 この基本設計で重視するのは次の 5 点です。
 
 - 公開の主役は `people` ではなく `encounter_cases`
-- `users` は編集アカウント、`people` は掲載対象として分ける
+- 認証を置かず、人物・事例・メモを誰でも更新できる
 - `case_outcomes` で「何が起き、どう変化したか」を持つ
 - `case_insights` で「前進要因 / 阻害要因 / 学び / 次への示唆」を持つ
 - `sources` を別テーブルにして、情報サイトとして出典を明確にする
@@ -176,27 +173,26 @@ Tsunagari の北極星は次の 1 文です。
 
 | テーブル | 役割 | 主なカラム |
 | --- | --- | --- |
-| `users` | 編集アカウント | `email`, `password_digest`, `role`, `status` |
 | `people` | 公開される人物情報 | `slug`, `display_name`, `summary`, `bio`, `publication_status` |
 | `organizations` | 会社、団体、地域、コミュニティ | `slug`, `name`, `category`, `website_url` |
 | `person_affiliations` | 人物と組織の所属履歴 | `person_id`, `organization_id`, `title`, `started_on`, `ended_on` |
 | `tags` | 検索用ラベル | `name`, `normalized_name` |
 | `person_tags` | 人物へのタグ付け | `person_id`, `tag_id` |
-| `encounter_cases` | 出会い事例の本体 | `slug`, `title`, `summary`, `background`, `happened_on`, `place`, `publication_status`, `editor_user_id` |
+| `encounter_cases` | 出会い事例の本体 | `slug`, `title`, `summary`, `background`, `happened_on`, `place`, `publication_status` |
 | `case_participants` | 事例に関わる人物 | `encounter_case_id`, `person_id`, `participation_role`, `contribution_summary` |
 | `case_tags` | 事例へのタグ付け | `encounter_case_id`, `tag_id` |
 | `case_outcomes` | その出会いで何が起き、どう変化したか | `encounter_case_id`, `category`, `outcome_direction`, `description`, `impact_scope`, `evidence_level` |
 | `case_insights` | 前進要因、阻害要因、学び、次への示唆 | `encounter_case_id`, `insight_type`, `description`, `application_note` |
 | `sources` | 出典情報 | `title`, `url`, `source_type`, `published_on` |
 | `case_sources` | 事例と出典の紐付け | `encounter_case_id`, `source_id`, `citation_note` |
-| `research_notes` | 非公開の編集メモ | `author_user_id`, `person_id`, `encounter_case_id`, `note_kind`, `body`, `status` |
+| `research_notes` | 公開の追記メモ | `person_id`, `encounter_case_id`, `note_kind`, `body`, `status` |
 
 ### 8.2 設計判断
 
-#### `users` と `people` は分ける
+#### 認証を前提にしない
 
-編集する人と掲載される人を同じテーブルにすると、権限と公開情報が混ざります。
-基本設計では `users` は完全に編集用、公開対象は `people` に分離します。
+Tsunagari は wiki 方式なので、編集権をアカウントに閉じません。
+誰でも人物、事例、追記メモを加筆できる前提で設計します。
 
 #### 主役は `encounter_cases`
 
@@ -218,10 +214,10 @@ Tsunagari の北極星は次の 1 文です。
 情報サイトとして運用する以上、公開情報の根拠が必要です。
 最初の実装で全部は作らなくても、設計上は `sources` と `case_sources` を前提にします。
 
-#### `research_notes` は private のまま残す
+#### `research_notes` は公開の追記メモとして残す
 
-編集メモは公開データと分けて持ちます。人物や事例に対する仮説、次の調査方針、
-公開前の下書きは `research_notes` に寄せます。
+wiki 方式では、仮説や補足も共同編集の一部です。人物や事例に対する補足、
+調査メモ、異論、次の確認ポイントは `research_notes` に寄せます。
 
 ## 9. 基本設計 ER 図
 
@@ -229,14 +225,6 @@ Tsunagari の北極星は次の 1 文です。
 
 ```mermaid
 erDiagram
-    USERS {
-        bigint id PK
-        string email
-        string password_digest
-        string role
-        string status
-    }
-
     PEOPLE {
         bigint id PK
         string slug
@@ -287,7 +275,6 @@ erDiagram
         string place
         string publication_status
         datetime published_at
-        bigint editor_user_id FK
     }
 
     CASE_PARTICIPANTS {
@@ -339,7 +326,6 @@ erDiagram
 
     RESEARCH_NOTES {
         bigint id PK
-        bigint author_user_id FK
         bigint person_id FK
         bigint encounter_case_id FK
         string note_kind
@@ -347,8 +333,6 @@ erDiagram
         string status
     }
 
-    USERS ||--o{ ENCOUNTER_CASES : edits
-    USERS ||--o{ RESEARCH_NOTES : writes
     PEOPLE ||--o{ PERSON_AFFILIATIONS : has
     ORGANIZATIONS ||--o{ PERSON_AFFILIATIONS : includes
     PEOPLE ||--o{ PERSON_TAGS : labeled
@@ -370,9 +354,9 @@ erDiagram
 ### 10.1 公開ルール
 
 - `people` と `encounter_cases` は `publication_status` で公開状態を管理する
-- `draft` / `review` は編集者のみ閲覧可能
-- `published` のみ未ログインで閲覧可能
-- `archived` は原則非表示にする
+- `publication_status` は閲覧制御ではなく編集上の状態を示す
+- `draft` / `review` / `published` / `archived` はすべて閲覧可能
+- 誰でも人物、事例、追記メモを作成・更新できる
 
 ### 10.2 掲載品質ルール
 
@@ -384,9 +368,9 @@ erDiagram
 
 ### 10.3 編集データの扱い
 
-- `research_notes` は作成者を含む編集者のみ閲覧可能
-- `research_notes` は公開面に出さない
-- 人物と事例の本文は、公開用コンテンツとして別に整える
+- `research_notes` は公開の追記メモとして扱う
+- 仮説、補足、異論、出典確認メモも残せる
+- 人物と事例の本文は、追記メモを踏まえて随時更新してよい
 
 ## 11. 技術方針
 
@@ -439,10 +423,9 @@ erDiagram
 ## 14. 現在の実装状況
 
 - 公開トップ
-- 編集メンバー登録 / ログイン
 - 人物録一覧 / 人物詳細 / 作成 / 編集
 - 出会い事例一覧 / 詳細 / 作成 / 編集
-- 編集メモ
+- 追記メモ
 - 出典紐付け
 - Ruby 3.3.9
 - Rails 7.2.3

@@ -8,6 +8,8 @@ require_dependency Rails.root.join("app/services/external_people/profile_resolve
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class PeopleController < ApplicationController
+  PERSON_GRAPH_FALLBACK_METADATA_RESOLUTION_LIMIT = 120
+
   before_action :set_person, only: %i[show edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
@@ -271,13 +273,14 @@ class PeopleController < ApplicationController
       tags: @resolved_person_profile[:tags],
       organizations: Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
     }
+    fallback_metadata_index = person_graph_fallback_metadata_index_for(candidate_people)
 
     1.upto(3).each_with_object({}) do |depth, graphs|
-      graphs[depth] = relationship_graph_for(depth, candidate_people:, focal_metadata:)
+      graphs[depth] = relationship_graph_for(depth, candidate_people:, focal_metadata:, fallback_metadata_index:)
     end
   end
 
-  def relationship_graph_for(depth, candidate_people:, focal_metadata:)
+  def relationship_graph_for(depth, candidate_people:, focal_metadata:, fallback_metadata_index:)
     graph_scope = PersonCaseGraphScope.new(focal_person: @person, depth:).build
     graph_people = graph_scope[:people]
     graph = RelationshipGraphBuilder.new(
@@ -288,12 +291,6 @@ class PeopleController < ApplicationController
     ).payload
 
     if graph[:edges].empty?
-      fallback_metadata_index = if @cluster_context_slug.present?
-        profile_resolver.metadata_index_for(candidate_people + [ @person ])
-      else
-        {}
-      end
-
       graph = PersonNeighborhoodGraphBuilder.new(
         focal_person: @person,
         candidates: candidate_people,
@@ -317,6 +314,40 @@ class PeopleController < ApplicationController
     end
 
     base_scope.where.not(id: @person.id).limit(600).to_a
+  end
+
+  def person_graph_fallback_metadata_index_for(people)
+    target_people = Array(people).compact.uniq { |person| person.id }
+                         .select { |person| missing_graph_metadata_for?(person) }
+                         .sort_by { |person| fallback_metadata_priority_for(person) }
+                         .first(PERSON_GRAPH_FALLBACK_METADATA_RESOLUTION_LIMIT)
+
+    return {} if target_people.empty?
+
+    profile_resolver.metadata_index_for(target_people)
+  rescue ExternalPeople::Error, StandardError
+    {}
+  end
+
+  def missing_graph_metadata_for?(person)
+    return false unless person.person_external_profiles.any?
+
+    person.tags.empty? &&
+      person.organizations.empty? &&
+      person.person_external_profiles.all? do |profile|
+        profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
+      end
+  end
+
+  def fallback_metadata_priority_for(person)
+    focal_source_name = @person.primary_external_profile&.source_name
+    candidate_source_name = person.primary_external_profile&.source_name
+
+    [
+      candidate_source_name == focal_source_name ? 0 : 1,
+      -person.person_external_profiles.maximum(:fetched_at).to_i,
+      person.display_name
+    ]
   end
 
   def cluster_context

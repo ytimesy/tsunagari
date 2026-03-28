@@ -1,4 +1,30 @@
 namespace :people do
+  desc "List available boundary-crossing import themes"
+  task list_boundary_crossing_themes: :environment do
+    BoundaryCrossingPeopleImporter::THEME_PRESETS.each do |theme_key, preset|
+      puts "#{theme_key}: #{preset[:label]}"
+      preset[:queries].each do |query|
+        puts "  - #{query}"
+      end
+    end
+  end
+
+  desc "Import curated boundary-crossing people from OpenAlex"
+  task :import_boundary_crossers, [:theme, :per_query] => :environment do |_task, args|
+    theme = args[:theme].presence || "all"
+    per_query = args[:per_query].presence&.to_i || 8
+    summary = BoundaryCrossingPeopleImporter.new(theme:, per_query:).import!
+
+    summary[:themes].each do |result|
+      puts "[#{result.theme_label}] imported #{result.imported_count} / #{result.candidate_count} candidates (skipped #{result.skipped_count})"
+      puts "  top tags: #{result.top_tags.map { |term, count| "#{term}(#{count})" }.join(', ')}" if result.top_tags.any?
+      puts "  top orgs: #{result.top_organizations.map { |term, count| "#{term}(#{count})" }.join(', ')}" if result.top_organizations.any?
+    end
+
+    puts "Total imported: #{summary[:total_imported]} / #{summary[:total_candidates]} candidates"
+    puts "Total skipped: #{summary[:total_skipped]}"
+  end
+
   desc "Import sample people from Wikidata into the local database"
   task :import_wikidata_sample, [:limit] => :environment do |_task, args|
     limit = args[:limit].presence&.to_i || 100

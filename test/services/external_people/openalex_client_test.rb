@@ -80,4 +80,34 @@ class ExternalPeople::OpenAlexClientTest < ActiveSupport::TestCase
       assert_equal [ "Machine learning" ], profiles.first[:tags]
     end
   end
+
+  test "normalizes query-based profile search" do
+    client = ExternalPeople::OpenAlexClient.new
+    response = {
+      "results" => [
+        {
+          "id" => "https://openalex.org/A123",
+          "display_name" => "Fei-Fei Li",
+          "works_count" => 80,
+          "cited_by_count" => 2000,
+          "last_known_institutions" => [
+            { "display_name" => "Stanford University", "homepage_url" => "https://stanford.edu" }
+          ],
+          "x_concepts" => [
+            { "display_name" => "Computer vision", "score" => 0.9 },
+            { "display_name" => "Medical imaging", "score" => 0.8 }
+          ]
+        }
+      ]
+    }
+
+    with_stubbed_method(client, :fetch_json, response) do
+      profiles = client.search_profiles("artificial intelligence medicine", limit: 1)
+
+      assert_equal 1, profiles.length
+      assert_equal "A123", profiles.first[:external_id]
+      assert_equal [ "Computer vision", "Medical imaging" ], profiles.first[:tags]
+      assert_equal "Stanford University", profiles.first[:affiliations].first[:name]
+    end
+  end
 end

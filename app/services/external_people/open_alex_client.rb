@@ -3,7 +3,7 @@ module ExternalPeople
     AUTHORS_ENDPOINT = "https://api.openalex.org/authors".freeze
 
     class << self
-      delegate :search, :fetch_profile, :fetch_top_people, to: :new
+      delegate :search, :fetch_profile, :fetch_top_people, :search_profiles, to: :new
     end
 
     def search(query)
@@ -33,6 +33,17 @@ module ExternalPeople
       json = fetch_json(AUTHORS_ENDPOINT, params: {
         sort: "cited_by_count:desc",
         "per-page": limit.to_i.clamp(1, 200)
+      })
+
+      Array(json["results"]).map do |result|
+        normalize_profile(result, external_id: extract_openalex_id(result["id"]))
+      end
+    end
+
+    def search_profiles(query, limit: 12)
+      json = fetch_json(AUTHORS_ENDPOINT, params: {
+        search: query,
+        "per-page": limit.to_i.clamp(1, 50)
       })
 
       Array(json["results"]).map do |result|

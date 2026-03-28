@@ -474,3 +474,17 @@ bin/rails test
 ```
 
 テスト実行前に、ローカルの PostgreSQL が起動している必要があります。
+
+## 17. Render デプロイ
+
+Render で `db:prepare` や起動時に
+`Missing secret_key_base for 'production' environment`
+が出た場合は、`SECRET_KEY_BASE` が未設定です。
+
+- 新しく Blueprint で作る場合は [render.yaml](/Users/ytimesy/projects/tsunagari/render.yaml) を使う
+- 既存の Render サービスは、ダッシュボードの `Environment` に `SECRET_KEY_BASE` を追加する
+- 値は Render 側でランダム生成したものを使えば十分
+- PostgreSQL は別途 Render Postgres か外部DBを接続して `DATABASE_URL` を設定する
+
+既存サービスでは `render.yaml` を追加しても自動では反映されないので、
+今回の失敗に対してはまず Render ダッシュボードで `SECRET_KEY_BASE` を設定して再デプロイします。

@@ -44,6 +44,26 @@ module ApplicationHelper
     }.fetch(direction, direction)
   end
 
+  def list_request_status_label(status)
+    {
+      "new" => "新着",
+      "reviewing" => "確認中",
+      "paid" => "支払い確認済み",
+      "researching" => "調査中",
+      "delivered" => "納品済み",
+      "archived" => "アーカイブ"
+    }.fetch(status, status)
+  end
+
+  def list_request_payment_status_label(status)
+    {
+      "pending" => "未請求",
+      "paid" => "支払い済み",
+      "refunded" => "返金済み",
+      "not_required" => "請求不要"
+    }.fetch(status, status)
+  end
+
   def insight_type_label(insight_type)
     {
       "enabler" => "前進要因",

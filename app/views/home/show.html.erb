@@ -16,6 +16,7 @@
         <%= link_to '全体関係マップを見る', graph_people_path, class: 'primary-link' %>
       <% end %>
       <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
+      <%= link_to '人物リストを依頼する', new_list_request_path, class: 'secondary-link' %>
     </div>
 
     <p class="meta">
@@ -119,6 +120,18 @@
 <% end %>
 
 <section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">List Request</p>
+    <h2>人物リスト作成依頼</h2>
+    <p>テーマや用途を送ると、Tsunagari を使って人物候補を整理した一覧を作る入口です。まずは小さな依頼から受け付けます。</p>
+    <div class="hero-actions">
+      <%= link_to '依頼フォームへ', new_list_request_path, class: 'primary-link' %>
+      <% if can_edit_content? %>
+        <%= link_to '依頼一覧を見る', list_requests_path, class: 'secondary-link' %>
+      <% end %>
+    </div>
+  </article>
+
   <article class="panel soft-panel">
     <p class="eyebrow">Latest Cases</p>
     <h2>最近更新された事例</h2>

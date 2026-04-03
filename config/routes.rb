@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     end
   end
   resources :person_imports, only: %i[new create]
+  resources :list_requests, path: 'requests', only: %i[index new create]
   resources :encounter_cases, path: 'cases', param: :slug
   resources :research_notes, only: :create
 end

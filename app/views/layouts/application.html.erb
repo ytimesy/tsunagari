@@ -31,6 +31,7 @@
           <%= link_to '人物録', people_path %>
           <%= link_to '全体関係マップ', graph_people_path %>
           <%= link_to '出会い事例', encounter_cases_path %>
+          <%= link_to(can_edit_content? ? '依頼一覧' : '人物リストを依頼', can_edit_content? ? list_requests_path : new_list_request_path) %>
           <% if can_edit_content? %>
             <span class="meta"><%= "#{current_user.email} / #{role_label(current_user.role)}" %></span>
             <%= link_to '新規人物', new_person_path %>

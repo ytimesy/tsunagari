@@ -458,6 +458,18 @@ a {
   outline: none;
 }
 
+.request-grid {
+  align-items: start;
+}
+
+.request-grid--tight {
+  gap: 14px;
+}
+
+.compact-list {
+  margin-top: 14px;
+}
+
 .profile-hero {
   padding: 28px;
   border: 1px solid var(--line);

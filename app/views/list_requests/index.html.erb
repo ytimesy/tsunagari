@@ -1,0 +1,53 @@
+<% content_for :title, '依頼一覧' %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">Requests</p>
+    <h1>人物リスト作成依頼</h1>
+    <p class="lede compact">受け付けた依頼を新着順に確認します。まずは手作業で連絡・納品する前提の一覧です。</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to '依頼フォームを見る', new_list_request_path, class: 'secondary-link' %>
+    <%= link_to 'トップへ戻る', root_path, class: 'secondary-link' %>
+  </div>
+</section>
+
+<section class="results-grid">
+  <% @list_requests.each do |list_request| %>
+    <article class="panel result-card">
+      <p class="eyebrow">Request</p>
+      <h2><%= list_request.request_theme %></h2>
+      <p class="meta"><%= list_request.created_at.strftime('%Y-%m-%d %H:%M') %> / <%= list_request.requester_name %> / <%= mail_to list_request.requester_email %></p>
+      <div class="tag-cloud">
+        <span class="tag-pill"><%= list_request_status_label(list_request.status) %></span>
+        <span class="tag-pill muted"><%= list_request_payment_status_label(list_request.payment_status) %></span>
+        <% if list_request.requested_count.present? %>
+          <span class="tag-pill muted"><%= "#{list_request.requested_count} 人" %></span>
+        <% end %>
+      </div>
+      <% if list_request.request_purpose.present? %>
+        <p><%= truncate(list_request.request_purpose, length: 140) %></p>
+      <% end %>
+      <ul class="stack-list soft-list compact-list">
+        <% if list_request.delivery_format.present? %>
+          <li><strong>納品形式:</strong> <%= list_request.delivery_format %></li>
+        <% end %>
+        <% if list_request.budget_range.present? %>
+          <li><strong>予算感:</strong> <%= list_request.budget_range %></li>
+        <% end %>
+        <% if list_request.deadline_preference.present? %>
+          <li><strong>納期感:</strong> <%= list_request.deadline_preference %></li>
+        <% end %>
+        <% if list_request.note.present? %>
+          <li><strong>補足:</strong> <%= truncate(list_request.note, length: 120) %></li>
+        <% end %>
+      </ul>
+    </article>
+  <% end %>
+
+  <% if @list_requests.empty? %>
+    <article class="panel empty-state">
+      <p>まだ依頼はありません。公開フォームから最初の依頼が来るのを待っています。</p>
+    </article>
+  <% end %>
+</section>

@@ -60,4 +60,25 @@ class AuthenticationTest < ActionDispatch::IntegrationTest
     get encounter_case_path(review_case)
     assert_response :success
   end
+
+
+  test 'editor sees publication status summary on home' do
+    sign_in_as(create_user)
+
+    Person.create!(display_name: 'Draft Person', publication_status: 'draft')
+    Person.create!(display_name: 'Review Person', publication_status: 'review')
+    Person.create!(display_name: 'Published Person', publication_status: 'published')
+    EncounterCase.create!(title: 'Draft Case', publication_status: 'draft')
+    EncounterCase.create!(title: 'Published Case', publication_status: 'published')
+
+    get root_path
+
+    assert_response :success
+    assert_match '公開状態サマリー', response.body
+    assert_match '事例の公開状態', response.body
+    assert_match '/people?publication_status=draft', response.body
+    assert_match '/people?publication_status=review', response.body
+    assert_match '/cases?publication_status=draft', response.body
+    assert_match 'アーカイブ以外を公開', response.body
+  end
 end

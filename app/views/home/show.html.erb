@@ -80,6 +80,44 @@
   </article>
 </section>
 
+<% if can_edit_content? %>
+  <section class="dashboard-grid">
+    <article class="panel soft-panel">
+      <p class="eyebrow">Publication Status</p>
+      <h2>公開状態サマリー</h2>
+      <p class="meta">人物録の状態別件数です。クリックすると該当状態だけに絞り込めます。</p>
+      <div class="status-summary-list">
+        <% Person::PUBLICATION_STATUSES.each do |status| %>
+          <%= link_to people_path(publication_status: status), class: "status-summary-link" do %>
+            <span><%= publication_status_label(status) %></span>
+            <strong><%= @people_status_counts.fetch(status, 0) %> 件</strong>
+          <% end %>
+        <% end %>
+      </div>
+    </article>
+
+    <article class="panel soft-panel">
+      <p class="eyebrow">Case Status</p>
+      <h2>事例の公開状態</h2>
+      <p class="meta">出会い事例の状態別件数です。レビュー待ちや公開待ちの確認に使えます。</p>
+      <div class="status-summary-list">
+        <% EncounterCase::PUBLICATION_STATUSES.each do |status| %>
+          <%= link_to encounter_cases_path(publication_status: status), class: "status-summary-link" do %>
+            <span><%= publication_status_label(status) %></span>
+            <strong><%= @case_status_counts.fetch(status, 0) %> 件</strong>
+          <% end %>
+        <% end %>
+      </div>
+    </article>
+
+    <article class="panel soft-panel">
+      <p class="eyebrow">Public Mode</p>
+      <h2><%= TsunagariFeatureFlags.strict_public_visibility? ? '公開中のみを公開' : 'アーカイブ以外を公開' %></h2>
+      <p><%= TsunagariFeatureFlags.strict_public_visibility? ? '仕様どおり、公開中のデータだけが一般公開されています。' : '現在は暫定運用として、アーカイブ以外のデータが一般公開されています。' %></p>
+    </article>
+  </section>
+<% end %>
+
 <section class="dashboard-grid">
   <article class="panel soft-panel">
     <p class="eyebrow">Latest Cases</p>

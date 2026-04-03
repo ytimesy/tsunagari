@@ -1,4 +1,4 @@
-<% content_for :title, "人物録" %>
+<% content_for :title, '人物録' %>
 
 <section class="page-header dreamy-header">
   <div>
@@ -7,16 +7,57 @@
     <p class="lede compact">外部DBを正本にしつつ、ローカルでは参照情報と独自メモだけを持つ人物録です。</p>
   </div>
   <div class="hero-actions">
-    <%= link_to "全体関係マップ", graph_people_path, class: "secondary-link" %>
-    <%= link_to "外部DBから取り込む", new_person_import_path, class: "secondary-link" %>
-    <%= link_to "新規人物", new_person_path, class: "primary-link" %>
+    <%= link_to '全体関係マップ', graph_people_path, class: 'secondary-link' %>
+    <% if can_edit_content? %>
+      <%= link_to '外部DBから取り込む', new_person_import_path, class: 'secondary-link' %>
+      <%= link_to '新規人物', new_person_path, class: 'primary-link' %>
+    <% end %>
   </div>
 </section>
 
 <section class="panel soft-panel">
-  <%= form_with url: people_path, method: :get, class: "inline-form" do |form| %>
-    <%= form.search_field :q, value: @query, placeholder: "名前、要約、外部ID、ローカル補足で検索" %>
-    <%= form.submit "検索", class: "primary-button" %>
+  <%= form_with url: people_path, method: :get, class: 'page-stack' do |form| %>
+    <div class="inline-form">
+      <div class="field field--wide">
+        <%= form.label :q, 'キーワード' %>
+        <%= form.search_field :q, value: @query, placeholder: '名前、要約、外部ID、ローカル補足で検索' %>
+      </div>
+
+      <div class="field">
+        <%= form.label :tag, 'タグ' %>
+        <%= form.select :tag, options_for_select([[ 'すべてのタグ', '' ]] + @available_tag_names.map { |name| [ name, name ] }, @selected_tag) %>
+      </div>
+
+      <div class="field">
+        <%= form.label :affiliation_category, '所属カテゴリ' %>
+        <%= form.select :affiliation_category, options_for_select([[ 'すべての所属', '' ]] + @available_affiliation_categories.map { |category| [ category, category ] }, @selected_affiliation_category) %>
+      </div>
+
+      <div class="field">
+        <%= form.label :source_filter, '外部ソース' %>
+        <%= form.select :source_filter, options_for_select(source_filter_options, @selected_source_filter) %>
+      </div>
+
+      <% if can_edit_content? %>
+        <div class="field field--narrow">
+          <%= form.label :publication_status, '公開状態' %>
+          <%= form.select :publication_status, options_for_select([[ 'すべての状態', '' ]] + Person::PUBLICATION_STATUSES.map { |value| [ publication_status_label(value), value ] }, @selected_publication_status) %>
+        </div>
+      <% end %>
+
+      <div class="field field--narrow">
+        <%= form.label :sort, '並び順' %>
+        <%= form.select :sort, options_for_select(people_sort_options, @selected_sort) %>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <%= form.submit '絞り込む', class: 'primary-button' %>
+      <% if @people_filters_active %>
+        <%= link_to '条件をリセット', people_path, class: 'secondary-link' %>
+      <% end %>
+      <span class="meta"><%= "#{@people.count} 人を表示" %></span>
+    </div>
   <% end %>
 </section>
 
@@ -24,17 +65,17 @@
   <% @people.each do |person| %>
     <article class="panel result-card">
       <p class="eyebrow">Person</p>
-      <h2><%= link_to person.display_name, person_path(person) %></h2>
+      <h2><%= link_to person.display_name, person_destination_path(person) %></h2>
       <% affiliation = person.primary_affiliation %>
       <% external_profile = person.primary_external_profile %>
       <p class="meta">
-        <%= affiliation&.organization&.name.presence || (external_profile.present? ? "#{external_source_label(external_profile.source_name)} / #{external_profile.external_id}" : "ローカル情報のみ") %>
+        <%= affiliation&.organization&.name.presence || (external_profile.present? ? "#{external_source_label(external_profile.source_name)} / #{external_profile.external_id}" : 'ローカル情報のみ') %>
         <% if affiliation&.title.present? %>
           / <%= affiliation.title %>
         <% end %>
       </p>
       <p class="meta"><%= publication_status_label(person.publication_status) %></p>
-      <p><%= truncate(person.summary.presence || person.bio.presence || "詳細は人物ページで外部DBから都度参照します。", length: 120) %></p>
+      <p><%= truncate(person.summary.presence || person.bio.presence || '詳細は人物ページで外部DBから都度参照します。', length: 120) %></p>
       <div class="tag-cloud">
         <% if person.tags.any? %>
           <% person.tags.order(:name).each do |tag| %>

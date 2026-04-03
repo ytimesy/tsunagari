@@ -3,18 +3,30 @@ require_dependency Rails.root.join("app/services/external_people/profile_resolve
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class EncounterCasesController < ApplicationController
-  before_action :set_encounter_case, only: %i[show edit update]
+  CASE_SORTS = %w[newest oldest recently_updated].freeze
+
+  before_action :require_editor!, only: %i[new create edit update]
+  before_action :set_visible_encounter_case, only: :show
+  before_action :set_encounter_case, only: %i[edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
   def index
-    @query = params[:q].to_s.strip
+    prepare_case_index_filters
+
     @encounter_cases = base_scope
     @encounter_cases = apply_search(@encounter_cases, @query) if @query.present?
-    @encounter_cases = @encounter_cases.order(happened_on: :desc, published_at: :desc, created_at: :desc)
+    @encounter_cases = filter_cases_by_tag(@encounter_cases, @selected_tag)
+    @encounter_cases = filter_cases_by_outcome_direction(@encounter_cases, @selected_outcome_direction)
+    @encounter_cases = filter_cases_by_evidence_level(@encounter_cases, @selected_evidence_level)
+    @encounter_cases = filter_cases_by_publication_status(@encounter_cases, @selected_publication_status)
+    @encounter_cases = filter_cases_by_date_range(@encounter_cases, @parsed_date_from, @parsed_date_to)
+    @encounter_cases = apply_case_sort(@encounter_cases, @selected_sort)
+
+    load_case_index_options
   end
 
   def show
-    @research_notes = @encounter_case.research_notes.order(created_at: :desc)
+    @research_notes = can_edit_content? ? @encounter_case.research_notes.order(created_at: :desc) : ResearchNote.none
     @edit_histories = @encounter_case.edit_histories.recent.limit(5)
     case_people = @encounter_case.people.to_a
     @relationship_graph = RelationshipGraphBuilder.new(
@@ -22,6 +34,12 @@ class EncounterCasesController < ApplicationController
       encounter_cases: [ @encounter_case ],
       profile_metadata_by_person_id: profile_resolver.metadata_index_for(case_people)
     ).payload
+    case_people_by_id = case_people.index_by(&:id)
+    @relationship_graph[:nodes].each do |node|
+      person = case_people_by_id[node[:id]]
+      node[:href] = person_destination_path(person) if person&.visible_to?(current_user)
+      node.delete(:href) unless person&.visible_to?(current_user)
+    end
   end
 
   def new
@@ -43,7 +61,7 @@ class EncounterCasesController < ApplicationController
       record_encounter_case_edit_history(@encounter_case, action: "created")
     end
 
-    redirect_to @encounter_case, notice: "出会い事例を作成しました。"
+    redirect_to encounter_case_destination_path(@encounter_case), notice: @encounter_case.published? ? "出会い事例を作成しました。" : "出会い事例を下書き保存しました。"
   rescue ActiveRecord::RecordInvalid
     prepare_form_fields
     render :new, status: :unprocessable_entity
@@ -66,7 +84,7 @@ class EncounterCasesController < ApplicationController
       record_encounter_case_edit_history(@encounter_case, action: "updated", before_snapshot:)
     end
 
-    redirect_to @encounter_case, notice: "出会い事例を更新しました。"
+    redirect_to encounter_case_destination_path(@encounter_case), notice: @encounter_case.published? ? "出会い事例を更新しました。" : "出会い事例の公開前データを更新しました。"
   rescue ActiveRecord::RecordInvalid
     prepare_form_fields
     render :edit, status: :unprocessable_entity
@@ -74,19 +92,113 @@ class EncounterCasesController < ApplicationController
 
   private
 
+  def set_visible_encounter_case
+    @encounter_case = visible_case_scope.find_by!(slug: params[:slug])
+  end
+
   def set_encounter_case
-    @encounter_case = EncounterCase.includes(
+    @encounter_case = all_case_scope.find_by!(slug: params[:slug])
+  end
+
+  def all_case_scope
+    EncounterCase.includes(
       :case_outcomes,
       :case_insights,
       :sources,
       :tags,
       case_participants: :person,
       people: [ :tags, { person_affiliations: :organization } ]
-    ).find_by!(slug: params[:slug])
+    )
+  end
+
+  def public_case_scope
+    all_case_scope.published
+  end
+
+  def editor_case_scope
+    all_case_scope.where.not(publication_status: 'archived')
+  end
+
+  def visible_case_scope
+    can_edit_content? ? all_case_scope : public_case_scope
   end
 
   def base_scope
-    EncounterCase.includes(:people, :case_outcomes, :sources, :tags)
+    can_edit_content? ? editor_case_scope : public_case_scope
+  end
+
+  def prepare_case_index_filters
+    @query = params[:q].to_s.strip
+    @selected_tag = params[:tag].to_s.strip.presence
+    @selected_outcome_direction = params[:outcome_direction].to_s.in?(CaseOutcome::OUTCOME_DIRECTIONS) ? params[:outcome_direction].to_s : nil
+    @selected_evidence_level = params[:evidence_level].to_s.in?(CaseOutcome::EVIDENCE_LEVELS) ? params[:evidence_level].to_s : nil
+    @selected_publication_status = can_edit_content? && params[:publication_status].to_s.in?(EncounterCase::PUBLICATION_STATUSES) ? params[:publication_status].to_s : nil
+    @date_from = params[:date_from].to_s
+    @date_to = params[:date_to].to_s
+    @parsed_date_from = parse_filter_date(@date_from)
+    @parsed_date_to = parse_filter_date(@date_to)
+    @selected_sort = params[:sort].to_s.in?(CASE_SORTS) ? params[:sort].to_s : 'newest'
+    @case_filters_active = [ @query, @selected_tag, @selected_outcome_direction, @selected_evidence_level, @selected_publication_status, @date_from, @date_to ].any?(&:present?) || @selected_sort != 'newest'
+  end
+
+  def load_case_index_options
+    visible_case_ids = base_scope.select(:id)
+
+    @available_tag_names = Tag.joins(:encounter_cases)
+      .where(encounter_cases: { id: visible_case_ids })
+      .distinct
+      .order(:name)
+      .pluck(:name)
+  end
+
+  def filter_cases_by_tag(scope, tag_name)
+    return scope unless tag_name.present?
+
+    scope.joins(:tags).where(tags: { normalized_name: tag_name.downcase }).distinct
+  end
+
+  def filter_cases_by_outcome_direction(scope, outcome_direction)
+    return scope unless outcome_direction.present?
+
+    scope.joins(:case_outcomes).where(case_outcomes: { outcome_direction: outcome_direction }).distinct
+  end
+
+  def filter_cases_by_evidence_level(scope, evidence_level)
+    return scope unless evidence_level.present?
+
+    scope.joins(:case_outcomes).where(case_outcomes: { evidence_level: evidence_level }).distinct
+  end
+
+  def filter_cases_by_publication_status(scope, publication_status)
+    return scope unless publication_status.present?
+
+    scope.where(publication_status: publication_status)
+  end
+
+  def filter_cases_by_date_range(scope, date_from, date_to)
+    scoped = scope
+    scoped = scoped.where('encounter_cases.happened_on >= ?', date_from) if date_from.present?
+    scoped = scoped.where('encounter_cases.happened_on <= ?', date_to) if date_to.present?
+    scoped
+  end
+
+  def apply_case_sort(scope, sort_key)
+    case sort_key
+    when 'oldest'
+      scope.order(happened_on: :asc, created_at: :asc)
+    when 'recently_updated'
+      scope.order(updated_at: :desc, happened_on: :desc, created_at: :desc)
+    else
+      scope.order(happened_on: :desc, published_at: :desc, created_at: :desc)
+    end
+  end
+
+  def parse_filter_date(value)
+    return if value.blank?
+
+    Date.iso8601(value)
+  rescue ArgumentError
+    nil
   end
 
   def apply_search(scope, query)

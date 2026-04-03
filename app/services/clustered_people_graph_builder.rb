@@ -77,6 +77,11 @@ class ClusteredPeopleGraphBuilder
     end
   end
 
+
+  def selected_cluster_overlap
+    @selected_cluster_overlap ||= build_selected_cluster_overlap
+  end
+
   private
 
   def nodes
@@ -449,6 +454,94 @@ class ClusteredPeopleGraphBuilder
     cluster.people.each_with_object(Hash.new(0)) do |person, counts|
       metadata_index.fetch(person.id).fetch(key).each { |term| counts[term] += 1 }
     end.sort_by { |term, count| [ -count, term ] }.first(6)
+  end
+
+  def build_selected_cluster_overlap
+    cluster = cluster_index[@selected_cluster_slug]
+    return unless cluster && venn_eligible_category?(cluster.category)
+
+    candidates = selected_edges.filter_map do |edge|
+      neighbor = overlap_neighbor_for(cluster, edge)
+      next unless neighbor && venn_eligible_category?(neighbor.category)
+
+      overlap_summary_for(cluster, neighbor, edge)
+    end
+
+    return if candidates.empty?
+
+    preferred_candidates = candidates.select { |candidate| candidate[:overlap_count].positive? }
+    (preferred_candidates.presence || candidates).max_by do |candidate|
+      [ candidate[:overlap_count], candidate[:pair_count], candidate[:neighbor_label] ]
+    end
+  end
+
+  def overlap_neighbor_for(cluster, edge)
+    neighbor_slug = if edge[:source] == cluster.slug
+      edge[:target]
+    elsif edge[:target] == cluster.slug
+      edge[:source]
+    end
+
+    return unless neighbor_slug
+
+    cluster_index[neighbor_slug]
+  end
+
+  def overlap_summary_for(cluster, neighbor, edge)
+    selected_person_ids = membership_person_ids_for(cluster)
+    neighbor_person_ids = membership_person_ids_for(neighbor)
+    overlap_person_ids = selected_person_ids & neighbor_person_ids
+    overlap_names = overlap_person_ids.map { |person_id| people_by_id.fetch(person_id).display_name }.sort
+
+    {
+      selected_slug: cluster.slug,
+      selected_label: cluster.label,
+      selected_category_label: category_label(cluster.category),
+      selected_count: selected_person_ids.length,
+      neighbor_slug: neighbor.slug,
+      neighbor_label: neighbor.label,
+      neighbor_category_label: category_label(neighbor.category),
+      neighbor_count: neighbor_person_ids.length,
+      overlap_count: overlap_person_ids.length,
+      union_count: (selected_person_ids | neighbor_person_ids).length,
+      left_only_count: selected_person_ids.length - overlap_person_ids.length,
+      right_only_count: neighbor_person_ids.length - overlap_person_ids.length,
+      pair_count: edge[:pairCount] || edge[:weight] || 0,
+      tone_label: edge[:toneLabel],
+      kind_label: edge[:kindLabel],
+      relation_mode: overlap_relation_mode(selected_person_ids.length, neighbor_person_ids.length, overlap_person_ids.length),
+      shared_people_names: overlap_names.first(6),
+      shared_people_more_count: [ overlap_names.length - 6, 0 ].max
+    }
+  end
+
+  def membership_person_ids_for(cluster)
+    @membership_person_ids_by_cluster_slug ||= {}
+    @membership_person_ids_by_cluster_slug[cluster.slug] ||= case cluster.category
+    when "organization"
+      metadata_index.filter_map do |person_id, metadata|
+        person_id if metadata[:organizations].include?(cluster.label)
+      end
+    when "tag"
+      metadata_index.filter_map do |person_id, metadata|
+        person_id if metadata[:tags].include?(cluster.label)
+      end
+    else
+      cluster.people.map(&:id)
+    end
+  end
+
+  def venn_eligible_category?(category)
+    category.in?(%w[organization tag])
+  end
+
+  def overlap_relation_mode(selected_count, neighbor_count, overlap_count)
+    return "same" if overlap_count == selected_count && overlap_count == neighbor_count
+    return "selected_subset" if overlap_count == selected_count
+    return "neighbor_subset" if overlap_count == neighbor_count
+    return "disjoint" if overlap_count.zero?
+
+    "overlap"
   end
 
   def graph_people_for(cluster)

@@ -145,6 +145,29 @@ module ApplicationHelper
     }.fetch(source_name, source_name)
   end
 
+  def enabled_external_source_labels
+    ExternalPeople::ProviderRegistry.available_sources.map { |source_name| external_source_label(source_name) }
+  end
+
+  def enabled_external_source_names_text(separator: " / ")
+    enabled_external_source_labels.join(separator)
+  end
+
+  def external_people_import_title(target_person: nil)
+    base = enabled_external_source_names_text
+    target_person.present? ? "#{base}で補う" : "外部データから人物を取り込む"
+  end
+
+  def external_people_import_description(target_person: nil)
+    source_text = enabled_external_source_names_text(separator: " と ")
+
+    if target_person.present?
+      "「#{target_person.display_name}」を土台に、#{source_text} の公開データを紐付けます。候補を選ぶと、この人物ページに外部情報源と軽量プロフィール情報が追加されます。"
+    else
+      "#{source_text} の公開データベースから人物候補を探し、人物録に取り込みます。"
+    end
+  end
+
   def external_profile_mode_label(mode)
     {
       "live" => "外部DBを都度参照中",
@@ -181,6 +204,30 @@ module ApplicationHelper
     end
 
     entries.presence || [ { label: "出典未設定", href: nil } ]
+  end
+
+  def people_sort_options
+    [
+      [ '名前順', 'name_asc' ],
+      [ '更新順', 'recently_updated' ],
+      [ '公開順', 'recently_published' ]
+    ]
+  end
+
+  def source_filter_options
+    [
+      [ 'すべて', '' ],
+      [ '外部ソースあり', 'external' ],
+      [ 'ローカルのみ', 'local' ]
+    ]
+  end
+
+  def encounter_case_sort_options
+    [
+      [ '新しい順', 'newest' ],
+      [ '古い順', 'oldest' ],
+      [ '更新順', 'recently_updated' ]
+    ]
   end
 
   def role_label(role)

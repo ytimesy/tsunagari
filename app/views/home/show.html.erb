@@ -1,4 +1,4 @@
-<% content_for :title, "Tsunagari" %>
+<% content_for :title, 'Tsunagari' %>
 
 <section class="hero-stage">
   <article class="hero-card hero-copy">
@@ -10,11 +10,15 @@
     </p>
 
     <div class="hero-actions">
-      <%= link_to "新規事例を作る", new_encounter_case_path, class: "primary-link" %>
-      <%= link_to "人物録を見る", people_path, class: "secondary-link" %>
+      <% if can_edit_content? %>
+        <%= link_to '新規事例を作る', new_encounter_case_path, class: 'primary-link' %>
+      <% else %>
+        <%= link_to '全体関係マップを見る', graph_people_path, class: 'primary-link' %>
+      <% end %>
+      <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
     </div>
 
-    <p class="meta">Tsunagari は wiki 方式です。誰でも閲覧、作成、編集、追記できます。</p>
+    <p class="meta">Tsunagari は wiki 方式です。公開中の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。</p>
 
     <div class="feature-strip">
       <span class="feature-pill">encounter</span>
@@ -44,17 +48,17 @@
   <article class="panel soft-panel">
     <p class="eyebrow">Wiki Scope</p>
     <h2><%= @people_count %> 人物</h2>
-    <p>人物録は誰でも読めて、誰でも更新できます。公開状態は閲覧制御ではなく編集上の状態として扱います。</p>
+    <p>人物録は公開中の人物だけを一般公開し、下書きやレビュー中の情報は公開前の整理用として扱います。</p>
   </article>
   <article class="panel soft-panel">
     <p class="eyebrow">Case Scope</p>
     <h2><%= @case_count %> 事例</h2>
-    <p>出会い事例は成功談だけでなく、停滞や失敗も含めて公開し、次に活かせる知見として残します。</p>
+    <p>出会い事例は公開中のものを一般公開し、成功だけでなく停滞や失敗も次に活かせる知見として残します。</p>
   </article>
   <article class="panel soft-panel">
     <p class="eyebrow">How To Use</p>
-    <h2>その場で加筆する</h2>
-    <p>気づいた情報があれば、そのまま人物や事例を編集し、追記メモを残してください。</p>
+    <h2><%= can_edit_content? ? 'その場で加筆する' : '公開ページを辿る' %></h2>
+    <p><%= can_edit_content? ? '気づいた情報があれば、そのまま人物や事例を編集し、追記メモを残してください。' : '人物録、出会い事例、全体関係マップを往復しながら、気になる関係を辿ってください。' %></p>
   </article>
 </section>
 
@@ -79,23 +83,27 @@
   <article class="panel soft-panel">
     <p class="eyebrow">Latest Notes</p>
     <h2>最近の追記メモ</h2>
-    <% if @latest_notes.any? %>
-      <ul class="stack-list soft-list">
-        <% @latest_notes.each do |note| %>
-          <li>
-            <strong>
-              <% if note.person.present? %>
-                <%= link_to note.person.display_name, person_path(note.person) %>
-              <% elsif note.encounter_case.present? %>
-                <%= link_to note.encounter_case.title, encounter_case_path(note.encounter_case) %>
-              <% end %>
-            </strong>
-            <span class="meta"><%= truncate(note.body, length: 70) %></span>
-          </li>
-        <% end %>
-      </ul>
+    <% if can_edit_content? %>
+      <% if @latest_notes.any? %>
+        <ul class="stack-list soft-list">
+          <% @latest_notes.each do |note| %>
+            <li>
+              <strong>
+                <% if note.person.present? %>
+                  <%= link_to note.person.display_name, person_destination_path(note.person) %>
+                <% elsif note.encounter_case.present? %>
+                  <%= link_to note.encounter_case.title, encounter_case_destination_path(note.encounter_case) %>
+                <% end %>
+              </strong>
+              <span class="meta"><%= truncate(note.body, length: 70) %></span>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">まだ追記メモはありません。人物や事例に仮説や補足を書き始めてください。</p>
+      <% end %>
     <% else %>
-      <p class="empty-note">まだ追記メモはありません。人物や事例に仮説や補足を書き始めてください。</p>
+      <p class="empty-note">追記メモの閲覧と記入は、編集者ログイン後に利用できます。</p>
     <% end %>
   </article>
 </section>

@@ -1,6 +1,7 @@
 require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
 require_dependency Rails.root.join("app/services/imported_people_graph_builder").to_s
 require_dependency Rails.root.join("app/services/clustered_people_graph_builder").to_s
+require_dependency Rails.root.join("app/services/cluster_focus_graph_builder").to_s
 require_dependency Rails.root.join("app/services/people_graph_snapshot").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
 require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
@@ -9,23 +10,35 @@ require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class PeopleController < ApplicationController
   PERSON_GRAPH_FALLBACK_METADATA_RESOLUTION_LIMIT = 120
+  PEOPLE_SORTS = %w[name_asc recently_updated recently_published].freeze
+  SOURCE_FILTERS = %w[external local].freeze
 
-  before_action :set_person, only: %i[show edit update]
+  before_action :require_editor!, only: %i[new create edit update]
+  before_action :set_visible_person, only: :show
+  before_action :set_person, only: %i[edit update]
   before_action :prepare_form_fields, only: %i[new edit]
 
   def index
-    @query = params[:q].to_s.strip
+    prepare_people_index_filters
+
     @people = base_scope
     @people = apply_search(@people, @query) if @query.present?
-    @people = @people.order(:display_name)
+    @people = filter_people_by_tag(@people, @selected_tag)
+    @people = filter_people_by_affiliation_category(@people, @selected_affiliation_category)
+    @people = filter_people_by_publication_status(@people, @selected_publication_status)
+    @people = filter_people_by_source(@people, @selected_source_filter)
+    @people = apply_people_sort(@people, @selected_sort)
+
+    load_people_index_options
   end
 
   def show
     @cluster_context_slug = params[:cluster].to_s.presence
     @graph_depth = graph_depth_param
-    @research_notes = @person.research_notes.order(created_at: :desc)
+    @research_notes = can_edit_content? ? @person.research_notes.order(created_at: :desc) : ResearchNote.none
     @resolved_person_profile = profile_resolver.resolve(@person)
     @relationship_graphs = build_relationship_graphs
+    @person_navigation_lens = build_person_navigation_lens
     @edit_histories = @person.edit_histories.recent.limit(5)
   end
 
@@ -46,8 +59,18 @@ class PeopleController < ApplicationController
     @graph_summary = snapshot.fetch(:graph_summary)
     @selected_cluster = hydrate_selected_cluster(snapshot[:selected_cluster])
     @selected_cluster_graph = snapshot[:selected_cluster_graph]
+    @selected_cluster_overlap = snapshot[:selected_cluster_overlap]
+    @selected_cluster_overlap[:neighbor_href] = graph_people_path(cluster: @selected_cluster_overlap[:neighbor_slug], q: @query.presence) if @selected_cluster_overlap.present?
+    focus_graph_builder = ClusterFocusGraphBuilder.new(
+      graph: @relationship_graph,
+      selected_cluster_slug: @selected_cluster&.dig(:slug),
+      query: @query
+    )
+    @selected_cluster_focus_graph = focus_graph_builder.payload
+    @selected_cluster_connections = focus_graph_builder.connections
     decorate_graph_with_cluster_context!(@selected_cluster_graph, @selected_cluster&.fetch(:graph_people, []), @selected_cluster&.dig(:slug))
     @selected_cluster_graph[:labelMode] = "all" if @selected_cluster_graph.present?
+    @diagram_showcase = build_diagram_showcase
   end
 
   def new
@@ -65,7 +88,7 @@ class PeopleController < ApplicationController
       record_person_edit_history(@person, action: "created")
     end
 
-    redirect_to @person, notice: "人物を作成しました。"
+    redirect_to person_destination_path(@person), notice: @person.published? ? "人物を作成しました。" : "人物を下書き保存しました。"
   rescue ActiveRecord::RecordInvalid
     prepare_form_fields
     render :new, status: :unprocessable_entity
@@ -84,7 +107,7 @@ class PeopleController < ApplicationController
       record_person_edit_history(@person, action: "updated", before_snapshot:)
     end
 
-    redirect_to @person, notice: "人物を更新しました。"
+    redirect_to person_destination_path(@person), notice: @person.published? ? "人物を更新しました。" : "人物の公開前データを更新しました。"
   rescue ActiveRecord::RecordInvalid
     prepare_form_fields
     render :edit, status: :unprocessable_entity
@@ -92,12 +115,99 @@ class PeopleController < ApplicationController
 
   private
 
+  def set_visible_person
+    @person = visible_people_scope.find_by!(slug: params[:slug])
+  end
+
   def set_person
-    @person = Person.includes(:person_external_profiles, :tags, person_affiliations: :organization).find_by!(slug: params[:slug])
+    @person = all_people_scope.find_by!(slug: params[:slug])
+  end
+
+  def all_people_scope
+    Person.includes(:person_external_profiles, :tags, person_affiliations: :organization)
+  end
+
+  def public_people_scope
+    all_people_scope.published
+  end
+
+  def editor_people_scope
+    all_people_scope.where.not(publication_status: 'archived')
+  end
+
+  def visible_people_scope
+    can_edit_content? ? all_people_scope : public_people_scope
   end
 
   def base_scope
-    Person.includes(:person_external_profiles, :tags, person_affiliations: :organization)
+    can_edit_content? ? editor_people_scope : public_people_scope
+  end
+
+  def prepare_people_index_filters
+    @query = params[:q].to_s.strip
+    @selected_tag = params[:tag].to_s.strip.presence
+    @selected_affiliation_category = params[:affiliation_category].to_s.strip.presence
+    @selected_source_filter = params[:source_filter].to_s.in?(SOURCE_FILTERS) ? params[:source_filter].to_s : nil
+    @selected_publication_status = can_edit_content? && params[:publication_status].to_s.in?(Person::PUBLICATION_STATUSES) ? params[:publication_status].to_s : nil
+    @selected_sort = params[:sort].to_s.in?(PEOPLE_SORTS) ? params[:sort].to_s : 'name_asc'
+    @people_filters_active = [ @query, @selected_tag, @selected_affiliation_category, @selected_source_filter, @selected_publication_status ].any?(&:present?) || @selected_sort != 'name_asc'
+  end
+
+  def load_people_index_options
+    visible_people_ids = base_scope.select(:id)
+
+    @available_tag_names = Tag.joins(:people)
+      .where(people: { id: visible_people_ids })
+      .distinct
+      .order(:name)
+      .pluck(:name)
+
+    @available_affiliation_categories = Organization.joins(:people)
+      .where(people: { id: visible_people_ids })
+      .where.not(category: [ nil, '' ])
+      .distinct
+      .order(:category)
+      .pluck(:category)
+  end
+
+  def filter_people_by_tag(scope, tag_name)
+    return scope unless tag_name.present?
+
+    scope.joins(:tags).where(tags: { normalized_name: tag_name.downcase }).distinct
+  end
+
+  def filter_people_by_affiliation_category(scope, category)
+    return scope unless category.present?
+
+    scope.joins(person_affiliations: :organization).where(organizations: { category: category }).distinct
+  end
+
+  def filter_people_by_publication_status(scope, publication_status)
+    return scope unless publication_status.present?
+
+    scope.where(publication_status: publication_status)
+  end
+
+  def filter_people_by_source(scope, source_filter)
+    case source_filter
+    when 'external'
+      scope.joins(:person_external_profiles).distinct
+    when 'local'
+      scope.where.missing(:person_external_profiles)
+    else
+      scope
+    end
+  end
+
+  def apply_people_sort(scope, sort_key)
+    case sort_key
+    when 'recently_updated'
+      scope.order(updated_at: :desc, display_name: :asc)
+    when 'recently_published'
+      scope.order(published_at: :desc, updated_at: :desc, display_name: :asc)
+    else
+      scope.order(display_name: :asc, created_at: :desc)
+    end
   end
 
   def imported_scope
@@ -281,7 +391,7 @@ class PeopleController < ApplicationController
   end
 
   def relationship_graph_for(depth, candidate_people:, focal_metadata:, fallback_metadata_index:)
-    graph_scope = PersonCaseGraphScope.new(focal_person: @person, depth:).build
+    graph_scope = depth == 1 ? direct_relationship_scope : PersonCaseGraphScope.new(focal_person: @person, depth:).build
     graph_people = graph_scope[:people]
     graph = RelationshipGraphBuilder.new(
       people: graph_people,
@@ -314,6 +424,83 @@ class PeopleController < ApplicationController
     end
 
     base_scope.where.not(id: @person.id).limit(600).to_a
+  end
+
+  def direct_relationship_scope
+    @direct_relationship_scope ||= PersonCaseGraphScope.new(focal_person: @person, depth: 1).build
+  end
+
+  def build_person_navigation_lens
+    primary_graph = @relationship_graphs.fetch(1)
+    nodes_by_id = Array(primary_graph[:nodes]).index_by { |node| node[:id] }
+    people_by_id = (direct_relationship_scope[:people] + graph_candidate_people + [ @person ]).compact.uniq { |person| person.id }.index_by(&:id)
+    focal_edges = Array(primary_graph[:edges]).select { |edge| edge[:source] == @person.id || edge[:target] == @person.id }
+    sorted_edges = focal_edges.sort_by do |edge|
+      [ -person_lens_edge_strength(edge), other_node_label_for(edge), edge[:kind].to_s ]
+    end
+
+    {
+      near_people: sorted_edges.map { |edge| build_person_lens_connection(edge, people_by_id, nodes_by_id) }.compact.first(5),
+      bridge_people: sorted_edges.select { |edge| person_lens_bridge_edge?(edge) }
+                               .map { |edge| build_person_lens_connection(edge, people_by_id, nodes_by_id) }
+                               .compact
+                               .first(4),
+      related_cases: build_person_lens_cases
+    }
+  end
+
+  def build_person_lens_connection(edge, people_by_id, nodes_by_id)
+    neighbor_id = edge[:source] == @person.id ? edge[:target] : edge[:source]
+    node = nodes_by_id[neighbor_id] || {}
+    person = people_by_id[neighbor_id]
+    href = node[:href].presence || (person_path(person, cluster: @cluster_context_slug.presence) if person)
+    label = node[:label].presence || person&.display_name.to_s
+    return if href.blank? || label.blank?
+
+    {
+      label: label,
+      href: href,
+      kind_label: edge[:kindLabel].presence || RelationshipKindClassifier.label_for(edge[:kind]),
+      tone_label: edge[:tone] == RelationshipGraphBuilder::DIVERSE_TONE ? "異質な組み合わせ" : "似たもの同士",
+      strength_label: person_lens_strength_label(edge),
+      reason: edge[:reason].presence || edge[:kindDescription].presence || "近い接点があります。"
+    }
+  end
+
+  def person_lens_bridge_edge?(edge)
+    edge[:tone] == RelationshipGraphBuilder::DIVERSE_TONE || %w[crossing inspiration sharpening].include?(edge[:kind].to_s)
+  end
+
+  def person_lens_edge_strength(edge)
+    return edge[:sharedCaseCount].to_i if edge[:sharedCaseCount].to_i.positive?
+    return edge[:weight].to_i if edge[:weight].to_i.positive?
+
+    1
+  end
+
+  def person_lens_strength_label(edge)
+    return "共通事例 #{edge[:sharedCaseCount]} 件" if edge[:sharedCaseCount].to_i.positive?
+    return "タグ・所属の近さから推定" if edge[:weight].to_i.positive?
+
+    "接点あり"
+  end
+
+  def other_node_label_for(edge)
+    edge[:source] == @person.id ? edge[:targetLabel].to_s : edge[:sourceLabel].to_s
+  end
+
+  def build_person_lens_cases
+    @person.encounter_cases.published.includes(:tags, :case_outcomes, case_participants: :person)
+           .order(happened_on: :desc, published_at: :desc, created_at: :desc)
+           .limit(4)
+           .map do |encounter_case|
+      {
+        encounter_case: encounter_case,
+        participants: encounter_case.case_participants.reject { |participant| participant.person_id == @person.id }.first(3),
+        outcome: encounter_case.case_outcomes.first,
+        tags: encounter_case.tags.order(:name).map(&:name).first(3)
+      }
+    end
   end
 
   def person_graph_fallback_metadata_index_for(people)
@@ -369,6 +556,141 @@ class PeopleController < ApplicationController
       next unless person
 
       node[:href] = person_path(person, cluster: cluster_slug)
+    end
+  end
+
+  def build_diagram_showcase
+    {
+      person_focus: build_person_focus_showcase,
+      encounter_flow: build_encounter_flow_showcase,
+      structure_clusters: @graph_summary[:largest_clusters].first(4)
+    }
+  end
+
+  def build_person_focus_showcase
+    person = showcase_person
+    return unless person
+
+    graph_scope = PersonCaseGraphScope.new(focal_person: person, depth: 1).build
+    graph_people = graph_scope[:people]
+    graph = RelationshipGraphBuilder.new(
+      people: graph_people,
+      encounter_cases: graph_scope[:encounter_cases],
+      focal_person: person,
+      profile_metadata_by_person_id: local_profile_metadata_index_for(graph_people)
+    ).payload
+
+    if graph[:edges].empty?
+      candidate_people = showcase_people_pool.reject { |candidate| candidate.id == person.id }.first(80)
+      graph = PersonNeighborhoodGraphBuilder.new(
+        focal_person: person,
+        candidates: candidate_people,
+        focal_metadata: local_graph_metadata_for(person),
+        depth: 1,
+        profile_metadata_by_person_id: local_profile_metadata_index_for(candidate_people)
+      ).payload
+    end
+
+    graph[:labelMode] = "all"
+
+    {
+      person: person,
+      graph: graph,
+      related_case_count: person.encounter_cases.count,
+      tags: local_graph_metadata_for(person)[:tags].first(4),
+      organizations: local_graph_metadata_for(person)[:organizations].first(3)
+    }
+  end
+
+  def build_encounter_flow_showcase
+    encounter_case = showcase_encounter_case
+    return unless encounter_case
+
+    {
+      encounter_case: encounter_case,
+      participants: encounter_case.case_participants.first(4),
+      remaining_participant_count: [ encounter_case.case_participants.size - 4, 0 ].max,
+      outcome: encounter_case.case_outcomes.first,
+      insight: encounter_case.case_insights.first,
+      tags: encounter_case.tags.sort_by(&:name).map(&:name).first(4)
+    }
+  end
+
+  def showcase_person
+    @showcase_person ||= begin
+      pool = showcase_people_pool
+      if pool.empty?
+        nil
+      else
+        case_counts = CaseParticipant.where(person_id: pool.map(&:id)).group(:person_id).count
+
+        pool.min_by do |person|
+          metadata = local_graph_metadata_for(person)
+
+          [
+            -case_counts.fetch(person.id, 0),
+            -(metadata[:tags].size + metadata[:organizations].size),
+            person.display_name
+          ]
+        end
+      end
+    end
+  end
+
+  def showcase_people_pool
+    @showcase_people_pool ||= begin
+      pool = @selected_cluster&.fetch(:people, nil).presence || @people.first(120)
+      Array(pool).compact.uniq { |person| person.id }
+    end
+  end
+
+  def showcase_encounter_case
+    candidate_scope = EncounterCase.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
+    person_cases = if showcase_person.present?
+      showcase_person.encounter_cases.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
+                   .order(happened_on: :desc, published_at: :desc)
+                   .limit(8)
+                   .to_a
+    else
+      []
+    end
+
+    person_cases.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
+      candidate_scope.published.order(happened_on: :desc, published_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
+      candidate_scope.order(happened_on: :desc, published_at: :desc, created_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 }
+  end
+
+  def local_profile_metadata_index_for(people)
+    Array(people).compact.uniq { |person| person.id }.index_with do |person|
+      local_graph_metadata_for(person)
+    end
+  end
+
+  def local_graph_metadata_for(person)
+    {
+      tags: normalize_graph_terms(
+        person.tags.map(&:name) +
+        person.person_external_profiles.flat_map(&:cached_graph_tags)
+      ),
+      organizations: normalize_graph_terms(
+        person.organizations.map(&:name) +
+        person.person_external_profiles.flat_map(&:cached_graph_organizations)
+      )
+    }
+  end
+
+  def normalize_graph_terms(values)
+    seen = {}
+
+    Array(values).filter_map do |value|
+      term = value.to_s.squish
+      next if term.blank?
+
+      key = term.downcase
+      next if seen[key]
+
+      seen[key] = true
+      term
     end
   end
 

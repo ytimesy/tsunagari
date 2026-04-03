@@ -44,6 +44,7 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     payload = builder.payload
     summary = builder.summary
     selected_cluster = builder.selected_cluster
+    overlap = builder.selected_cluster_overlap
 
     assert_equal 2, summary[:cluster_count]
     assert_equal 1, summary[:edge_count]
@@ -60,6 +61,10 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     assert_equal "Analytical Society", selected_cluster[:label]
     assert_equal 2, selected_cluster[:people_count]
     assert_equal [ "Ada Lovelace", "Charles Babbage" ], selected_cluster[:people].map(&:display_name)
+    assert_equal "Civic Lab", overlap[:neighbor_label]
+    assert_equal 0, overlap[:overlap_count]
+    assert_equal 4, overlap[:union_count]
+    assert_equal "disjoint", overlap[:relation_mode]
   end
 
   test "builds fallback network clusters for nearby people when dominant tags are too small for main clusters" do

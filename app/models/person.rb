@@ -21,7 +21,7 @@ class Person < ApplicationRecord
   validates :slug, presence: true, uniqueness: true
   validates :publication_status, presence: true, inclusion: { in: PUBLICATION_STATUSES }
 
-  scope :published, -> { where(publication_status: "published") }
+  scope :published, -> { where(publication_status: 'published') }
 
   def self.slug_candidate(value)
     value.to_s.parameterize
@@ -31,8 +31,12 @@ class Person < ApplicationRecord
     slug
   end
 
-  def visible_to?(_viewer = nil)
-    true
+  def published?
+    publication_status == 'published'
+  end
+
+  def visible_to?(viewer = nil)
+    published? || viewer&.can_edit_content?
   end
 
   def primary_affiliation
@@ -42,7 +46,7 @@ class Person < ApplicationRecord
   def primary_external_profile
     person_external_profiles.min_by do |profile|
       [
-        profile.source_name == "openalex" ? 0 : 1,
+        profile.source_name == 'openalex' ? 0 : 1,
         -profile.fetched_at.to_i
       ]
     end

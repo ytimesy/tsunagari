@@ -1,0 +1,101 @@
+<% mode = overlap[:relation_mode] %>
+<% selected_diagram_label = truncate(overlap[:selected_label], length: 18) %>
+<% neighbor_diagram_label = truncate(overlap[:neighbor_label], length: 18) %>
+<% geometry = case mode
+when "disjoint"
+  {
+    left: { cx: 118, cy: 110, r: 68 },
+    right: { cx: 242, cy: 110, r: 68 },
+    badge: { x: 180, y: 112, text: "共通人物なし" },
+    caption: "重なりはまだありません"
+  }
+when "selected_subset"
+  {
+    left: { cx: 156, cy: 112, r: 42 },
+    right: { cx: 198, cy: 112, r: 86 },
+    badge: { x: 278, y: 74, text: "含まれる関係" },
+    caption: "#{overlap[:selected_label]} は #{overlap[:neighbor_label]} の中に含まれます"
+  }
+when "neighbor_subset"
+  {
+    left: { cx: 162, cy: 112, r: 86 },
+    right: { cx: 204, cy: 112, r: 42 },
+    badge: { x: 278, y: 74, text: "含まれる関係" },
+    caption: "#{overlap[:neighbor_label]} は #{overlap[:selected_label]} の中に含まれます"
+  }
+when "same"
+  {
+    left: { cx: 180, cy: 110, r: 76 },
+    right: { cx: 180, cy: 110, r: 76 },
+    badge: { x: 180, y: 112, text: "同じ人物集合" },
+    caption: "2 つの集合は同じです"
+  }
+else
+  {
+    left: { cx: 138, cy: 110, r: 72 },
+    right: { cx: 222, cy: 110, r: 72 },
+    badge: { x: 180, y: 112, text: "共通人物" },
+    caption: "重なっている部分が共通人物です"
+  }
+end %>
+<% selected_label_position = mode == "same" ? { x: 180, y: 42, anchor: "middle" } : { x: 56, y: 40, anchor: "start" } %>
+<% neighbor_label_position = mode == "same" ? { x: 180, y: 60, anchor: "middle" } : { x: 304, y: 40, anchor: "end" } %>
+
+<article id="lens-overlap" class="panel soft-panel map-set-overlap-panel relationship-panel relationship-panel--wide">
+  <p class="eyebrow">Lens 2</p>
+  <h3>重なりレンズ</h3>
+  <p class="meta">ベン図のイメージに寄せて、同じ人物が両集合に入る部分だけを重なりとして表示します。全体マップの線とは意味が違い、ここでは人物集合の共通部分を見ます。</p>
+
+  <div class="map-set-overlap-layout">
+    <div class="map-set-overlap-diagram-wrap">
+      <svg class="map-set-overlap-diagram" viewBox="0 0 360 240" role="img" aria-label="<%= "#{overlap[:selected_label]} と #{overlap[:neighbor_label]} の集合の重なり" %>">
+        <rect x="12" y="16" width="336" height="196" rx="28" class="map-set-overlap-frame"></rect>
+        <circle cx="<%= geometry[:left][:cx] %>" cy="<%= geometry[:left][:cy] %>" r="<%= geometry[:left][:r] %>" class="map-set-overlap-circle map-set-overlap-circle--selected"></circle>
+        <circle cx="<%= geometry[:right][:cx] %>" cy="<%= geometry[:right][:cy] %>" r="<%= geometry[:right][:r] %>" class="map-set-overlap-circle map-set-overlap-circle--neighbor"></circle>
+        <text x="<%= selected_label_position[:x] %>" y="<%= selected_label_position[:y] %>" text-anchor="<%= selected_label_position[:anchor] %>" class="map-set-overlap-name map-set-overlap-name--selected"><%= selected_diagram_label %></text>
+        <text x="<%= neighbor_label_position[:x] %>" y="<%= neighbor_label_position[:y] %>" text-anchor="<%= neighbor_label_position[:anchor] %>" class="map-set-overlap-name map-set-overlap-name--neighbor"><%= neighbor_diagram_label %></text>
+        <text x="<%= geometry[:badge][:x] %>" y="<%= geometry[:badge][:y] %>" text-anchor="middle" class="map-set-overlap-badge"><%= geometry[:badge][:text] %></text>
+        <text x="180" y="198" text-anchor="middle" class="map-set-overlap-caption"><%= truncate(geometry[:caption], length: 34) %></text>
+      </svg>
+    </div>
+
+    <div class="map-set-overlap-summary">
+      <div class="compact-stats">
+        <div class="stat-chip">
+          <span class="meta"><%= overlap[:selected_label] %></span>
+          <strong><%= overlap[:selected_count] %> 人</strong>
+        </div>
+        <div class="stat-chip">
+          <span class="meta"><%= overlap[:neighbor_label] %></span>
+          <strong><%= overlap[:neighbor_count] %> 人</strong>
+        </div>
+        <div class="stat-chip">
+          <span class="meta">共通人物</span>
+          <strong><%= overlap[:overlap_count] %> 人</strong>
+        </div>
+        <div class="stat-chip">
+          <span class="meta">合計</span>
+          <strong><%= overlap[:union_count] %> 人</strong>
+        </div>
+      </div>
+
+      <p class="meta"><%= [overlap[:selected_category_label], overlap[:neighbor_category_label], "接点 #{overlap[:pair_count]} 件", overlap[:tone_label], overlap[:kind_label]].compact.join(" / ") %></p>
+      <p class="meta"><%= "#{overlap[:selected_label]} のみ: #{overlap[:left_only_count]} 人 / #{overlap[:neighbor_label]} のみ: #{overlap[:right_only_count]} 人" %></p>
+      <p class="meta"><%= link_to overlap[:neighbor_label], overlap[:neighbor_href] %> の詳細へ移動できます。</p>
+
+      <% if overlap[:shared_people_names].any? %>
+        <p class="meta">共通人物</p>
+        <div class="tag-cloud">
+          <% overlap[:shared_people_names].each do |name| %>
+            <span class="tag-pill"><%= name %></span>
+          <% end %>
+          <% if overlap[:shared_people_more_count].positive? %>
+            <span class="tag-pill muted"><%= "+#{overlap[:shared_people_more_count]} 人" %></span>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="empty-note">共通人物はまだ見つかっていません。</p>
+      <% end %>
+    </div>
+  </div>
+</article>

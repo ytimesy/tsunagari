@@ -1,0 +1,30 @@
+<% content_for :title, 'ログイン' %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">Editor Access</p>
+    <h1>編集者ログイン</h1>
+    <p class="lede compact">公開ページの閲覧はそのまま、人物・事例・外部取り込みの編集はログイン後に開きます。</p>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <%= form_with url: login_path, class: 'page-stack' do |form| %>
+      <div class="field">
+        <%= form.label :email, 'メールアドレス' %>
+        <%= form.email_field :email, value: @email.to_s, required: true, autofocus: true, autocomplete: 'email' %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password, 'パスワード' %>
+        <%= form.password_field :password, required: true, autocomplete: 'current-password' %>
+      </div>
+
+      <div class="hero-actions">
+        <%= form.submit 'ログイン', class: 'primary-button' %>
+        <%= link_to '人物録へ戻る', people_path, class: 'secondary-link' %>
+      </div>
+    <% end %>
+  </article>
+</section>

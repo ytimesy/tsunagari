@@ -8,7 +8,9 @@
     <%= render "shared/record_provenance", source_entries: encounter_case_source_entries(@encounter_case), edit_histories: @edit_histories %>
   </div>
 
-  <%= link_to "編集", edit_encounter_case_path(@encounter_case), class: "primary-link" %>
+  <% if can_edit_content? %>
+    <%= link_to "編集", edit_encounter_case_path(@encounter_case), class: "primary-link" %>
+  <% end %>
 </section>
 
 <section class="dashboard-grid">
@@ -41,7 +43,15 @@
       <ul class="stack-list soft-list">
         <% @encounter_case.case_participants.each do |participant| %>
           <li>
-            <strong><%= link_to participant.person.display_name, person_path(participant.person) %></strong>
+            <% if participant.person.visible_to?(current_user) %>
+              <strong><%= link_to participant.person.display_name, person_destination_path(participant.person) %></strong>
+              <% unless participant.person.published? %>
+                <span class="tag-pill muted">公開前人物</span>
+              <% end %>
+            <% else %>
+              <strong><%= participant.person.display_name %></strong>
+              <span class="tag-pill muted">公開前人物</span>
+            <% end %>
             <span class="meta"><%= participant.participation_role %></span>
           </li>
         <% end %>
@@ -115,33 +125,37 @@
     <p class="eyebrow">Wiki Notes</p>
     <h2>追記メモ</h2>
 
-    <%= form_with url: research_notes_path do |form| %>
-      <%= form.hidden_field :encounter_case_id, value: @encounter_case.id, name: "research_note[encounter_case_id]" %>
+    <% if can_edit_content? %>
+      <%= form_with url: research_notes_path do |form| %>
+        <%= form.hidden_field :encounter_case_id, value: @encounter_case.id, name: "research_note[encounter_case_id]" %>
 
-      <div class="field">
-        <%= form.label :note_kind, "メモ種別" %>
-        <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
-      </div>
+        <div class="field">
+          <%= form.label :note_kind, "メモ種別" %>
+          <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
+        </div>
 
-      <div class="field">
-        <%= form.label :body, "内容" %>
-        <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
-      </div>
+        <div class="field">
+          <%= form.label :body, "内容" %>
+          <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
+        </div>
 
-      <%= form.submit "メモを残す", class: "primary-button" %>
-    <% end %>
+        <%= form.submit "メモを残す", class: "primary-button" %>
+      <% end %>
 
-    <% if @research_notes.any? %>
-      <ul class="stack-list note-list">
-        <% @research_notes.each do |note| %>
-          <li class="timeline-card">
-            <strong><%= note.note_kind.humanize %></strong>
-            <div><%= simple_format(note.body) %></div>
-          </li>
-        <% end %>
-      </ul>
+      <% if @research_notes.any? %>
+        <ul class="stack-list note-list">
+          <% @research_notes.each do |note| %>
+            <li class="timeline-card">
+              <strong><%= note.note_kind.humanize %></strong>
+              <div><%= simple_format(note.body) %></div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">まだ追記メモはありません。補足や異論、追加情報を残してください。</p>
+      <% end %>
     <% else %>
-      <p class="empty-note">まだ追記メモはありません。補足や異論、追加情報を残してください。</p>
+      <p class="empty-note">追記メモの閲覧と記入は、編集者ログイン後に利用できます。</p>
     <% end %>
   </article>
 </section>

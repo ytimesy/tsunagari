@@ -1,0 +1,55 @@
+<% encounter_case = flow.fetch(:encounter_case) %>
+<% participants = flow.fetch(:participants, []) %>
+<% outcome = flow[:outcome] %>
+<% insight = flow[:insight] %>
+
+<div class="encounter-flow-preview">
+  <div class="encounter-flow-column">
+    <p class="encounter-flow-kicker">関わった人物</p>
+    <div class="encounter-flow-pill-stack">
+      <% participants.each do |participant| %>
+        <%= link_to participant.person.display_name, person_path(participant.person), class: "encounter-flow-pill" %>
+      <% end %>
+    </div>
+    <% if flow[:remaining_participant_count].to_i.positive? %>
+      <p class="meta"><%= "ほか #{flow[:remaining_participant_count]} 人" %></p>
+    <% end %>
+  </div>
+
+  <div class="encounter-flow-center" aria-hidden="true">
+    <span class="encounter-flow-arrow"></span>
+    <article class="encounter-flow-node">
+      <p class="encounter-flow-kicker">出会い事例</p>
+      <strong><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></strong>
+      <p class="meta"><%= [ encounter_case.happened_on, encounter_case.place.presence ].compact.join(" / ").presence || "時期・場所の情報を追加できます" %></p>
+    </article>
+    <span class="encounter-flow-arrow"></span>
+  </div>
+
+  <div class="encounter-flow-column">
+    <% if outcome.present? %>
+      <article class="encounter-flow-result encounter-flow-result--outcome">
+        <p class="encounter-flow-kicker">結果</p>
+        <strong><%= outcome_direction_label(outcome.outcome_direction) %></strong>
+        <p class="meta"><%= outcome.category.presence || "カテゴリ未設定" %></p>
+        <p><%= truncate(outcome.description.to_s, length: 96) %></p>
+      </article>
+    <% end %>
+
+    <% if insight.present? %>
+      <article class="encounter-flow-result encounter-flow-result--insight">
+        <p class="encounter-flow-kicker">学び</p>
+        <strong><%= insight_type_label(insight.insight_type) %></strong>
+        <p><%= truncate(insight.description.to_s, length: 96) %></p>
+      </article>
+    <% end %>
+  </div>
+</div>
+
+<% if flow[:tags].any? %>
+  <div class="tag-cloud">
+    <% flow[:tags].each do |tag_name| %>
+      <span class="tag-pill"><%= tag_name %></span>
+    <% end %>
+  </div>
+<% end %>

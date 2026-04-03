@@ -14,10 +14,12 @@
     <%= render "shared/record_provenance", source_entries: person_source_entries(@person), edit_histories: @edit_histories %>
   </div>
 
-  <div class="hero-actions">
-    <%= link_to "Wikidata / OpenAlexで補う", new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
-    <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
-  </div>
+  <% if can_edit_content? %>
+    <div class="hero-actions">
+      <%= link_to external_people_import_title(target_person: @person), new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
+      <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
+    </div>
+  <% end %>
 </section>
 
 <section class="dashboard-grid">
@@ -30,8 +32,9 @@
       { value: 2, title: "2階層" },
       { value: 3, title: "3階層" }
     ] %>
-    <p class="eyebrow">Relationship Map</p>
-    <h2>人物関係図</h2>
+    <p class="eyebrow">Person Lens</p>
+    <h2>人物起点マップ</h2>
+    <p class="meta">人物関係図を入口に、この人物に近い人、越境的につながる人、関連事例へ進みます。</p>
     <div class="relationship-map-layout">
       <div class="relationship-depth-rail">
         <div class="relationship-depth-picker" role="navigation" aria-label="人物関係図の表示範囲">
@@ -65,6 +68,86 @@
   </article>
 </section>
 
+<section class="dashboard-grid person-lens-grid">
+  <article class="panel soft-panel person-lens-card">
+    <p class="eyebrow">Nearby</p>
+    <h2>近い人物</h2>
+    <p class="meta">まずたどりやすい人物です。共通事例や近い文脈から、次に見る相手を選べます。</p>
+    <% if @person_navigation_lens[:near_people].any? %>
+      <ul class="person-lens-list">
+        <% @person_navigation_lens[:near_people].each do |connection| %>
+          <li class="person-lens-item">
+            <div class="person-lens-head">
+              <%= link_to connection[:label], connection[:href] %>
+              <span class="tag-pill"><%= connection[:kind_label] %></span>
+            </div>
+            <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
+            <p class="person-lens-copy"><%= connection[:reason] %></p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだこの人物の近い関係は十分に見つかっていません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel person-lens-card">
+    <p class="eyebrow">Bridge</p>
+    <h2>越境人物</h2>
+    <p class="meta">異分野や橋渡しの接点が見える人物です。広げて見たいときの入口になります。</p>
+    <% if @person_navigation_lens[:bridge_people].any? %>
+      <ul class="person-lens-list">
+        <% @person_navigation_lens[:bridge_people].each do |connection| %>
+          <li class="person-lens-item">
+            <div class="person-lens-head">
+              <%= link_to connection[:label], connection[:href] %>
+              <span class="tag-pill"><%= connection[:kind_label] %></span>
+            </div>
+            <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
+            <p class="person-lens-copy"><%= connection[:reason] %></p>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">いまは越境が強い接点はまだ少ないです。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel person-lens-card">
+    <p class="eyebrow">Cases</p>
+    <h2>関連事例</h2>
+    <p class="meta">この人物が関わった出会い事例です。図で気になった関係を、事例の文章で確かめられます。</p>
+    <% if @person_navigation_lens[:related_cases].any? %>
+      <ul class="person-lens-list">
+        <% @person_navigation_lens[:related_cases].each do |entry| %>
+          <% encounter_case = entry[:encounter_case] %>
+          <li class="person-lens-item">
+            <div class="person-lens-head">
+              <%= link_to encounter_case.title, encounter_case_path(encounter_case) %>
+              <% if entry[:outcome].present? %>
+                <span class="tag-pill"><%= outcome_direction_label(entry[:outcome].outcome_direction) %></span>
+              <% end %>
+            </div>
+            <p class="meta"><%= [ encounter_case.happened_on, encounter_case.place.presence ].compact.join(" / ").presence || "時期・場所未設定" %></p>
+            <% if entry[:participants].any? %>
+              <p class="person-lens-copy"><%= "一緒に関わった人物: #{entry[:participants].map { |participant| participant.person.display_name }.join(' / ')}" %></p>
+            <% end %>
+            <% if entry[:tags].any? %>
+              <div class="tag-cloud person-lens-tags">
+                <% entry[:tags].each do |tag_name| %>
+                  <span class="tag-pill"><%= tag_name %></span>
+                <% end %>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">この人物に紐づく出会い事例はまだありません。</p>
+    <% end %>
+  </article>
+</section>
+
 <section class="dashboard-grid">
   <article class="panel soft-panel">
     <p class="eyebrow">Summary</p>
@@ -90,33 +173,37 @@
     <p class="eyebrow">Wiki Notes</p>
     <h2>追記メモ</h2>
 
-    <%= form_with url: research_notes_path do |form| %>
-      <%= form.hidden_field :person_id, value: @person.id, name: "research_note[person_id]" %>
+    <% if can_edit_content? %>
+      <%= form_with url: research_notes_path do |form| %>
+        <%= form.hidden_field :person_id, value: @person.id, name: "research_note[person_id]" %>
 
-      <div class="field">
-        <%= form.label :note_kind, "メモ種別" %>
-        <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
-      </div>
+        <div class="field">
+          <%= form.label :note_kind, "メモ種別" %>
+          <%= form.select :note_kind, ResearchNote::NOTE_KINDS.map { |value| [ value.humanize, value ] }, {}, name: "research_note[note_kind]" %>
+        </div>
 
-      <div class="field">
-        <%= form.label :body, "内容" %>
-        <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
-      </div>
+        <div class="field">
+          <%= form.label :body, "内容" %>
+          <%= form.text_area :body, rows: 4, required: true, name: "research_note[body]" %>
+        </div>
 
-      <%= form.submit "メモを残す", class: "primary-button" %>
-    <% end %>
+        <%= form.submit "メモを残す", class: "primary-button" %>
+      <% end %>
 
-    <% if @research_notes.any? %>
-      <ul class="stack-list note-list">
-        <% @research_notes.each do |note| %>
-          <li class="timeline-card">
-            <strong><%= note.note_kind.humanize %></strong>
-            <div><%= simple_format(note.body) %></div>
-          </li>
-        <% end %>
-      </ul>
+      <% if @research_notes.any? %>
+        <ul class="stack-list note-list">
+          <% @research_notes.each do |note| %>
+            <li class="timeline-card">
+              <strong><%= note.note_kind.humanize %></strong>
+              <div><%= simple_format(note.body) %></div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">まだ追記メモはありません。補足や仮説を残してください。</p>
+      <% end %>
     <% else %>
-      <p class="empty-note">まだ追記メモはありません。補足や仮説を残してください。</p>
+      <p class="empty-note">追記メモの閲覧と記入は、編集者ログイン後に利用できます。</p>
     <% end %>
   </article>
 </section>

@@ -7,7 +7,10 @@ require_dependency Rails.root.join("app/services/external_people/importer").to_s
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
 class PersonImportsController < ApplicationController
+  before_action :require_editor!
+
   def new
+    @available_sources = ExternalPeople::ProviderRegistry.available_sources
     @source_name = normalized_source_name(params[:source_name])
     @query = params[:q].to_s.strip
     @target_person = Person.find_by(id: params[:person_id]) if params[:person_id].present?
@@ -27,7 +30,7 @@ class PersonImportsController < ApplicationController
   end
 
   def create
-    source_name = normalized_source_name(import_params[:source_name])
+    source_name = import_params[:source_name].to_s
     target_person = Person.find_by(id: import_params[:person_id]) if import_params[:person_id].present?
     profile = provider_for(source_name).fetch_profile(import_params[:external_id])
     person = ExternalPeople::Importer.import!(profile: profile, target_person: target_person)
@@ -38,7 +41,7 @@ class PersonImportsController < ApplicationController
       details: { source_name: source_name, external_id: import_params[:external_id].to_s }
     )
 
-    redirect_to person_path(person), notice: target_person.present? ? "既存の人物に外部データを取り込みました。" : "外部データから人物を取り込みました。"
+    redirect_to person_destination_path(person), notice: target_person.present? ? "既存の人物に外部データを取り込みました。" : (person.published? ? "外部データから人物を取り込みました。" : "外部データから人物の下書きを取り込みました。")
   rescue ExternalPeople::Error => error
     redirect_to new_person_import_path(
       source_name: import_params[:source_name],
@@ -54,7 +57,7 @@ class PersonImportsController < ApplicationController
   end
 
   def normalized_source_name(value)
-    value.to_s.in?(PersonExternalProfile::SOURCES) ? value.to_s : "wikidata"
+    value.to_s.in?(ExternalPeople::ProviderRegistry.available_sources) ? value.to_s : "wikidata"
   end
 
   def provider_for(source_name)

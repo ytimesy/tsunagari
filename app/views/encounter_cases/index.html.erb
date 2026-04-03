@@ -1,18 +1,69 @@
-<% content_for :title, "出会い事例" %>
+<% content_for :title, '出会い事例' %>
 
 <section class="page-header dreamy-header">
   <div>
     <p class="ribbon-label">Cases</p>
     <h1>出会い事例</h1>
-    <p class="lede compact">誰でも追記できる出会い事例集です。前進、停滞、失敗を含めて事例単位で辿れます。</p>
+    <p class="lede compact">公開ページは誰でも読めて、編集者は前進、停滞、失敗を含めて事例単位で追記できます。</p>
   </div>
-  <%= link_to "新規事例", new_encounter_case_path, class: "primary-link" %>
+  <% if can_edit_content? %>
+    <%= link_to '新規事例', new_encounter_case_path, class: 'primary-link' %>
+  <% end %>
 </section>
 
 <section class="panel soft-panel">
-  <%= form_with url: encounter_cases_path, method: :get, class: "inline-form" do |form| %>
-    <%= form.search_field :q, value: @query, placeholder: "タイトル、背景、人物、タグで検索" %>
-    <%= form.submit "検索", class: "primary-button" %>
+  <%= form_with url: encounter_cases_path, method: :get, class: 'page-stack' do |form| %>
+    <div class="inline-form">
+      <div class="field field--wide">
+        <%= form.label :q, 'キーワード' %>
+        <%= form.search_field :q, value: @query, placeholder: 'タイトル、背景、人物、タグで検索' %>
+      </div>
+
+      <div class="field">
+        <%= form.label :tag, 'タグ' %>
+        <%= form.select :tag, options_for_select([[ 'すべてのタグ', '' ]] + @available_tag_names.map { |name| [ name, name ] }, @selected_tag) %>
+      </div>
+
+      <div class="field field--narrow">
+        <%= form.label :outcome_direction, '結果の向き' %>
+        <%= form.select :outcome_direction, options_for_select([[ 'すべての結果', '' ]] + CaseOutcome::OUTCOME_DIRECTIONS.map { |value| [ outcome_direction_label(value), value ] }, @selected_outcome_direction) %>
+      </div>
+
+      <div class="field field--narrow">
+        <%= form.label :evidence_level, '根拠レベル' %>
+        <%= form.select :evidence_level, options_for_select([[ 'すべての根拠', '' ]] + CaseOutcome::EVIDENCE_LEVELS.map { |value| [ evidence_level_label(value), value ] }, @selected_evidence_level) %>
+      </div>
+
+      <div class="field field--narrow">
+        <%= form.label :date_from, '発生日_from' %>
+        <%= form.date_field :date_from, value: @date_from %>
+      </div>
+
+      <div class="field field--narrow">
+        <%= form.label :date_to, '発生日_to' %>
+        <%= form.date_field :date_to, value: @date_to %>
+      </div>
+
+      <% if can_edit_content? %>
+        <div class="field field--narrow">
+          <%= form.label :publication_status, '公開状態' %>
+          <%= form.select :publication_status, options_for_select([[ 'すべての状態', '' ]] + EncounterCase::PUBLICATION_STATUSES.map { |value| [ publication_status_label(value), value ] }, @selected_publication_status) %>
+        </div>
+      <% end %>
+
+      <div class="field field--narrow">
+        <%= form.label :sort, '並び順' %>
+        <%= form.select :sort, options_for_select(encounter_case_sort_options, @selected_sort) %>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <%= form.submit '絞り込む', class: 'primary-button' %>
+      <% if @case_filters_active %>
+        <%= link_to '条件をリセット', encounter_cases_path, class: 'secondary-link' %>
+      <% end %>
+      <span class="meta"><%= "#{@encounter_cases.count} 件を表示" %></span>
+    </div>
   <% end %>
 </section>
 
@@ -20,13 +71,13 @@
   <% @encounter_cases.each do |encounter_case| %>
     <article class="panel result-card">
       <p class="eyebrow">Case</p>
-      <h2><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></h2>
-      <p class="meta"><%= encounter_case.happened_on || "時期未設定" %> / <%= encounter_case.place.presence || "場所未設定" %></p>
+      <h2><%= link_to encounter_case.title, encounter_case_destination_path(encounter_case) %></h2>
+      <p class="meta"><%= encounter_case.happened_on || '時期未設定' %> / <%= encounter_case.place.presence || '場所未設定' %></p>
       <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
       <% if (primary_outcome = encounter_case.case_outcomes.first).present? %>
-        <p class="meta"><%= outcome_direction_label(primary_outcome.outcome_direction) %> / <%= primary_outcome.category %></p>
+        <p class="meta"><%= outcome_direction_label(primary_outcome.outcome_direction) %> / <%= primary_outcome.category %> / <%= evidence_level_label(primary_outcome.evidence_level.presence || 'reported') %></p>
       <% end %>
-      <p><%= truncate(encounter_case.summary.presence || encounter_case.background.presence || "概要未設定", length: 140) %></p>
+      <p><%= truncate(encounter_case.summary.presence || encounter_case.background.presence || '概要未設定', length: 140) %></p>
       <div class="tag-cloud">
         <% if encounter_case.tags.any? %>
           <% encounter_case.tags.order(:name).each do |tag| %>

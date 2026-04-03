@@ -1,14 +1,20 @@
 <% content_for :title, "全体関係マップ" %>
 
+<div class="page-stack graph-density-shell" data-controller="graph-density" data-graph-density-storage-key-value="people-graph-density">
 <section class="page-header dreamy-header">
   <div>
     <p class="ribbon-label">Relationship Map</p>
     <h1>全体関係マップ</h1>
-    <p class="lede compact">登録人物を一人ずつ並べるのではなく、所属・分野・近縁性からできる人物群ごとに束ねて、全体構造を俯瞰します。線は人物群どうしの接点の多さや関係の性質を表します。気になる人物群を選ぶと、その集団内の人物関係を詳しく見られます。</p>
+    <p class="lede compact" data-graph-density-target="collapsible">Tsunagari の図は 1 枚で全部を説明するより、役割を分けたほうが読みやすくなります。この画面では、構造・重なり・越境・人物の 4 つのレンズで人物群のつながりを読みます。</p>
   </div>
   <div class="hero-actions">
+    <button type="button" class="ghost-button graph-density-toggle" data-action="graph-density#toggle" data-graph-density-target="button" aria-pressed="false">
+      <span data-graph-density-target="label">説明を省略</span>
+    </button>
     <%= link_to "人物録へ戻る", people_path, class: "secondary-link" %>
-    <%= link_to "外部DBから取り込む", new_person_import_path, class: "primary-link" %>
+    <% if can_edit_content? %>
+      <%= link_to "外部DBから取り込む", new_person_import_path, class: "primary-link" %>
+    <% end %>
   </div>
 </section>
 
@@ -25,26 +31,149 @@
   <% end %>
 </section>
 
-<section class="dashboard-grid map-guide-grid">
-  <article class="panel soft-panel">
-    <p class="eyebrow">Flow</p>
-    <h2>俯瞰から詳細へ</h2>
-    <p class="meta">この画面は構造を見るための画面です。上段で人物群どうしの接点を俯瞰し、気になるクラスタを選ぶと、下段にそのクラスタの人物関係と構成情報が開きます。</p>
-
+<section class="dashboard-grid map-showcase-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide map-showcase-intro" data-graph-density-target="collapsible">
+    <p class="eyebrow">Diagram Showcase</p>
+    <h2>見たい図の候補</h2>
+    <p class="meta">Tsunagari では、全体図だけを磨くより、人物起点・出会いフロー・全体構造の 3 つを使い分けたほうが価値が出ます。まずはこの 3 種類を実物で見比べます。</p>
     <div class="map-flow">
-      <span class="map-flow-pill is-current">1. 全体を俯瞰</span>
-      <span class="map-flow-pill"><span aria-hidden="true">-></span> 2. クラスタを選択</span>
-      <span class="map-flow-pill"><span aria-hidden="true">-></span> 3. 下段で詳細を確認</span>
+      <span class="map-flow-pill is-current">人物起点</span>
+      <span class="map-flow-pill">出会いフロー</span>
+      <span class="map-flow-pill">全体構造</span>
     </div>
+  </article>
 
-    <% if @selected_cluster.present? %>
-      <p class="meta">選択中: <strong><%= @selected_cluster[:label] %></strong> / <%= @selected_cluster[:category_label] %> / <%= @selected_cluster[:people_count] %> 人</p>
+  <article class="panel soft-panel relationship-panel relationship-panel--wide map-showcase-card">
+    <p class="eyebrow">Most Useful</p>
+    <h2>人物起点マップ</h2>
+    <p class="meta">一番使われやすいのは、"この人の周りに誰がいて、次に何を見るべきか" をすぐ辿れる図です。</p>
+    <% if @diagram_showcase[:person_focus].present? %>
+      <% focus = @diagram_showcase[:person_focus] %>
+      <div class="map-showcase-head">
+        <div>
+          <strong><%= link_to focus[:person].display_name, person_path(focus[:person]) %></strong>
+          <p class="meta"><%= "関連事例 #{focus[:related_case_count]} 件" %></p>
+        </div>
+        <%= link_to "人物詳細で見る", person_path(focus[:person]), class: "secondary-link" %>
+      </div>
+      <%= render "shared/relationship_graph", graph: focus[:graph], empty_message: "この人物の周辺関係はまだ少ないです。" %>
+      <% if focus[:organizations].any? || focus[:tags].any? %>
+        <div class="tag-cloud">
+          <% focus[:organizations].each do |organization_name| %>
+            <span class="tag-pill"><%= "所属: #{organization_name}" %></span>
+          <% end %>
+          <% focus[:tags].each do |tag_name| %>
+            <span class="tag-pill"><%= "タグ: #{tag_name}" %></span>
+          <% end %>
+        </div>
+      <% end %>
     <% else %>
-      <p class="meta">まだクラスタは選択されていません。まずは上段の構造マップから気になる塊を選んでください。</p>
+      <p class="empty-note">まず人物や事例が増えると、人物起点マップの候補をここに表示できます。</p>
     <% end %>
   </article>
 
-  <article class="panel soft-panel">
+  <article class="panel soft-panel map-showcase-card">
+    <p class="eyebrow">Story Flow</p>
+    <h2>出会いフロー図</h2>
+    <p class="meta">"誰が関わり、何が起き、何が学びとして残ったか" を読むには、ネットワーク図よりフロー図のほうが向いています。</p>
+    <% if @diagram_showcase[:encounter_flow].present? %>
+      <% flow = @diagram_showcase[:encounter_flow] %>
+      <%= render "shared/encounter_flow_preview", flow: flow %>
+      <%= link_to "事例詳細で読む", encounter_case_path(flow[:encounter_case]), class: "secondary-link" %>
+    <% else %>
+      <p class="empty-note">2 人以上が関わる公開事例が増えると、ここに出会いフロー図を表示できます。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel map-showcase-card">
+    <p class="eyebrow">Overview</p>
+    <h2>全体構造図</h2>
+    <p class="meta">全体構造図は、どこに大きな塊があり、どこで越境が起きているかを掴むための俯瞰図です。</p>
+    <div class="map-structure-preview">
+      <% @diagram_showcase[:structure_clusters].each_with_index do |cluster, index| %>
+        <article class="map-structure-node" style="<%= cluster_category_css_vars(cluster[:category]) %>">
+          <strong><%= cluster[:label] %></strong>
+          <p class="meta"><%= "#{cluster[:category_label]} / #{cluster[:people_count]} 人" %></p>
+        </article>
+        <% unless index == @diagram_showcase[:structure_clusters].length - 1 %>
+          <span class="map-structure-connector" aria-hidden="true">接点</span>
+        <% end %>
+      <% end %>
+    </div>
+    <div class="map-showcase-questions">
+      <span class="map-question-pill">どこが大きい人物群か</span>
+      <span class="map-question-pill">どこに越境があるか</span>
+      <span class="map-question-pill">次にどのクラスタを開くか</span>
+    </div>
+    <a href="#lens-structure" class="secondary-link">下の構造レンズを見る</a>
+  </article>
+</section>
+
+<section class="dashboard-grid map-lens-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide" data-graph-density-target="collapsible">
+    <p class="eyebrow">Lens System</p>
+    <h2>Tsunagari に合う図の使い分け</h2>
+    <p class="meta">このサイトに合うのは、万能な 1 枚ではなく、視点ごとに役割が違う複数の図です。まず全体構造を見て、次に重なりと越境を読み、最後に人物関係へ降ります。</p>
+
+    <div class="map-flow map-flow--lenses">
+      <span class="map-flow-pill is-current">1. 構造</span>
+      <span class="map-flow-pill"><span aria-hidden="true">-></span> 2. 重なり</span>
+      <span class="map-flow-pill"><span aria-hidden="true">-></span> 3. 越境</span>
+      <span class="map-flow-pill"><span aria-hidden="true">-></span> 4. 人物</span>
+    </div>
+
+    <div class="map-lens-cards">
+      <a href="#lens-structure" class="map-lens-card is-available">
+        <span class="map-lens-number">1</span>
+        <strong>構造レンズ</strong>
+        <p class="meta">人物群どうしの全体構造を見る図です。</p>
+      </a>
+
+      <% if @selected_cluster.present? && @selected_cluster_overlap.present? %>
+        <a href="#lens-overlap" class="map-lens-card is-available">
+          <span class="map-lens-number">2</span>
+          <strong>重なりレンズ</strong>
+          <p class="meta"><%= "#{@selected_cluster[:label]} と #{@selected_cluster_overlap[:neighbor_label]} の共通人物を見ます。" %></p>
+        </a>
+      <% else %>
+        <div class="map-lens-card is-awaiting">
+          <span class="map-lens-number">2</span>
+          <strong>重なりレンズ</strong>
+          <p class="meta">クラスタを選ぶと、集合の重なりを図で見られます。</p>
+        </div>
+      <% end %>
+
+      <% if @selected_cluster.present? && @selected_cluster_focus_graph.present? %>
+        <a href="#lens-bridge" class="map-lens-card is-available">
+          <span class="map-lens-number">3</span>
+          <strong>越境レンズ</strong>
+          <p class="meta"><%= "#{@selected_cluster[:label]} から外へ伸びる接点を見ます。" %></p>
+        </a>
+      <% else %>
+        <div class="map-lens-card is-awaiting">
+          <span class="map-lens-number">3</span>
+          <strong>越境レンズ</strong>
+          <p class="meta">クラスタを選ぶと、外へ伸びる接点の強さを比較できます。</p>
+        </div>
+      <% end %>
+
+      <% if @selected_cluster.present? %>
+        <a href="#lens-people" class="map-lens-card is-available">
+          <span class="map-lens-number">4</span>
+          <strong>人物レンズ</strong>
+          <p class="meta"><%= "#{@selected_cluster[:label]} の中の人物関係へ降ります。" %></p>
+        </a>
+      <% else %>
+        <div class="map-lens-card is-awaiting">
+          <span class="map-lens-number">4</span>
+          <strong>人物レンズ</strong>
+          <p class="meta">クラスタを選ぶと、人物同士の関係図が開きます。</p>
+        </div>
+      <% end %>
+    </div>
+  </article>
+
+  <article class="panel soft-panel" data-graph-density-target="collapsible">
     <p class="eyebrow">Overview Stats</p>
     <h2>全体の規模</h2>
     <div class="compact-stats">
@@ -69,31 +198,36 @@
         <strong><%= @graph_summary[:edge_count] %></strong>
       </div>
     </div>
+    <% if @selected_cluster.present? %>
+      <p class="meta"><%= "選択中: #{@selected_cluster[:label]} / #{@selected_cluster[:category_label]} / #{@selected_cluster[:people_count]} 人" %></p>
+    <% else %>
+      <p class="meta">まずは構造レンズから気になるクラスタを選んでください。</p>
+    <% end %>
     <% if @graph_summary[:missing_cache_count].positive? %>
       <p class="meta">軽量キャッシュ未生成の人物が <%= @graph_summary[:missing_cache_count] %> 人います。既存インポート分は `bundle exec rake "people:refresh_graph_cache"` で補完できます。</p>
     <% end %>
   </article>
 </section>
 
-<section class="dashboard-grid">
+<section id="lens-structure" class="dashboard-grid">
   <article class="panel soft-panel relationship-panel relationship-panel--wide map-overview-panel">
-    <p class="eyebrow">Overview</p>
-    <h2>人物群どうしの全体構造</h2>
-    <p class="meta">ノードはクラスタ、線はクラスタ間の接点です。ノードサイズは人数、色はクラスタ種別、線の太さは接点数を表します。</p>
+    <p class="eyebrow">Lens 1</p>
+    <h2>構造レンズ</h2>
+    <p class="meta">人物群どうしの全体構造を俯瞰する図です。ノードはクラスタ、線はクラスタ間の接点で、どこに大きな塊があり、どこで越境が起きるかを読みます。</p>
     <%= render "shared/relationship_graph",
                graph: @relationship_graph,
                empty_message: "共通タグや所属が増えると、クラスタ間の全体構造を描画できます。",
                show_inspector: true,
-               inspector_title: (@selected_cluster.present? ? "#{@selected_cluster[:label]} を下段で表示中" : "クラスタを選んで詳細を見る"),
-               inspector_meta: "俯瞰 -> 選択 -> 詳細",
-               inspector_body: (@selected_cluster.present? ? "上段で別のクラスタを選ぶと、下段の詳細がその場で切り替わります。hover / focus で接点の説明も確認できます。" : "上段ではクラスタ間の構造を俯瞰し、下段で選択したクラスタの人物関係と構成情報を詳しく確認します。") %>
+               inspector_title: (@selected_cluster.present? ? "#{@selected_cluster[:label]} を下段で表示中" : "クラスタを選んで次のレンズへ進む"),
+               inspector_meta: "構造 -> 重なり -> 越境 -> 人物",
+               inspector_body: (@selected_cluster.present? ? "上段で別のクラスタを選ぶと、下段のレンズ群がその場で切り替わります。hover / focus で接点の説明も確認できます。" : "まずは全体構造を見て、気になるクラスタを1つ選びます。下段で重なり、越境、人物の各レンズが開きます。") %>
   </article>
 </section>
 
-<section class="dashboard-grid map-reference-grid">
+<section class="dashboard-grid map-reference-grid" data-graph-density-target="collapsible">
   <article class="panel soft-panel">
     <p class="eyebrow">Legend</p>
-    <h2>構造の見方</h2>
+    <h2>構造レンズの見方</h2>
 
     <div class="map-legend-grid">
       <% cluster_category_palette.each_key do |category| %>
@@ -145,7 +279,7 @@
       <% if @selected_cluster.present? %>
         <p class="meta"><%= @selected_cluster[:label] %> / <%= @selected_cluster[:category_label] %> / <%= @selected_cluster[:people_count] %> 人</p>
       <% else %>
-        <p class="meta">上段の全体関係マップからクラスタを 1 つ選ぶと、ここに人物関係・人物一覧・参照元が表示されます。</p>
+        <p class="meta">上段の構造レンズからクラスタを 1 つ選ぶと、ここに重なり・越境・人物の 3 つの詳細レンズが表示されます。</p>
       <% end %>
     </div>
 
@@ -155,7 +289,7 @@
   </div>
 
   <% if @selected_cluster.present? %>
-    <div class="tag-cloud map-cluster-summary">
+    <div class="tag-cloud map-cluster-summary" data-graph-density-target="collapsible">
       <% @selected_cluster[:top_organizations].each do |organization_name, count| %>
         <span class="tag-pill"><%= "代表所属: #{organization_name} (#{count})" %></span>
       <% end %>
@@ -164,10 +298,61 @@
       <% end %>
     </div>
 
-    <div class="dashboard-grid map-detail-grid">
+    <%= render "shared/cluster_set_overlap", overlap: @selected_cluster_overlap if @selected_cluster_overlap.present? %>
+
+    <% if @selected_cluster_focus_graph.present? %>
+      <% bridge_max_pair_count = [@selected_cluster_connections.map { |connection| connection[:pair_count].to_i }.max.to_i, 1].max %>
+      <div id="lens-bridge" class="dashboard-grid map-neighbor-grid">
+        <article class="panel soft-panel relationship-panel relationship-panel--wide map-neighbor-view">
+          <p class="eyebrow">Lens 3</p>
+          <h3>越境レンズ</h3>
+          <p class="meta">このクラスタから外へ伸びる接点を見る図です。全体構造より一歩近い距離で、どの人物群へ強く伸びているかを読みます。</p>
+          <%= render "shared/relationship_graph",
+                     graph: @selected_cluster_focus_graph,
+                     empty_message: "このクラスタと強くつながる周辺クラスタはまだ見つかっていません。",
+                     show_inspector: true,
+                     inspector_title: "#{@selected_cluster[:label]} から外へ伸びる接点",
+                     inspector_meta: "中心クラスタ -> 周辺クラスタ",
+                     inspector_body: "全体マップを補助する越境レンズです。どの人物群へ接点が伸びるか、どこに越境があるかをここで読みます。" %>
+        </article>
+
+        <article class="panel soft-panel map-bridge-panel">
+          <p class="eyebrow">Bridge Bands</p>
+          <h3>越境の強い行き先</h3>
+          <ul class="stack-list soft-list map-bridge-list">
+            <% @selected_cluster_connections.each do |connection| %>
+              <% strength = ((connection[:pair_count].to_f / bridge_max_pair_count) * 100).round(1) %>
+              <li class="map-bridge-item" style="--bridge-strength: <%= strength %>%;">
+                <div class="map-bridge-head">
+                  <%= link_to connection[:label], connection[:href] %>
+                  <span class="meta"><%= "接点 #{connection[:pair_count]} 件" %></span>
+                </div>
+                <div class="map-bridge-meter" aria-hidden="true">
+                  <span class="map-bridge-fill"></span>
+                </div>
+                <p class="meta"><%= [connection[:category_label], connection[:tone_label], connection[:kind_label]].compact.join(" / ") %></p>
+                <% if connection[:shared_organizations].any? || connection[:shared_tags].any? %>
+                  <div class="tag-cloud map-neighbor-clues">
+                    <% connection[:shared_organizations].each do |organization_name| %>
+                      <span class="tag-pill"><%= "所属: #{organization_name}" %></span>
+                    <% end %>
+                    <% connection[:shared_tags].each do |tag_name| %>
+                      <span class="tag-pill"><%= "タグ: #{tag_name}" %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </li>
+            <% end %>
+          </ul>
+        </article>
+      </div>
+    <% end %>
+
+    <div id="lens-people" class="dashboard-grid map-detail-grid">
       <article class="panel soft-panel relationship-panel relationship-panel--wide">
-        <p class="eyebrow">Cluster Graph</p>
-        <h3>このクラスタの人物関係</h3>
+        <p class="eyebrow">Lens 4</p>
+        <h3>人物レンズ</h3>
+        <p class="meta">最後にこのクラスタの中へ降りて、人物同士の関係を読みます。</p>
         <% if @selected_cluster_graph.present? %>
           <% if @selected_cluster_graph[:labelMode] == "all" %>
             <p class="meta">人物名を読み取りやすいように、各ノードに名前を表示しています。</p>
@@ -181,7 +366,7 @@
         <% end %>
       </article>
 
-      <article class="panel soft-panel">
+      <article class="panel soft-panel" data-graph-density-target="collapsible">
         <p class="eyebrow">People</p>
         <h3>このクラスタを構成する人物</h3>
         <ul class="stack-list soft-list">
@@ -199,7 +384,7 @@
         <% end %>
       </article>
 
-      <article class="panel soft-panel">
+      <article class="panel soft-panel" data-graph-density-target="collapsible">
         <p class="eyebrow">Sources</p>
         <h3>このクラスタの参照元</h3>
         <% if @selected_cluster[:source_breakdown].any? %>
@@ -218,12 +403,12 @@
     </div>
   <% else %>
     <div class="map-empty-detail">
-      <p>まだクラスタは選択されていません。上段の全体関係マップからノードを選ぶと、ここに人物関係と構成情報が開きます。</p>
+      <p>まだクラスタは選択されていません。上段の構造レンズからノードを選ぶと、ここに重なり・越境・人物の 3 つの詳細レンズが開きます。</p>
     </div>
   <% end %>
 </section>
 
-<section class="panel soft-panel">
+<section class="panel soft-panel" data-graph-density-target="collapsible">
   <p class="eyebrow">Relationship Types</p>
   <h2>主な関係タイプの読み方</h2>
   <div class="relationship-kind-grid">
@@ -236,7 +421,7 @@
   </div>
 </section>
 
-<section class="dashboard-grid">
+<section class="dashboard-grid" data-graph-density-target="collapsible">
   <article class="panel soft-panel">
     <p class="eyebrow">Organizations</p>
     <h2>接点が多い所属</h2>
@@ -282,3 +467,4 @@
     <% end %>
   </article>
 </section>
+</div>

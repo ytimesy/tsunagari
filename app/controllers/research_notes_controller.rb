@@ -1,4 +1,6 @@
 class ResearchNotesController < ApplicationController
+  before_action :require_editor!
+
   def create
     @research_note = ResearchNote.new(research_note_params)
 
@@ -16,20 +18,20 @@ class ResearchNotesController < ApplicationController
   end
 
   def target_path_for(note)
-    return person_path(note.person) if note.person.present?
+    return person_destination_path(note.person) if note.person.present?
 
-    encounter_case_path(note.encounter_case)
+    encounter_case_destination_path(note.encounter_case)
   end
 
   def fallback_target_path
     if params.dig(:research_note, :person_id).present?
       person = Person.find(params[:research_note][:person_id])
-      return person_path(person)
+      return person_destination_path(person)
     end
 
     if params.dig(:research_note, :encounter_case_id).present?
       encounter_case = EncounterCase.find(params[:research_note][:encounter_case_id])
-      return encounter_case_path(encounter_case)
+      return encounter_case_destination_path(encounter_case)
     end
 
     root_path

@@ -1,7 +1,9 @@
 require "test_helper"
 
 class UserFlowsTest < ActionDispatch::IntegrationTest
-  test "visitor can create and update a person and encounter case" do
+  test "editor can create and update a person and encounter case" do
+    sign_in_as(create_user)
+
     get new_person_path
     assert_response :success
 
@@ -37,7 +39,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to person_path(person)
+    assert_redirected_to edit_person_path(person)
     assert_equal "review", person.reload.publication_status
     assert_equal [ "Computing", "Math", "Writing" ], person.tags.order(:name).pluck(:name)
     assert_equal %w[created updated], person.edit_histories.order(:created_at).pluck(:action)
@@ -85,8 +87,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "情報源", response.body
     assert_match "編集履歴", response.body
     assert_match "Biography", response.body
-    assert_match %r{href="/people/ada-lovelace"}, response.body
-    assert_match %r{href="/people/charles-babbage"}, response.body
+    assert_match "Ada Lovelace", response.body
+    assert_match "Charles Babbage", response.body
 
     patch encounter_case_path(encounter_case), params: {
       encounter_case: {
@@ -114,43 +116,55 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
       }
     }
 
-    assert_redirected_to encounter_case_path(encounter_case)
+    assert_redirected_to edit_encounter_case_path(encounter_case)
     assert_equal "review", encounter_case.reload.publication_status
     assert_equal "mixed", encounter_case.case_outcomes.first.outcome_direction
     assert_equal %w[created updated], encounter_case.edit_histories.order(:created_at).pluck(:action)
     assert_match "結果", encounter_case.edit_histories.recent.first.summary
   end
 
-  test "wiki shows draft and published people and cases to every visitor" do
+  test "wiki hides draft and review records from general visitors" do
     public_person = Person.create!(display_name: "Public Person", publication_status: "published")
     draft_person = Person.create!(display_name: "Draft Person", publication_status: "draft")
+    review_person = Person.create!(display_name: "Review Person", publication_status: "review")
     public_case = EncounterCase.create!(title: "Public Case", publication_status: "published")
     draft_case = EncounterCase.create!(title: "Draft Case", publication_status: "draft")
+    review_case = EncounterCase.create!(title: "Review Case", publication_status: "review")
 
     get people_path
     assert_response :success
     assert_match "Public Person", response.body
-    assert_match "Draft Person", response.body
+    assert_no_match "Draft Person", response.body
+    assert_no_match "Review Person", response.body
 
     get encounter_cases_path
     assert_response :success
     assert_match "Public Case", response.body
-    assert_match "Draft Case", response.body
+    assert_no_match "Draft Case", response.body
+    assert_no_match "Review Case", response.body
 
     get person_path(public_person)
     assert_response :success
 
     get person_path(draft_person)
-    assert_response :success
+    assert_response :not_found
+
+    get person_path(review_person)
+    assert_response :not_found
 
     get encounter_case_path(public_case)
     assert_response :success
 
     get encounter_case_path(draft_case)
-    assert_response :success
+    assert_response :not_found
+
+    get encounter_case_path(review_case)
+    assert_response :not_found
   end
 
-  test "visitor can add research notes to person and encounter case" do
+  test "editor can add research notes to person and encounter case" do
+    sign_in_as(create_user)
+
     person = Person.create!(display_name: "Grace Hopper", publication_status: "published")
     encounter_case = EncounterCase.create!(title: "Grace met a Navy team", publication_status: "published")
 
@@ -200,7 +214,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "失敗・後退", response.body
     assert_match "阻害要因", response.body
     assert_match "ownership stayed ambiguous", response.body
-    assert_match "メモを残す", response.body
+    assert_match "追記メモの閲覧と記入は、編集者ログイン後に利用できます。", response.body
+    assert_no_match "メモを残す", response.body
   end
 
   test "person detail shows relationship map around the focal person" do
@@ -214,14 +229,20 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     encounter_case = EncounterCase.create!(title: "Analytical exchange", publication_status: "published")
     encounter_case.case_participants.create!(person: ada, participation_role: "participant")
     encounter_case.case_participants.create!(person: babbage, participation_role: "participant")
-    encounter_case.case_participants.create!(person: helper, participation_role: "participant")
+    encounter_case.case_participants.create!(person: helper, participation_role: "bridge")
+    encounter_case.case_outcomes.create!(category: "prototype", outcome_direction: "positive", description: "試作が前に進んだ")
 
     get person_path(ada)
     assert_response :success
+    assert_match "人物起点マップ", response.body
     assert_match "人物関係図", response.body
+    assert_match "近い人物", response.body
+    assert_match "越境人物", response.body
+    assert_match "関連事例", response.body
     assert_match "ada-lovelace", response.body
     assert_match "charles-babbage", response.body
     assert_match "community-organizer", response.body
+    assert_match encounter_case_path(encounter_case), response.body
   end
 
   test "person detail can expand the relationship map to second and third hop" do
@@ -259,6 +280,32 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match 'data-relationship-depth-active-depth-value="3"', response.body
     assert_match "alan-kay", response.body
+  end
+
+  test "graph page offers a compact toggle for people who want the diagrams first" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+
+    [
+      [ ada, "openalex", "A123" ],
+      [ babbage, "openalex", "A456" ]
+    ].each do |person, source_name, external_id|
+      person.person_external_profiles.create!(
+        source_name: source_name,
+        external_id: external_id,
+        source_url: "https://example.test/#{external_id}",
+        fetched_at: Time.current,
+        graph_tags: [ "Computing" ],
+        graph_organizations: [ "Analytical Society" ]
+      )
+    end
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match 'data-controller="graph-density"', response.body
+    assert_match "説明を省略", response.body
+    assert_match 'data-graph-density-target="collapsible"', response.body
   end
 
   test "global people graph shows imported network" do
@@ -304,7 +351,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_match "全体関係マップ", response.body
-    assert_match "人物群どうしの全体構造", response.body
+    assert_match "構造レンズ", response.body
     assert_match "主要クラスタ", response.body
     assert_match "org-analytical-society", response.body
     assert_match "org-civic-lab", response.body
@@ -377,6 +424,52 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "org-civic-lab", response.body
   end
 
+  test "graph page shows concrete diagram candidates" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    grace = Person.create!(display_name: "Grace Hopper", publication_status: "published")
+
+    [
+      [ ada, "openalex", "A123", [ "Computing", "Mathematics" ], [ "Analytical Society" ] ],
+      [ babbage, "openalex", "A456", [ "Computing" ], [ "Analytical Society" ] ],
+      [ grace, "wikidata", "Q111", [ "Compilers", "Computing" ], [ "Navy Lab" ] ]
+    ].each do |person, source_name, external_id, tags, organizations|
+      person.person_external_profiles.create!(
+        source_name: source_name,
+        external_id: external_id,
+        source_url: "https://example.test/#{external_id}",
+        fetched_at: Time.current,
+        graph_tags: tags,
+        graph_organizations: organizations
+      )
+    end
+
+    encounter_case = EncounterCase.create!(
+      title: "Analytical Engine Session",
+      publication_status: "published",
+      published_at: Time.current,
+      happened_on: Date.current,
+      place: "London"
+    )
+    encounter_case.case_participants.create!(person: ada, participation_role: "host")
+    encounter_case.case_participants.create!(person: babbage, participation_role: "guest")
+    encounter_case.case_outcomes.create!(category: "prototype", outcome_direction: "positive", description: "試作が前に進んだ")
+    encounter_case.case_insights.create!(insight_type: "lesson", description: "役割を明確にしたほうが進みやすい")
+
+    tag = Tag.create!(name: "Computing", normalized_name: "computing")
+    encounter_case.tags << tag
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match "見たい図の候補", response.body
+    assert_match "人物起点マップ", response.body
+    assert_match "出会いフロー図", response.body
+    assert_match "全体構造図", response.body
+    assert_match person_path(ada), response.body
+    assert_match encounter_case_path(encounter_case), response.body
+  end
+
   test "selected cluster shows member details" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
@@ -422,7 +515,12 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "選択クラスタ詳細", response.body
     assert_match "Ada Lovelace", response.body
     assert_match "Charles Babbage", response.body
-    assert_match "このクラスタの人物関係", response.body
+    assert_match "人物レンズ", response.body
+    assert_match "重なりレンズ", response.body
+    assert_match "共通人物なし", response.body
+    assert_match "越境レンズ", response.body
+    assert_match "越境の強い行き先", response.body
+    assert_match "Civic Lab", response.body
     assert_match 'labelMode&quot;:&quot;all', response.body
     assert_match person_path(ada, cluster: "org-analytical-society"), response.body
   end
@@ -444,7 +542,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path(cluster: "org-analytical-society")
 
     assert_response :success
-    assert_match "このクラスタの人物関係", response.body
+    assert_match "人物レンズ", response.body
     assert_match "接点が多い 60 人を選んで描画しています", response.body
     assert_no_match "人数が多いため、部分関係図は省略しています", response.body
   end

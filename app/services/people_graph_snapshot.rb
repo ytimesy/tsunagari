@@ -1,5 +1,5 @@
 class PeopleGraphSnapshot
-  CACHE_NAMESPACE = "people-graph/v1".freeze
+  CACHE_NAMESPACE = "people-graph/v2".freeze
   CACHE_TTL = 30.minutes
 
   def initialize(people:, selected_cluster_slug: nil, query: nil, profile_resolver: ExternalPeople::ProfileResolver.new)
@@ -54,7 +54,8 @@ class PeopleGraphSnapshot
       relationship_graph: builder.payload,
       graph_summary: builder.summary,
       selected_cluster: serialize_selected_cluster(selected_cluster),
-      selected_cluster_graph: selected_cluster_graph
+      selected_cluster_graph: selected_cluster_graph,
+      selected_cluster_overlap: builder.selected_cluster_overlap
     }
   end
 

@@ -1,18 +1,21 @@
 require 'test_helper'
 
 class ListFilteringTest < ActionDispatch::IntegrationTest
-  test 'guest people filters stay on published records only' do
+  test 'guest people filters show public records without archived items and ignore the status filter' do
     public_person = Person.create!(display_name: 'Public Analyst', publication_status: 'published')
     draft_person = Person.create!(display_name: 'Draft Analyst', publication_status: 'draft')
+    archived_person = Person.create!(display_name: 'Archived Analyst', publication_status: 'archived')
     computing = Tag.create!(name: 'Computing')
     public_person.tags << computing
     draft_person.tags << computing
+    archived_person.tags << computing
 
     get people_path, params: { tag: 'Computing', publication_status: 'draft' }
 
     assert_response :success
     assert_match 'Public Analyst', response.body
-    assert_no_match 'Draft Analyst', response.body
+    assert_match 'Draft Analyst', response.body
+    assert_no_match 'Archived Analyst', response.body
     assert_match '条件をリセット', response.body
   end
 

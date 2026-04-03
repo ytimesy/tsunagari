@@ -123,43 +123,114 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "結果", encounter_case.edit_histories.recent.first.summary
   end
 
-  test "wiki hides draft and review records from general visitors" do
+  test "wiki shows draft and review records to general visitors by default while archived records stay hidden" do
     public_person = Person.create!(display_name: "Public Person", publication_status: "published")
     draft_person = Person.create!(display_name: "Draft Person", publication_status: "draft")
     review_person = Person.create!(display_name: "Review Person", publication_status: "review")
+    archived_person = Person.create!(display_name: "Archived Person", publication_status: "archived")
     public_case = EncounterCase.create!(title: "Public Case", publication_status: "published")
     draft_case = EncounterCase.create!(title: "Draft Case", publication_status: "draft")
     review_case = EncounterCase.create!(title: "Review Case", publication_status: "review")
+    archived_case = EncounterCase.create!(title: "Archived Case", publication_status: "archived")
+
+    get root_path
+    assert_response :success
+    assert_match "#{Person.publicly_visible.count} 人物", response.body
+    assert_match "#{EncounterCase.publicly_visible.count} 事例", response.body
 
     get people_path
     assert_response :success
     assert_match "Public Person", response.body
-    assert_no_match "Draft Person", response.body
-    assert_no_match "Review Person", response.body
+    assert_match "Draft Person", response.body
+    assert_match "Review Person", response.body
+    assert_no_match "Archived Person", response.body
 
     get encounter_cases_path
     assert_response :success
     assert_match "Public Case", response.body
-    assert_no_match "Draft Case", response.body
-    assert_no_match "Review Case", response.body
+    assert_match "Draft Case", response.body
+    assert_match "Review Case", response.body
+    assert_no_match "Archived Case", response.body
 
     get person_path(public_person)
     assert_response :success
 
     get person_path(draft_person)
-    assert_response :not_found
+    assert_response :success
 
     get person_path(review_person)
+    assert_response :success
+
+    get person_path(archived_person)
     assert_response :not_found
 
     get encounter_case_path(public_case)
     assert_response :success
 
     get encounter_case_path(draft_case)
-    assert_response :not_found
+    assert_response :success
 
     get encounter_case_path(review_case)
+    assert_response :success
+
+    get encounter_case_path(archived_case)
     assert_response :not_found
+  end
+
+  test "wiki hides draft and review records from general visitors when strict public visibility is enabled" do
+    public_person = Person.create!(display_name: "Strict Public Person", publication_status: "published")
+    draft_person = Person.create!(display_name: "Strict Draft Person", publication_status: "draft")
+    review_person = Person.create!(display_name: "Strict Review Person", publication_status: "review")
+    archived_person = Person.create!(display_name: "Strict Archived Person", publication_status: "archived")
+    public_case = EncounterCase.create!(title: "Strict Public Case", publication_status: "published")
+    draft_case = EncounterCase.create!(title: "Strict Draft Case", publication_status: "draft")
+    review_case = EncounterCase.create!(title: "Strict Review Case", publication_status: "review")
+    archived_case = EncounterCase.create!(title: "Strict Archived Case", publication_status: "archived")
+
+    with_stubbed_method(TsunagariFeatureFlags, :strict_public_visibility?, true) do
+      get root_path
+      assert_response :success
+      assert_match "#{Person.publicly_visible.count} 人物", response.body
+      assert_match "#{EncounterCase.publicly_visible.count} 事例", response.body
+
+      get people_path
+      assert_response :success
+      assert_match "Strict Public Person", response.body
+      assert_no_match "Strict Draft Person", response.body
+      assert_no_match "Strict Review Person", response.body
+      assert_no_match "Strict Archived Person", response.body
+
+      get encounter_cases_path
+      assert_response :success
+      assert_match "Strict Public Case", response.body
+      assert_no_match "Strict Draft Case", response.body
+      assert_no_match "Strict Review Case", response.body
+      assert_no_match "Strict Archived Case", response.body
+
+      get person_path(public_person)
+      assert_response :success
+
+      get person_path(draft_person)
+      assert_response :not_found
+
+      get person_path(review_person)
+      assert_response :not_found
+
+      get person_path(archived_person)
+      assert_response :not_found
+
+      get encounter_case_path(public_case)
+      assert_response :success
+
+      get encounter_case_path(draft_case)
+      assert_response :not_found
+
+      get encounter_case_path(review_case)
+      assert_response :not_found
+
+      get encounter_case_path(archived_case)
+      assert_response :not_found
+    end
   end
 
   test "editor can add research notes to person and encounter case" do

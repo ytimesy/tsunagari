@@ -25,7 +25,7 @@ class PersonCaseGraphScope
       candidate_people = {}
 
       layer_cases.each do |encounter_case|
-        encounter_case.people.select(&:published?).each do |person|
+        encounter_case.people.select(&:publicly_visible?).each do |person|
           next if selected_people.key?(person.id)
 
           candidate_people[person.id] ||= person
@@ -43,7 +43,7 @@ class PersonCaseGraphScope
 
     people_ids = selected_people.keys
     filtered_cases = selected_cases.values.select do |encounter_case|
-      (encounter_case.people.select(&:published?).map(&:id) & people_ids).length >= 2
+      (encounter_case.people.select(&:publicly_visible?).map(&:id) & people_ids).length >= 2
     end
 
     {
@@ -62,7 +62,7 @@ class PersonCaseGraphScope
     frontier_ids = frontier.map(&:id)
     return [] if frontier_ids.empty?
 
-    EncounterCase.published.includes(
+    EncounterCase.publicly_visible.includes(
       :case_outcomes,
       :case_insights,
       case_participants: :person,

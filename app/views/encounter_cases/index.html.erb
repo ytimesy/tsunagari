@@ -73,7 +73,9 @@
       <p class="eyebrow">Case</p>
       <h2><%= link_to encounter_case.title, encounter_case_destination_path(encounter_case) %></h2>
       <p class="meta"><%= encounter_case.happened_on || '時期未設定' %> / <%= encounter_case.place.presence || '場所未設定' %></p>
-      <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
+      <% if can_edit_content? %>
+        <p class="meta"><%= publication_status_label(encounter_case.publication_status) %></p>
+      <% end %>
       <% if (primary_outcome = encounter_case.case_outcomes.first).present? %>
         <p class="meta"><%= outcome_direction_label(primary_outcome.outcome_direction) %> / <%= primary_outcome.category %> / <%= evidence_level_label(primary_outcome.evidence_level.presence || 'reported') %></p>
       <% end %>

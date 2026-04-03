@@ -1,5 +1,12 @@
 class TsunagariFeatureFlags
   class << self
+    def strict_public_visibility?
+      raw_value = ENV["TSUNAGARI_STRICT_PUBLIC_VISIBILITY"]
+      return false if raw_value.nil?
+
+      ActiveModel::Type::Boolean.new.cast(raw_value)
+    end
+
     def openalex_enabled?
       raw_value = ENV["TSUNAGARI_OPENALEX_ENABLED"]
       return !Rails.env.production? if raw_value.nil?

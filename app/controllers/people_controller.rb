@@ -128,7 +128,7 @@ class PeopleController < ApplicationController
   end
 
   def public_people_scope
-    all_people_scope.published
+    all_people_scope.publicly_visible
   end
 
   def editor_people_scope
@@ -490,7 +490,7 @@ class PeopleController < ApplicationController
   end
 
   def build_person_lens_cases
-    @person.encounter_cases.published.includes(:tags, :case_outcomes, case_participants: :person)
+    @person.encounter_cases.publicly_visible.includes(:tags, :case_outcomes, case_participants: :person)
            .order(happened_on: :desc, published_at: :desc, created_at: :desc)
            .limit(4)
            .map do |encounter_case|
@@ -647,7 +647,7 @@ class PeopleController < ApplicationController
   def showcase_encounter_case
     candidate_scope = EncounterCase.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
     person_cases = if showcase_person.present?
-      showcase_person.encounter_cases.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
+      showcase_person.encounter_cases.publicly_visible.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
                    .order(happened_on: :desc, published_at: :desc)
                    .limit(8)
                    .to_a
@@ -656,7 +656,7 @@ class PeopleController < ApplicationController
     end
 
     person_cases.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
-      candidate_scope.published.order(happened_on: :desc, published_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
+      candidate_scope.publicly_visible.order(happened_on: :desc, published_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
       candidate_scope.order(happened_on: :desc, published_at: :desc, created_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 }
   end
 

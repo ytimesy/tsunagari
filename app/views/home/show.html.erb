@@ -18,7 +18,13 @@
       <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
     </div>
 
-    <p class="meta">Tsunagari は wiki 方式です。公開中の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。</p>
+    <p class="meta">
+      <% if TsunagariFeatureFlags.strict_public_visibility? %>
+        Tsunagari は wiki 方式です。公開中の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。
+      <% else %>
+        Tsunagari は wiki 方式です。アーカイブ前の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。
+      <% end %>
+    </p>
 
     <div class="feature-strip">
       <span class="feature-pill">encounter</span>
@@ -48,12 +54,24 @@
   <article class="panel soft-panel">
     <p class="eyebrow">Wiki Scope</p>
     <h2><%= @people_count %> 人物</h2>
-    <p>人物録は公開中の人物だけを一般公開し、下書きやレビュー中の情報は公開前の整理用として扱います。</p>
+    <p>
+      <% if TsunagariFeatureFlags.strict_public_visibility? %>
+        人物録は公開中の人物だけを一般公開し、下書きやレビュー中の情報は公開前の整理用として扱います。
+      <% else %>
+        人物録はアーカイブ前の人物を一般公開し、整理中の情報もあとから補いながら育てていきます。
+      <% end %>
+    </p>
   </article>
   <article class="panel soft-panel">
     <p class="eyebrow">Case Scope</p>
     <h2><%= @case_count %> 事例</h2>
-    <p>出会い事例は公開中のものを一般公開し、成功だけでなく停滞や失敗も次に活かせる知見として残します。</p>
+    <p>
+      <% if TsunagariFeatureFlags.strict_public_visibility? %>
+        出会い事例は公開中のものを一般公開し、成功だけでなく停滞や失敗も次に活かせる知見として残します。
+      <% else %>
+        出会い事例はアーカイブ前の記録をたどれます。完成前のメモを含めて、出会いから何が起きたかを追える構成です。
+      <% end %>
+    </p>
   </article>
   <article class="panel soft-panel">
     <p class="eyebrow">How To Use</p>
@@ -70,8 +88,10 @@
       <ul class="stack-list soft-list">
         <% @latest_cases.each do |encounter_case| %>
           <li>
-            <strong><%= link_to encounter_case.title, encounter_case_path(encounter_case) %></strong>
-            <span class="meta"><%= publication_status_label(encounter_case.publication_status) %></span>
+            <strong><%= link_to encounter_case.title, encounter_case_destination_path(encounter_case) %></strong>
+            <% if can_edit_content? %>
+              <span class="meta"><%= publication_status_label(encounter_case.publication_status) %></span>
+            <% end %>
           </li>
         <% end %>
       </ul>

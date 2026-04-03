@@ -43,10 +43,14 @@ class ApplicationController < ActionController::Base
   end
 
   def person_destination_path(person)
-    person.published? ? person_path(person) : edit_person_path(person)
+    return edit_person_path(person) if can_edit_content? && !person.published?
+
+    person_path(person)
   end
 
   def encounter_case_destination_path(encounter_case)
-    encounter_case.published? ? encounter_case_path(encounter_case) : edit_encounter_case_path(encounter_case)
+    return edit_encounter_case_path(encounter_case) if can_edit_content? && !encounter_case.published?
+
+    encounter_case_path(encounter_case)
   end
 end

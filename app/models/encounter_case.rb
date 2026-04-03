@@ -23,6 +23,7 @@ class EncounterCase < ApplicationRecord
   validates :publication_status, presence: true, inclusion: { in: PUBLICATION_STATUSES }
 
   scope :published, -> { where(publication_status: 'published') }
+  scope :publicly_visible, -> { TsunagariFeatureFlags.strict_public_visibility? ? where(publication_status: 'published') : where.not(publication_status: 'archived') }
 
   def self.slug_candidate(value)
     value.to_s.parameterize
@@ -36,8 +37,12 @@ class EncounterCase < ApplicationRecord
     publication_status == 'published'
   end
 
+  def publicly_visible?
+    TsunagariFeatureFlags.strict_public_visibility? ? published? : publication_status != 'archived'
+  end
+
   def visible_to?(viewer = nil)
-    published? || viewer&.can_edit_content?
+    publicly_visible? || viewer&.can_edit_content?
   end
 
   private

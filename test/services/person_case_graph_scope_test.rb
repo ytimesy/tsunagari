@@ -29,8 +29,36 @@ class PersonCaseGraphScopeTest < ActiveSupport::TestCase
     assert_equal [ "Analytical exchange", "Compiler dialogue", "Object systems forum" ], depth_three[:encounter_cases].map(&:title).sort
   end
 
+  test "includes draft and review cases by default but ignores archived records" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    published_neighbor = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+    draft_neighbor = Person.create!(display_name: "Draft Neighbor", publication_status: "draft")
+    review_neighbor = Person.create!(display_name: "Review Neighbor", publication_status: "review")
+    archived_neighbor = Person.create!(display_name: "Archived Neighbor", publication_status: "archived")
 
-  test "ignores unpublished cases and unpublished participants" do
+    published_case = EncounterCase.create!(title: "Published Exchange", publication_status: "published")
+    published_case.case_participants.create!(person: ada, participation_role: "participant")
+    published_case.case_participants.create!(person: published_neighbor, participation_role: "participant")
+
+    draft_case = EncounterCase.create!(title: "Draft Exchange", publication_status: "draft")
+    draft_case.case_participants.create!(person: ada, participation_role: "participant")
+    draft_case.case_participants.create!(person: draft_neighbor, participation_role: "participant")
+
+    review_case = EncounterCase.create!(title: "Review Exchange", publication_status: "review")
+    review_case.case_participants.create!(person: ada, participation_role: "participant")
+    review_case.case_participants.create!(person: review_neighbor, participation_role: "participant")
+
+    archived_case = EncounterCase.create!(title: "Archived Exchange", publication_status: "archived")
+    archived_case.case_participants.create!(person: ada, participation_role: "participant")
+    archived_case.case_participants.create!(person: archived_neighbor, participation_role: "participant")
+
+    scope = PersonCaseGraphScope.new(focal_person: ada, depth: 1).build
+
+    assert_equal [ "Ada Lovelace", "Charles Babbage", "Draft Neighbor", "Review Neighbor" ], scope[:people].map(&:display_name).sort
+    assert_equal [ "Draft Exchange", "Published Exchange", "Review Exchange" ], scope[:encounter_cases].map(&:title).sort
+  end
+
+  test "can ignore draft and review records when strict public visibility is enabled" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     published_neighbor = Person.create!(display_name: "Charles Babbage", publication_status: "published")
     draft_neighbor = Person.create!(display_name: "Draft Neighbor", publication_status: "draft")
@@ -43,10 +71,11 @@ class PersonCaseGraphScopeTest < ActiveSupport::TestCase
     draft_case.case_participants.create!(person: ada, participation_role: "participant")
     draft_case.case_participants.create!(person: draft_neighbor, participation_role: "participant")
 
-    scope = PersonCaseGraphScope.new(focal_person: ada, depth: 1).build
+    with_stubbed_method(TsunagariFeatureFlags, :strict_public_visibility?, true) do
+      scope = PersonCaseGraphScope.new(focal_person: ada, depth: 1).build
 
-    assert_equal [ "Ada Lovelace", "Charles Babbage" ], scope[:people].map(&:display_name).sort
-    assert_equal [ "Published Exchange" ], scope[:encounter_cases].map(&:title)
+      assert_equal [ "Ada Lovelace", "Charles Babbage" ], scope[:people].map(&:display_name).sort
+      assert_equal [ "Published Exchange" ], scope[:encounter_cases].map(&:title)
+    end
   end
-
 end

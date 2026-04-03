@@ -112,7 +112,7 @@ class EncounterCasesController < ApplicationController
   end
 
   def public_case_scope
-    all_case_scope.published
+    all_case_scope.publicly_visible
   end
 
   def editor_case_scope

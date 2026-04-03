@@ -45,12 +45,14 @@
           <li>
             <% if participant.person.visible_to?(current_user) %>
               <strong><%= link_to participant.person.display_name, person_destination_path(participant.person) %></strong>
-              <% unless participant.person.published? %>
+              <% if can_edit_content? && !participant.person.published? %>
                 <span class="tag-pill muted">公開前人物</span>
               <% end %>
             <% else %>
               <strong><%= participant.person.display_name %></strong>
-              <span class="tag-pill muted">公開前人物</span>
+              <% if can_edit_content? %>
+                <span class="tag-pill muted">公開前人物</span>
+              <% end %>
             <% end %>
             <span class="meta"><%= participant.participation_role %></span>
           </li>

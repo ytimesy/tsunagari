@@ -74,7 +74,9 @@
           / <%= affiliation.title %>
         <% end %>
       </p>
-      <p class="meta"><%= publication_status_label(person.publication_status) %></p>
+      <% if can_edit_content? %>
+        <p class="meta"><%= publication_status_label(person.publication_status) %></p>
+      <% end %>
       <p><%= truncate(person.summary.presence || person.bio.presence || '詳細は人物ページで外部DBから都度参照します。', length: 120) %></p>
       <div class="tag-cloud">
         <% if person.tags.any? %>

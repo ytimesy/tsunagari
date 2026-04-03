@@ -1,4 +1,11 @@
 module ApplicationHelper
+  CLUSTER_CATEGORY_PALETTE = {
+    "organization" => { accent: "#3276d3", fill: "rgba(220, 234, 252, 0.94)", text: "#214f92", halo: "rgba(50, 118, 211, 0.18)" },
+    "tag" => { accent: "#3f8f5b", fill: "rgba(224, 241, 229, 0.94)", text: "#2d6641", halo: "rgba(63, 143, 91, 0.18)" },
+    "network" => { accent: "#d08b33", fill: "rgba(248, 234, 210, 0.94)", text: "#925c1a", halo: "rgba(208, 139, 51, 0.2)" },
+    "other" => { accent: "#7b8797", fill: "rgba(232, 236, 241, 0.94)", text: "#536071", halo: "rgba(123, 135, 151, 0.18)" }
+  }.freeze
+
   RELATIONSHIP_KIND_PALETTE = {
     "same_field" => { stroke: "#4b84b6", fill: "rgba(220, 235, 248, 0.92)", text: "#365f89" },
     "same_organization" => { stroke: "#5f8f5a", fill: "rgba(225, 240, 221, 0.94)", text: "#456640" },
@@ -67,6 +74,39 @@ module ApplicationHelper
 
   def relationship_kind_palette
     RELATIONSHIP_KIND_PALETTE
+  end
+
+  def cluster_category_palette
+    CLUSTER_CATEGORY_PALETTE
+  end
+
+  def cluster_category_label(category)
+    {
+      "organization" => "所属クラスタ",
+      "tag" => "分野クラスタ",
+      "network" => "近縁クラスタ",
+      "other" => "補助クラスタ"
+    }.fetch(category, category)
+  end
+
+  def cluster_category_description(category)
+    {
+      "organization" => "共通の所属や機関を軸にまとまる人物群です。",
+      "tag" => "近い専門分野や関心でまとまる人物群です。",
+      "network" => "所属やタグをまたいだ近縁ネットワークです。",
+      "other" => "大きな塊に入らない補助的な人物群です。"
+    }.fetch(category, category.to_s)
+  end
+
+  def cluster_category_css_vars(category)
+    palette = cluster_category_palette.fetch(category.to_s, cluster_category_palette.fetch("other"))
+
+    [
+      "--cluster-category-accent: #{palette[:accent]}",
+      "--cluster-category-fill: #{palette[:fill]}",
+      "--cluster-category-text: #{palette[:text]}",
+      "--cluster-category-halo: #{palette[:halo]}"
+    ].join("; ")
   end
 
   def browser_asset_version

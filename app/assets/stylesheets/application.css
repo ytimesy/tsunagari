@@ -912,3 +912,222 @@ a {
     font-size: clamp(2.2rem, 10vw, 3.2rem);
   }
 }
+
+
+.relationship-graph-stage {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.relationship-graph-stage--with-inspector {
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 280px);
+}
+
+.relationship-canvas--cluster_overview {
+  background:
+    radial-gradient(circle at 14% 16%, rgba(255, 255, 255, 0.92), transparent 24%),
+    linear-gradient(180deg, rgba(244, 248, 252, 0.94), rgba(233, 239, 230, 0.82));
+}
+
+.relationship-inspector {
+  padding: 18px 18px 20px;
+  border: 1px solid rgba(124, 144, 112, 0.2);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.96), transparent 34%),
+    linear-gradient(165deg, rgba(248, 246, 238, 0.94), rgba(230, 238, 228, 0.88));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.34);
+}
+
+.relationship-inspector h3 {
+  margin-bottom: 8px;
+  font-size: 1.08rem;
+}
+
+.relationship-inspector .meta {
+  margin-bottom: 10px;
+}
+
+.relationship-inspector-body {
+  margin-bottom: 0;
+  line-height: 1.7;
+}
+
+.relationship-edge-hit {
+  cursor: help;
+  outline: none;
+}
+
+.relationship-edge-hit:focus-visible {
+  stroke: rgba(53, 92, 74, 0.18);
+}
+
+.relationship-node.is-selected circle {
+  stroke-width: 4;
+}
+
+.relationship-node.is-cluster:hover circle,
+.relationship-node.is-cluster:focus-visible circle {
+  transform: translateY(-1px);
+}
+
+.relationship-edge-group.is-muted {
+  filter: saturate(0.65);
+}
+
+.map-guide-grid {
+  grid-template-columns: minmax(320px, 1.2fr) minmax(300px, 1fr);
+}
+
+.map-overview-panel,
+.map-detail-shell {
+  overflow: hidden;
+}
+
+.map-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 14px;
+}
+
+.map-flow-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(124, 144, 112, 0.24);
+  background: rgba(255, 255, 255, 0.76);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.map-flow-pill.is-current {
+  border-color: rgba(53, 92, 74, 0.32);
+  background: linear-gradient(155deg, rgba(232, 239, 228, 0.96), rgba(219, 232, 216, 0.94));
+  color: var(--sage-strong);
+}
+
+.map-reference-grid {
+  align-items: start;
+}
+
+.map-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.map-legend-card {
+  padding: 14px 16px;
+  border: 1px solid var(--cluster-category-accent, rgba(124, 144, 112, 0.2));
+  border-radius: 18px;
+  background: var(--cluster-category-fill, rgba(255, 255, 255, 0.72));
+  color: var(--cluster-category-text, var(--ink));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+
+.map-legend-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.map-legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--cluster-category-accent, var(--sage));
+  box-shadow: 0 0 0 6px var(--cluster-category-halo, rgba(95, 116, 86, 0.14));
+}
+
+.map-edge-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 18px 0 14px;
+}
+
+.map-edge-card {
+  padding: 14px 16px;
+  border: 1px solid rgba(124, 144, 112, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.map-edge-line {
+  display: block;
+  width: 72px;
+  margin-bottom: 10px;
+  border-top: 4px solid currentColor;
+  border-radius: 999px;
+}
+
+.map-edge-card--similar {
+  color: #628abf;
+}
+
+.map-edge-card--diverse {
+  color: #d38a45;
+}
+
+.map-cluster-list-item a {
+  font-weight: 800;
+}
+
+.map-detail-shell {
+  display: grid;
+  gap: 18px;
+}
+
+.map-detail-header {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.map-cluster-summary {
+  margin-top: -2px;
+}
+
+.map-detail-grid {
+  align-items: start;
+}
+
+.map-empty-detail {
+  padding: 20px 22px;
+  border: 1px dashed rgba(124, 144, 112, 0.3);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.map-empty-detail p {
+  margin-bottom: 0;
+}
+
+@media (max-width: 980px) {
+  .relationship-graph-stage--with-inspector {
+    grid-template-columns: 1fr;
+  }
+
+  .map-guide-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .map-flow-pill {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .map-detail-header {
+    align-items: stretch;
+  }
+}

@@ -42,13 +42,13 @@ class PeopleGraphNavigationTest < ApplicationSystemTestCase
 
     visit graph_people_path
 
-    assert_text "全体人物関係図"
+    assert_text "全体関係マップ"
     assert_selector "[data-node-href='#{graph_people_path(cluster: "org-analytical-society")}']", wait: 5
 
     find("[data-node-href='#{graph_people_path(cluster: "org-analytical-society")}']", visible: :all).click
 
     assert_current_path graph_people_path(cluster: "org-analytical-society"), ignore_query: false
-    assert_text "この集団の人物"
+    assert_text "選択クラスタ詳細"
     assert_selector "[data-node-href='#{person_path(ada, cluster: "org-analytical-society")}']", wait: 5
 
     find("[data-node-href='#{person_path(ada, cluster: "org-analytical-society")}']", visible: :all).click

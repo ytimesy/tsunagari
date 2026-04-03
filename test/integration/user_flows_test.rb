@@ -303,7 +303,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path
 
     assert_response :success
-    assert_match "全体人物関係図", response.body
+    assert_match "全体関係マップ", response.body
     assert_match "人物群どうしの全体構造", response.body
     assert_match "主要クラスタ", response.body
     assert_match "org-analytical-society", response.body
@@ -332,7 +332,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path
 
     assert_response :success
-    assert_match "全体人物関係図", response.body
+    assert_match "全体関係マップ", response.body
     assert_match 'data-controller="relationship-graph"', response.body
     assert_match "cluster=other", response.body
     assert_match "その他", response.body
@@ -372,7 +372,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal 80, resolved_people_count
-    assert_match "全体人物関係図", response.body
+    assert_match "全体関係マップ", response.body
     assert_match "org-analytical-society", response.body
     assert_match "org-civic-lab", response.body
   end
@@ -419,10 +419,10 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path(cluster: "org-analytical-society")
 
     assert_response :success
-    assert_match "この集団の人物", response.body
+    assert_match "選択クラスタ詳細", response.body
     assert_match "Ada Lovelace", response.body
     assert_match "Charles Babbage", response.body
-    assert_match "この集団の人物関係図", response.body
+    assert_match "このクラスタの人物関係", response.body
     assert_match 'labelMode&quot;:&quot;all', response.body
     assert_match person_path(ada, cluster: "org-analytical-society"), response.body
   end
@@ -444,7 +444,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path(cluster: "org-analytical-society")
 
     assert_response :success
-    assert_match "この集団の人物関係図", response.body
+    assert_match "このクラスタの人物関係", response.body
     assert_match "接点が多い 60 人を選んで描画しています", response.body
     assert_no_match "人数が多いため、部分関係図は省略しています", response.body
   end

@@ -30,7 +30,9 @@ class ClusteredPeopleGraphBuilder
       nodes: nodes,
       edges: selected_edges,
       layout: "rings",
-      labelMode: "all"
+      labelMode: "all",
+      variant: "cluster_overview",
+      ariaLabel: "人物群どうしの全体構造を示す全体関係マップ"
     }
   end
 
@@ -85,7 +87,10 @@ class ClusteredPeopleGraphBuilder
         href: cluster_href(cluster.slug),
         role: node_role_for(cluster),
         degree: degree_by_cluster_slug.fetch(cluster.slug, 0),
-        population: cluster.people_count
+        population: cluster.people_count,
+        category: cluster.category,
+        categoryLabel: category_label(cluster.category),
+        selected: selected_cluster&.dig(:slug) == cluster.slug
       }
     end
   end
@@ -116,17 +121,23 @@ class ClusteredPeopleGraphBuilder
       right = cluster_index.fetch(pair.last)
       kind = facts[:kind_counts].max_by { |entry| [ entry.last, entry.first ] }&.first || "crossing"
 
+      tone = facts[:tone_counts].max_by { |entry| entry.last }&.first || RelationshipGraphBuilder::SIMILAR_TONE
+
       {
         source: left.slug,
         target: right.slug,
         sourceLabel: left.label,
         targetLabel: right.label,
-        tone: facts[:tone_counts].max_by { |entry| entry.last }&.first || RelationshipGraphBuilder::SIMILAR_TONE,
+        tone: tone,
+        toneLabel: tone_label(tone),
         kind: kind,
         kindLabel: RelationshipKindClassifier.label_for(kind),
         kindDescription: RelationshipKindClassifier.description_for(kind),
         reason: cluster_reason(left, right, facts),
-        weight: facts[:pair_count]
+        weight: facts[:pair_count],
+        pairCount: facts[:pair_count],
+        sharedOrganizations: facts[:shared_organizations].sort.first(3),
+        sharedTags: facts[:shared_tags].sort.first(3)
       }
     end
   end
@@ -137,6 +148,13 @@ class ClusteredPeopleGraphBuilder
     reasons << "代表所属: #{facts[:shared_organizations].sort.first(2).join(', ')}" if facts[:shared_organizations].any?
     reasons << "代表タグ: #{facts[:shared_tags].sort.first(2).join(', ')}" if facts[:shared_tags].any?
     reasons.join(" / ")
+  end
+
+  def tone_label(tone)
+    {
+      RelationshipGraphBuilder::SIMILAR_TONE => "近い文脈",
+      RelationshipGraphBuilder::DIVERSE_TONE => "越境的な接点"
+    }.fetch(tone, tone)
   end
 
   def cluster_pair_accumulator
@@ -420,6 +438,7 @@ class ClusteredPeopleGraphBuilder
       {
         slug: cluster.slug,
         label: cluster.label,
+        category: cluster.category,
         category_label: category_label(cluster.category),
         people_count: cluster.people_count
       }

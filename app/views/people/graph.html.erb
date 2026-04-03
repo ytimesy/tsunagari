@@ -1,10 +1,10 @@
-<% content_for :title, "全体人物関係図" %>
+<% content_for :title, "全体関係マップ" %>
 
 <section class="page-header dreamy-header">
   <div>
-    <p class="ribbon-label">People Graph</p>
-    <h1>全体人物関係図</h1>
-    <p class="lede compact">登録人物全体をそのまま並べるのではなく、所属や専門の近さでできる集団ごとに束ねて、全体構造を俯瞰します。</p>
+    <p class="ribbon-label">Relationship Map</p>
+    <h1>全体関係マップ</h1>
+    <p class="lede compact">登録人物を一人ずつ並べるのではなく、所属・分野・近縁性からできる人物群ごとに束ねて、全体構造を俯瞰します。線は人物群どうしの接点の多さや関係の性質を表します。気になる人物群を選ぶと、その集団内の人物関係を詳しく見られます。</p>
   </div>
   <div class="hero-actions">
     <%= link_to "人物録へ戻る", people_path, class: "secondary-link" %>
@@ -17,121 +17,215 @@
     <% if @selected_cluster_slug.present? %>
       <%= form.hidden_field :cluster, value: @selected_cluster_slug %>
     <% end %>
-    <%= form.search_field :q, value: @query, placeholder: "名前、所属、タグ、外部IDで全体図を絞り込む" %>
-    <%= form.submit "全体図を更新", class: "primary-button" %>
+    <%= form.search_field :q, value: @query, placeholder: "名前、所属、タグ、外部IDで全体マップを絞り込む" %>
+    <%= form.submit "マップを更新", class: "primary-button" %>
     <% if @selected_cluster_slug.present? %>
       <%= link_to "クラスタ選択を解除", graph_people_path(q: @query.presence), class: "secondary-link" %>
     <% end %>
   <% end %>
 </section>
 
-<section class="panel soft-panel">
-  <div class="compact-stats">
-    <div class="stat-chip">
-      <span class="meta">対象人物</span>
-      <strong><%= @graph_summary[:people_count] %></strong>
-    </div>
-    <div class="stat-chip">
-      <span class="meta">クラスタ数</span>
-      <strong><%= @graph_summary[:cluster_count] %></strong>
-    </div>
-    <div class="stat-chip">
-      <span class="meta">つながりありクラスタ</span>
-      <strong><%= @graph_summary[:connected_cluster_count] %></strong>
-    </div>
-    <div class="stat-chip">
-      <span class="meta">孤立クラスタ</span>
-      <strong><%= @graph_summary[:isolated_cluster_count] %></strong>
-    </div>
-    <div class="stat-chip">
-      <span class="meta">クラスタ間の線</span>
-      <strong><%= @graph_summary[:edge_count] %></strong>
-    </div>
-  </div>
-  <% if @graph_summary[:missing_cache_count].positive? %>
-    <p class="meta">軽量キャッシュ未生成の人物が <%= @graph_summary[:missing_cache_count] %> 人います。既存インポート分は `bundle exec rake "people:refresh_graph_cache"` で補完できます。</p>
-  <% end %>
-</section>
+<section class="dashboard-grid map-guide-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Flow</p>
+    <h2>俯瞰から詳細へ</h2>
+    <p class="meta">この画面は構造を見るための画面です。上段で人物群どうしの接点を俯瞰し、気になるクラスタを選ぶと、下段にそのクラスタの人物関係と構成情報が開きます。</p>
 
-<section class="dashboard-grid">
-  <article class="panel soft-panel relationship-panel relationship-panel--wide">
-    <p class="eyebrow">Overview</p>
-    <h2>人物群どうしの全体構造</h2>
-    <p class="meta">1つのノードは、近い所属や分野を持つ人物群です。線は人物群どうしの接点の多さを表します。ノードを押すと、その集団の詳細を開けます。</p>
-    <%= render "shared/relationship_graph", graph: @relationship_graph, empty_message: "共通タグや所属が増えると全体ネットワークを描画できます。" %>
+    <div class="map-flow">
+      <span class="map-flow-pill is-current">1. 全体を俯瞰</span>
+      <span class="map-flow-pill"><span aria-hidden="true">-></span> 2. クラスタを選択</span>
+      <span class="map-flow-pill"><span aria-hidden="true">-></span> 3. 下段で詳細を確認</span>
+    </div>
+
+    <% if @selected_cluster.present? %>
+      <p class="meta">選択中: <strong><%= @selected_cluster[:label] %></strong> / <%= @selected_cluster[:category_label] %> / <%= @selected_cluster[:people_count] %> 人</p>
+    <% else %>
+      <p class="meta">まだクラスタは選択されていません。まずは上段の構造マップから気になる塊を選んでください。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Overview Stats</p>
+    <h2>全体の規模</h2>
+    <div class="compact-stats">
+      <div class="stat-chip">
+        <span class="meta">対象人物</span>
+        <strong><%= @graph_summary[:people_count] %></strong>
+      </div>
+      <div class="stat-chip">
+        <span class="meta">クラスタ数</span>
+        <strong><%= @graph_summary[:cluster_count] %></strong>
+      </div>
+      <div class="stat-chip">
+        <span class="meta">つながりありクラスタ</span>
+        <strong><%= @graph_summary[:connected_cluster_count] %></strong>
+      </div>
+      <div class="stat-chip">
+        <span class="meta">孤立クラスタ</span>
+        <strong><%= @graph_summary[:isolated_cluster_count] %></strong>
+      </div>
+      <div class="stat-chip">
+        <span class="meta">クラスタ間の接点</span>
+        <strong><%= @graph_summary[:edge_count] %></strong>
+      </div>
+    </div>
+    <% if @graph_summary[:missing_cache_count].positive? %>
+      <p class="meta">軽量キャッシュ未生成の人物が <%= @graph_summary[:missing_cache_count] %> 人います。既存インポート分は `bundle exec rake "people:refresh_graph_cache"` で補完できます。</p>
+    <% end %>
   </article>
 </section>
 
-<% if @selected_cluster.present? %>
-  <section class="dashboard-grid">
-    <article class="panel soft-panel relationship-panel relationship-panel--wide">
-      <p class="eyebrow">Cluster Detail</p>
-      <h2><%= @selected_cluster[:label] %></h2>
-      <p class="meta"><%= @selected_cluster[:category_label] %> / <%= @selected_cluster[:people_count] %> 人</p>
+<section class="dashboard-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide map-overview-panel">
+    <p class="eyebrow">Overview</p>
+    <h2>人物群どうしの全体構造</h2>
+    <p class="meta">ノードはクラスタ、線はクラスタ間の接点です。ノードサイズは人数、色はクラスタ種別、線の太さは接点数を表します。</p>
+    <%= render "shared/relationship_graph",
+               graph: @relationship_graph,
+               empty_message: "共通タグや所属が増えると、クラスタ間の全体構造を描画できます。",
+               show_inspector: true,
+               inspector_title: (@selected_cluster.present? ? "#{@selected_cluster[:label]} を下段で表示中" : "クラスタを選んで詳細を見る"),
+               inspector_meta: "俯瞰 -> 選択 -> 詳細",
+               inspector_body: (@selected_cluster.present? ? "上段で別のクラスタを選ぶと、下段の詳細がその場で切り替わります。hover / focus で接点の説明も確認できます。" : "上段ではクラスタ間の構造を俯瞰し、下段で選択したクラスタの人物関係と構成情報を詳しく確認します。") %>
+  </article>
+</section>
 
-      <div class="tag-cloud">
-        <% @selected_cluster[:top_organizations].each do |organization_name, count| %>
-          <span class="tag-pill"><%= "#{organization_name} (#{count})" %></span>
-        <% end %>
-        <% @selected_cluster[:top_tags].each do |tag_name, count| %>
-          <span class="tag-pill"><%= "#{tag_name} (#{count})" %></span>
-        <% end %>
-      </div>
+<section class="dashboard-grid map-reference-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Legend</p>
+    <h2>構造の見方</h2>
 
-      <% if @selected_cluster_graph.present? %>
-        <h3>この集団の人物関係図</h3>
-        <% if @selected_cluster_graph[:labelMode] == "all" %>
-          <p class="meta">人物名を読み取りやすいように、各ノードに名前を表示しています。</p>
-        <% end %>
-        <% if @selected_cluster[:graph_truncated] %>
-          <p class="meta">見やすさのため、この集団の中で接点が多い <%= @selected_cluster[:graph_people].length %> 人を選んで描画しています。</p>
-        <% end %>
-        <%= render "shared/relationship_graph", graph: @selected_cluster_graph, empty_message: "この集団内で図にできる関係はまだありません。" %>
+    <div class="map-legend-grid">
+      <% cluster_category_palette.each_key do |category| %>
+        <article class="map-legend-card" style="<%= cluster_category_css_vars(category) %>">
+          <div class="map-legend-head">
+            <span class="map-legend-swatch" aria-hidden="true"></span>
+            <strong><%= cluster_category_label(category) %></strong>
+          </div>
+          <p class="meta"><%= cluster_category_description(category) %></p>
+        </article>
       <% end %>
-    </article>
-  </section>
+    </div>
 
-  <section class="dashboard-grid">
-    <article class="panel soft-panel">
-      <p class="eyebrow">People</p>
-      <h2>この集団の人物</h2>
-      <ul class="stack-list soft-list">
-        <% @selected_cluster[:people_preview].each do |person| %>
-          <li>
-            <%= link_to person.display_name, person_path(person, cluster: @selected_cluster[:slug]) %>
-            <% if person.primary_affiliation.present? %>
-              <span class="meta"><%= person.primary_affiliation.organization.name %></span>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
-      <% if @selected_cluster[:preview_truncated] %>
-        <p class="meta">表示は先頭 <%= @selected_cluster[:people_preview].length %> 人までです。全体では <%= @selected_cluster[:people_count] %> 人います。</p>
+    <div class="map-edge-legend">
+      <article class="map-edge-card map-edge-card--similar">
+        <span class="map-edge-line" aria-hidden="true"></span>
+        <strong>似た文脈の接点</strong>
+        <p class="meta">落ち着いた寒色の線は、近い分野や文脈どうしの接点を表します。</p>
+      </article>
+      <article class="map-edge-card map-edge-card--diverse">
+        <span class="map-edge-line" aria-hidden="true"></span>
+        <strong>越境的な接点</strong>
+        <p class="meta">暖色の線は、異なる人物群がつながる越境的な接点を表します。</p>
+      </article>
+    </div>
+
+    <p class="meta">操作: ノードをクリックまたは Enter で選択できます。hover / focus すると、クラスタや接点の説明が右側に表示されます。</p>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">Clusters</p>
+    <h2>主要クラスタ</h2>
+    <ul class="stack-list soft-list">
+      <% @graph_summary[:largest_clusters].each do |cluster| %>
+        <li class="map-cluster-list-item">
+          <%= link_to cluster[:label], graph_people_path(cluster: cluster[:slug], q: @query.presence) %>
+          <span class="meta"><%= "#{cluster[:category_label]} / #{cluster[:people_count]} 人" %></span>
+        </li>
       <% end %>
-    </article>
+    </ul>
+  </article>
+</section>
 
-    <article class="panel soft-panel">
-      <p class="eyebrow">Sources</p>
-      <h2>この集団の参照元</h2>
-      <% if @selected_cluster[:source_breakdown].any? %>
+<section class="panel soft-panel map-detail-shell">
+  <div class="map-detail-header">
+    <div>
+      <p class="eyebrow">Detail</p>
+      <h2>選択クラスタ詳細</h2>
+      <% if @selected_cluster.present? %>
+        <p class="meta"><%= @selected_cluster[:label] %> / <%= @selected_cluster[:category_label] %> / <%= @selected_cluster[:people_count] %> 人</p>
+      <% else %>
+        <p class="meta">上段の全体関係マップからクラスタを 1 つ選ぶと、ここに人物関係・人物一覧・参照元が表示されます。</p>
+      <% end %>
+    </div>
+
+    <% if @selected_cluster.present? %>
+      <%= link_to "クラスタ選択を解除", graph_people_path(q: @query.presence), class: "secondary-link" %>
+    <% end %>
+  </div>
+
+  <% if @selected_cluster.present? %>
+    <div class="tag-cloud map-cluster-summary">
+      <% @selected_cluster[:top_organizations].each do |organization_name, count| %>
+        <span class="tag-pill"><%= "代表所属: #{organization_name} (#{count})" %></span>
+      <% end %>
+      <% @selected_cluster[:top_tags].each do |tag_name, count| %>
+        <span class="tag-pill"><%= "代表タグ: #{tag_name} (#{count})" %></span>
+      <% end %>
+    </div>
+
+    <div class="dashboard-grid map-detail-grid">
+      <article class="panel soft-panel relationship-panel relationship-panel--wide">
+        <p class="eyebrow">Cluster Graph</p>
+        <h3>このクラスタの人物関係</h3>
+        <% if @selected_cluster_graph.present? %>
+          <% if @selected_cluster_graph[:labelMode] == "all" %>
+            <p class="meta">人物名を読み取りやすいように、各ノードに名前を表示しています。</p>
+          <% end %>
+          <% if @selected_cluster[:graph_truncated] %>
+            <p class="meta">見やすさのため、このクラスタの中で接点が多い <%= @selected_cluster[:graph_people].length %> 人を選んで描画しています。</p>
+          <% end %>
+          <%= render "shared/relationship_graph", graph: @selected_cluster_graph, empty_message: "このクラスタ内で図にできる関係はまだありません。" %>
+        <% else %>
+          <p class="empty-note">このクラスタ内で図にできる関係はまだありません。</p>
+        <% end %>
+      </article>
+
+      <article class="panel soft-panel">
+        <p class="eyebrow">People</p>
+        <h3>このクラスタを構成する人物</h3>
         <ul class="stack-list soft-list">
-          <% @selected_cluster[:source_breakdown].each do |source_name, count| %>
+          <% @selected_cluster[:people_preview].each do |person| %>
             <li>
-              <strong><%= external_source_label(source_name) %></strong>
-              <span class="meta"><%= count %> 人</span>
+              <%= link_to person.display_name, person_path(person, cluster: @selected_cluster[:slug]) %>
+              <% if person.primary_affiliation.present? %>
+                <span class="meta"><%= person.primary_affiliation.organization.name %></span>
+              <% end %>
             </li>
           <% end %>
         </ul>
-      <% else %>
-        <p class="empty-note">参照元情報はまだ少ないです。</p>
-      <% end %>
-    </article>
-  </section>
-<% end %>
+        <% if @selected_cluster[:preview_truncated] %>
+          <p class="meta">表示は先頭 <%= @selected_cluster[:people_preview].length %> 人までです。全体では <%= @selected_cluster[:people_count] %> 人います。</p>
+        <% end %>
+      </article>
+
+      <article class="panel soft-panel">
+        <p class="eyebrow">Sources</p>
+        <h3>このクラスタの参照元</h3>
+        <% if @selected_cluster[:source_breakdown].any? %>
+          <ul class="stack-list soft-list">
+            <% @selected_cluster[:source_breakdown].each do |source_name, count| %>
+              <li>
+                <strong><%= external_source_label(source_name) %></strong>
+                <span class="meta"><%= count %> 人</span>
+              </li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="empty-note">参照元情報はまだ少ないです。</p>
+        <% end %>
+      </article>
+    </div>
+  <% else %>
+    <div class="map-empty-detail">
+      <p>まだクラスタは選択されていません。上段の全体関係マップからノードを選ぶと、ここに人物関係と構成情報が開きます。</p>
+    </div>
+  <% end %>
+</section>
 
 <section class="panel soft-panel">
   <p class="eyebrow">Relationship Types</p>
-  <h2>8種類の関係タイプ</h2>
+  <h2>主な関係タイプの読み方</h2>
   <div class="relationship-kind-grid">
     <% relationship_kind_options.each do |kind, label, description| %>
       <article class="relationship-kind-card" style="<%= relationship_kind_css_vars(kind) %>">
@@ -143,19 +237,6 @@
 </section>
 
 <section class="dashboard-grid">
-  <article class="panel soft-panel">
-    <p class="eyebrow">Clusters</p>
-    <h2>主要クラスタ</h2>
-    <ul class="stack-list soft-list">
-      <% @graph_summary[:largest_clusters].each do |cluster| %>
-        <li>
-          <%= link_to cluster[:label], graph_people_path(cluster: cluster[:slug], q: @query.presence) %>
-          <span class="meta"><%= "#{cluster[:category_label]} / #{cluster[:people_count]} 人" %></span>
-        </li>
-      <% end %>
-    </ul>
-  </article>
-
   <article class="panel soft-panel">
     <p class="eyebrow">Organizations</p>
     <h2>接点が多い所属</h2>
@@ -183,9 +264,7 @@
       <% end %>
     </div>
   </article>
-</section>
 
-<section class="dashboard-grid">
   <article class="panel soft-panel">
     <p class="eyebrow">Sources</p>
     <h2>参照元の内訳</h2>

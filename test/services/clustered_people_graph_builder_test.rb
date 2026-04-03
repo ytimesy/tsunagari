@@ -47,8 +47,16 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
 
     assert_equal 2, summary[:cluster_count]
     assert_equal 1, summary[:edge_count]
+    assert_equal "cluster_overview", payload[:variant]
+    analytical_node = payload[:nodes].find { |node| node[:label] == "Analytical Society" }
+    civic_edge = payload[:edges].first
+
     assert_includes payload[:nodes].map { |node| node[:label] }, "Analytical Society"
     assert_includes payload[:nodes].map { |node| node[:label] }, "Civic Lab"
+    assert_equal "organization", analytical_node[:category]
+    assert analytical_node[:selected]
+    assert_equal 4, civic_edge[:pairCount]
+    assert_includes civic_edge[:sharedTags], "Computing"
     assert_equal "Analytical Society", selected_cluster[:label]
     assert_equal 2, selected_cluster[:people_count]
     assert_equal [ "Ada Lovelace", "Charles Babbage" ], selected_cluster[:people].map(&:display_name)

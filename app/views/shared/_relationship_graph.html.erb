@@ -1,3 +1,9 @@
+<% show_inspector = local_assigns.fetch(:show_inspector, false) %>
+<% inspector_title = local_assigns.fetch(:inspector_title, "") %>
+<% inspector_meta = local_assigns.fetch(:inspector_meta, "") %>
+<% inspector_body = local_assigns.fetch(:inspector_body, "") %>
+<% canvas_classes = ["relationship-canvas", ("relationship-canvas--#{graph[:variant]}" if graph[:variant].present?)].compact.join(" ") %>
+
 <% if graph[:nodes].any? %>
   <% kind_counts = graph[:edges].each_with_object(Hash.new(0)) { |edge, counts| counts[edge[:kind].presence || "same_field"] += 1 } %>
   <% ordered_kinds = relationship_kind_options.map(&:first).select { |kind| kind_counts.key?(kind) } %>
@@ -5,7 +11,11 @@
     class="relationship-graph-shell"
     data-controller="relationship-graph"
     data-relationship-graph-graph-value="<%= json_escape(graph.to_json) %>"
-    data-relationship-graph-palette-value="<%= json_escape(relationship_kind_palette.to_json) %>">
+    data-relationship-graph-palette-value="<%= json_escape(relationship_kind_palette.to_json) %>"
+    data-relationship-graph-cluster-palette-value="<%= json_escape(cluster_category_palette.to_json) %>"
+    data-relationship-graph-inspector-title-value="<%= inspector_title %>"
+    data-relationship-graph-inspector-meta-value="<%= inspector_meta %>"
+    data-relationship-graph-inspector-body-value="<%= inspector_body %>">
     <% if ordered_kinds.any? %>
       <div class="relationship-filter-bar">
         <button type="button" class="relationship-filter relationship-filter--reset is-active" data-action="relationship-graph#showAllKinds" data-relationship-graph-target="reset">全表示</button>
@@ -25,7 +35,18 @@
       </div>
     <% end %>
 
-    <div class="relationship-canvas" data-relationship-graph-target="canvas"></div>
+    <div class="relationship-graph-stage<%= ' relationship-graph-stage--with-inspector' if show_inspector %>">
+      <div class="<%= canvas_classes %>" data-relationship-graph-target="canvas"></div>
+
+      <% if show_inspector %>
+        <aside class="relationship-inspector" aria-live="polite">
+          <p class="eyebrow" data-relationship-graph-target="inspectorEyebrow">Map Guide</p>
+          <h3 data-relationship-graph-target="inspectorTitle"><%= inspector_title %></h3>
+          <p class="meta" data-relationship-graph-target="inspectorMeta"><%= inspector_meta %></p>
+          <p class="relationship-inspector-body" data-relationship-graph-target="inspectorBody"><%= inspector_body %></p>
+        </aside>
+      <% end %>
+    </div>
   </section>
 <% else %>
   <p class="empty-note"><%= empty_message %></p>

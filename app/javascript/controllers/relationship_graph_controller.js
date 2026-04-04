@@ -180,6 +180,10 @@ export default class extends Controller {
   }
 
   visibleNodes(graph, visibleEdges) {
+    if (graph?.variant === "cluster_overview") {
+      return graph.nodes || []
+    }
+
     const visibleNodeIds = new Set()
 
     visibleEdges.forEach((edge) => {

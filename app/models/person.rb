@@ -1,5 +1,6 @@
 class Person < ApplicationRecord
   PUBLICATION_STATUSES = %w[draft review published archived].freeze
+  QUALITY_TEXT_ATTRIBUTES = %i[recommended_for meeting_value fit_modes introduction_note].freeze
 
   has_many :person_affiliations, dependent: :destroy
   has_many :organizations, through: :person_affiliations
@@ -15,6 +16,7 @@ class Person < ApplicationRecord
 
   has_many :research_notes, dependent: :nullify
 
+  before_validation :normalize_quality_fields
   before_validation :assign_slug
 
   validates :display_name, presence: true
@@ -28,8 +30,8 @@ class Person < ApplicationRecord
     parameterized = value.to_s.parameterize
     return parameterized if parameterized.present?
 
-    encoded = value.to_s.unpack1("H*").to_s.first(20)
-    encoded.present? ? "person-#{encoded}" : ""
+    encoded = value.to_s.unpack1('H*').to_s.first(20)
+    encoded.present? ? "person-#{encoded}" : ''
   end
 
   def to_param
@@ -61,7 +63,29 @@ class Person < ApplicationRecord
     end
   end
 
+  def fit_modes_list
+    fit_modes.to_s.split(/[
+,、]/).filter_map { |value| value.strip.presence }.uniq
+  end
+
+  def quality_insight?
+    recommended_for.present? || meeting_value.present? || introduction_note.present? || last_reviewed_on.present? || fit_modes_list.any?
+  end
+
+  def quality_summary
+    recommended_for.presence || meeting_value.presence || summary.presence || bio.presence
+  end
+
   private
+
+  def normalize_quality_fields
+    QUALITY_TEXT_ATTRIBUTES.each do |attribute_name|
+      value = public_send(attribute_name)
+      public_send("#{attribute_name}=", value.to_s.strip.presence)
+    end
+
+    self.fit_modes = fit_modes_list.join(', ').presence
+  end
 
   def assign_slug
     base = self.class.slug_candidate(display_name)

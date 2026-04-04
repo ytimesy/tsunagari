@@ -1,10 +1,15 @@
 <% content_for :title, '人物録' %>
 
-<section class="page-header dreamy-header">
+<section class="page-header dreamy-header impact-header">
   <div>
     <p class="ribbon-label">People</p>
     <h1>人物録</h1>
     <p class="lede compact">外部DBを正本にしつつ、ローカルでは参照情報と独自メモだけを持つ人物録です。</p>
+    <div class="compact-stats impact-stats impact-stats--header">
+      <span class="status-petal impact-petal"><strong><%= @people.count %></strong> 表示中</span>
+      <span class="status-petal impact-petal"><strong><%= @available_tag_names.count %></strong> タグ</span>
+      <span class="status-petal impact-petal"><strong><%= @available_affiliation_categories.count %></strong> 所属カテゴリ</span>
+    </div>
   </div>
   <div class="hero-actions">
     <%= link_to '全体関係マップ', graph_people_path, class: 'secondary-link' %>
@@ -79,8 +84,13 @@
       <% if can_edit_content? %>
         <p class="meta"><%= publication_status_label(person.publication_status) %></p>
       <% end %>
-      <p><%= truncate(person.summary.presence || person.bio.presence || '詳細は人物ページで外部DBから都度参照します。', length: 120) %></p>
+      <p><%= truncate(person.quality_summary.presence || '詳細は人物ページで外部DBから都度参照します。', length: 120) %></p>
       <div class="tag-cloud">
+        <% if person.fit_modes_list.any? %>
+          <% person.fit_modes_list.first(3).each do |fit_mode| %>
+            <span class="tag-pill person-fit-pill"><%= fit_mode %></span>
+          <% end %>
+        <% end %>
         <% if person.tags.any? %>
           <% person.tags.order(:name).each do |tag| %>
             <span class="tag-pill"><%= tag.name %></span>

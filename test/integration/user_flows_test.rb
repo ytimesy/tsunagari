@@ -12,6 +12,11 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
         display_name: "Ada Lovelace",
         summary: "Poetical science pioneer",
         bio: "Known for linking imagination and computation.",
+        recommended_for: "計算文化を語る企画、創造性と技術の交差点を探る場",
+        meeting_value: "概念の翻訳や、技術と物語をつなぐ相談に価値があります。",
+        fit_modes: "登壇向き, 取材向き",
+        introduction_note: "技術史の導入役として紹介すると入りやすいです。",
+        last_reviewed_on: Date.new(2026, 4, 4),
         publication_status: "published",
         tag_list: "Math, Computing",
         primary_organization_name: "Analytical Society",
@@ -23,6 +28,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     person = Person.find_by!(display_name: "Ada Lovelace")
     assert_redirected_to person_path(person)
     assert_equal [ "Computing", "Math" ], person.tags.order(:name).pluck(:name)
+    assert_equal "計算文化を語る企画、創造性と技術の交差点を探る場", person.recommended_for
+    assert_equal "登壇向き, 取材向き", person.fit_modes
     assert_equal [ "created" ], person.edit_histories.pluck(:action)
     assert_match "人物情報", person.edit_histories.last.summary
 
@@ -31,6 +38,11 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
         display_name: "Ada Lovelace",
         summary: "Poetical science pioneer and editor",
         bio: "Known for linking imagination and computation.",
+        recommended_for: "技術史と編集の接点を考える企画",
+        meeting_value: "技術の意味づけや編集方針を相談する価値があります。",
+        fit_modes: "登壇向き, 共同研究向き",
+        introduction_note: "編集者や研究者と組み合わせると話が深まりやすいです。",
+        last_reviewed_on: Date.new(2026, 4, 5),
         publication_status: "review",
         tag_list: "Math, Computing, Writing",
         primary_organization_name: "Analytical Society",
@@ -42,8 +54,19 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_redirected_to edit_person_path(person)
     assert_equal "review", person.reload.publication_status
     assert_equal [ "Computing", "Math", "Writing" ], person.tags.order(:name).pluck(:name)
+    assert_equal "技術史と編集の接点を考える企画", person.recommended_for
+    assert_equal "登壇向き, 共同研究向き", person.fit_modes
     assert_equal %w[created updated], person.edit_histories.order(:created_at).pluck(:action)
-    assert_match "タグ", person.edit_histories.recent.first.summary
+    assert_match "活用視点", person.edit_histories.recent.first.summary
+
+    get person_path(person)
+    assert_response :success
+    assert_match "この人物の活用視点", response.body
+    assert_match "公開情報ベースの見立て", response.body
+    assert_match "性格や年収などの私的属性は推定しません", response.body
+    assert_match "技術史と編集の接点を考える企画", response.body
+    assert_match "登壇向き", response.body
+    assert_match "紹介メモ", response.body
 
     get new_encounter_case_path
     assert_response :success
@@ -307,9 +330,14 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "人物起点マップ", response.body
     assert_match "人物関係図", response.body
-    assert_match "近い人物", response.body
-    assert_match "越境人物", response.body
+    assert_match "主要関係者", response.body
+    assert_match "関係の理由", response.body
+    assert_match "次に見るべき人物", response.body
     assert_match "関連事例", response.body
+    assert_match "公開情報ベースの見立て", response.body
+    assert_match "関係の持ち方", response.body
+    assert_match "共通事例", response.body
+    assert_match "共通テーマ: Computing", response.body
     assert_match "ada-lovelace", response.body
     assert_match "charles-babbage", response.body
     assert_match "community-organizer", response.body
@@ -568,7 +596,9 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get graph_people_path
 
     assert_response :success
-    assert_match "見たい図の候補", response.body
+    assert_match "全体の規模", response.body
+    assert_match "構造レンズ", response.body
+    assert_match "参考ビュー", response.body
     assert_match "人物起点マップ", response.body
     assert_match "出会いフロー図", response.body
     assert_match "全体構造図", response.body

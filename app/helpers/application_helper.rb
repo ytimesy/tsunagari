@@ -159,7 +159,7 @@ module ApplicationHelper
   end
 
   def youtube_person_topics(person, limit: 4)
-    topics = person.tags.map(&:name) + person.person_external_profiles.flat_map(&:graph_tags)
+    topics = person.fit_modes_list + person.tags.map(&:name) + person.person_external_profiles.flat_map(&:graph_tags)
 
     topics.filter_map { |topic| topic.to_s.strip.presence }.uniq.first(limit)
   end
@@ -178,6 +178,8 @@ module ApplicationHelper
   end
 
   def youtube_person_pitch(person, case_count: 0)
+    return person.recommended_for if person.recommended_for.present?
+    return person.meeting_value if person.meeting_value.present?
     return person.summary if person.summary.present?
     return truncate(person.bio, length: 110) if person.bio.present?
 

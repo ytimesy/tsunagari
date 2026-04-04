@@ -48,8 +48,13 @@
       <p class="eyebrow">Saved Person</p>
       <h2><%= link_to person.display_name, person_destination_path(person) %></h2>
       <p class="meta"><%= person.primary_affiliation&.organization&.name.presence || '所属未設定' %></p>
-      <p><%= truncate(person.summary.presence || person.bio.presence || 'まだローカル補足は少ない人物です。', length: 150) %></p>
+      <p><%= truncate(person.quality_summary.presence || 'まだローカル補足は少ない人物です。', length: 150) %></p>
       <div class="tag-cloud">
+        <% if person.fit_modes_list.any? %>
+          <% person.fit_modes_list.first(3).each do |fit_mode| %>
+            <span class="tag-pill person-fit-pill"><%= fit_mode %></span>
+          <% end %>
+        <% end %>
         <% if person.tags.any? %>
           <% person.tags.order(:name).each do |tag| %>
             <span class="tag-pill"><%= tag.name %></span>

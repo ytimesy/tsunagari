@@ -31,6 +31,33 @@
     </div>
 
     <div class="field">
+      <%= form.label :recommended_for, "役立つ文脈" %>
+      <%= form.text_area :recommended_for, rows: 3, placeholder: "この人がどんなテーマや文脈で役立つかを書きます。" %>
+      <p class="field-hint">例: 教育政策と現場をつなぐ人材探索、地域実装の伴走者探し。</p>
+    </div>
+
+    <div class="field">
+      <%= form.label :meeting_value, "会う価値" %>
+      <%= form.text_area :meeting_value, rows: 3, placeholder: "会うと何が前に進むか、どんな相談がしやすいかを書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :fit_modes, "向いている用途" %>
+      <%= form.text_field :fit_modes, placeholder: "登壇向き, 取材向き, 共同研究向き, 相談向き" %>
+      <p class="field-hint">カンマ区切りで入力します。公開ページでは用途タグとして見えます。</p>
+    </div>
+
+    <div class="field">
+      <%= form.label :introduction_note, "紹介メモ" %>
+      <%= form.text_area :introduction_note, rows: 4, placeholder: "紹介するときの切り口、注意点、相性の良い相手などを書きます。" %>
+    </div>
+
+    <div class="field">
+      <%= form.label :last_reviewed_on, "最終確認日" %>
+      <%= form.date_field :last_reviewed_on %>
+    </div>
+
+    <div class="field">
       <%= form.label :publication_status, "公開状態" %>
       <%= form.select :publication_status, Person::PUBLICATION_STATUSES.map { |value| [ publication_status_label(value), value ] } %>
     </div>

@@ -5,6 +5,7 @@ require_dependency Rails.root.join("app/services/cluster_focus_graph_builder").t
 require_dependency Rails.root.join("app/services/people_graph_snapshot").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
 require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
+require_dependency Rails.root.join("app/services/person_public_estimate_builder").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
 
@@ -55,6 +56,11 @@ class PeopleController < ApplicationController
     @resolved_person_profile = profile_resolver.resolve(@person)
     @relationship_graphs = build_relationship_graphs
     @person_navigation_lens = build_person_navigation_lens
+    @person_public_estimate = PersonPublicEstimateBuilder.new(
+      person: @person,
+      resolved_profile: @resolved_person_profile,
+      navigation_lens: @person_navigation_lens
+    ).build
     @edit_histories = @person.edit_histories.recent.limit(5)
   end
 
@@ -246,7 +252,7 @@ class PeopleController < ApplicationController
     like_query = "%#{ActiveRecord::Base.sanitize_sql_like(query.downcase)}%"
 
     scope.left_joins(:person_external_profiles, :tags, person_affiliations: :organization).where(
-      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query OR LOWER(COALESCE(person_external_profiles.external_id, '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_tags, ' '), '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_organizations, ' '), '')) LIKE :query",
+      "LOWER(people.display_name) LIKE :query OR LOWER(COALESCE(people.summary, '')) LIKE :query OR LOWER(COALESCE(people.bio, '')) LIKE :query OR LOWER(COALESCE(people.recommended_for, '')) LIKE :query OR LOWER(COALESCE(people.meeting_value, '')) LIKE :query OR LOWER(COALESCE(people.fit_modes, '')) LIKE :query OR LOWER(COALESCE(people.introduction_note, '')) LIKE :query OR LOWER(COALESCE(tags.name, '')) LIKE :query OR LOWER(COALESCE(organizations.name, '')) LIKE :query OR LOWER(COALESCE(person_external_profiles.external_id, '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_tags, ' '), '')) LIKE :query OR LOWER(COALESCE(array_to_string(person_external_profiles.graph_organizations, ' '), '')) LIKE :query",
       query: like_query
     ).distinct
   end
@@ -258,6 +264,11 @@ class PeopleController < ApplicationController
       :bio,
       :publication_status,
       :published_at,
+      :recommended_for,
+      :meeting_value,
+      :fit_modes,
+      :introduction_note,
+      :last_reviewed_on,
       :tag_list,
       :primary_organization_name,
       :primary_organization_category,
@@ -267,7 +278,7 @@ class PeopleController < ApplicationController
   end
 
   def person_attributes
-    person_params.slice(:display_name, :summary, :bio, :publication_status, :published_at)
+    person_params.slice(:display_name, :summary, :bio, :publication_status, :published_at, :recommended_for, :meeting_value, :fit_modes, :introduction_note, :last_reviewed_on)
   end
 
   def assign_form_values_from_params
@@ -331,6 +342,7 @@ class PeopleController < ApplicationController
         publication_status: person.publication_status.to_s,
         published_at: person.published_at&.iso8601.to_s
       },
+      insight: person_insight_snapshot(person),
       tags: person.tags.order(:name).pluck(:name),
       affiliation: {
         name: affiliation&.organization&.name.to_s,
@@ -350,6 +362,7 @@ class PeopleController < ApplicationController
         publication_status: person_attributes[:publication_status].to_s,
         published_at: person_attributes[:published_at].to_s
       },
+      insight: requested_person_insight_snapshot,
       tags: normalized_tag_names(@tag_list),
       affiliation: {
         name: @primary_organization_name.to_s,
@@ -357,6 +370,26 @@ class PeopleController < ApplicationController
         website_url: @primary_organization_website_url.to_s,
         title: @primary_affiliation_title.to_s
       }
+    }
+  end
+
+  def person_insight_snapshot(person)
+    {
+      recommended_for: person.recommended_for.to_s,
+      meeting_value: person.meeting_value.to_s,
+      fit_modes: person.fit_modes.to_s,
+      introduction_note: person.introduction_note.to_s,
+      last_reviewed_on: person.last_reviewed_on&.iso8601.to_s
+    }
+  end
+
+  def requested_person_insight_snapshot
+    {
+      recommended_for: person_attributes[:recommended_for].to_s,
+      meeting_value: person_attributes[:meeting_value].to_s,
+      fit_modes: person_attributes[:fit_modes].to_s,
+      introduction_note: person_attributes[:introduction_note].to_s,
+      last_reviewed_on: person_attributes[:last_reviewed_on].to_s
     }
   end
 
@@ -379,6 +412,7 @@ class PeopleController < ApplicationController
 
   def created_person_sections
     sections = [ "人物情報" ]
+    sections << "活用視点" if requested_person_insight_snapshot.values.any?(&:present?)
     sections << "タグ" if normalized_tag_names(@tag_list).any?
     sections << "所属" if @primary_organization_name.present?
     sections
@@ -387,6 +421,7 @@ class PeopleController < ApplicationController
   def changed_person_sections(before_snapshot, after_snapshot)
     sections = []
     sections << "人物情報" if before_snapshot[:attributes] != after_snapshot[:attributes]
+    sections << "活用視点" if before_snapshot[:insight] != after_snapshot[:insight]
     sections << "タグ" if before_snapshot[:tags] != after_snapshot[:tags]
     sections << "所属" if before_snapshot[:affiliation] != after_snapshot[:affiliation]
     sections
@@ -466,13 +501,16 @@ class PeopleController < ApplicationController
     sorted_edges = focal_edges.sort_by do |edge|
       [ -person_lens_edge_strength(edge), other_node_label_for(edge), edge[:kind].to_s ]
     end
+    connections = sorted_edges.map { |edge| build_person_lens_connection(edge, people_by_id, nodes_by_id) }.compact
+    primary_people = connections.first(6)
+    next_people = build_person_lens_next_people(connections, primary_people)
 
     {
-      near_people: sorted_edges.map { |edge| build_person_lens_connection(edge, people_by_id, nodes_by_id) }.compact.first(5),
-      bridge_people: sorted_edges.select { |edge| person_lens_bridge_edge?(edge) }
-                               .map { |edge| build_person_lens_connection(edge, people_by_id, nodes_by_id) }
-                               .compact
-                               .first(4),
+      primary_people: primary_people,
+      relation_reasons: primary_people.select { |connection| person_lens_explains_relationship?(connection) }.first(4),
+      next_people: next_people.first(4),
+      near_people: primary_people,
+      bridge_people: connections.select { |connection| connection[:bridge] }.first(4),
       related_cases: build_person_lens_cases
     }
   end
@@ -485,14 +523,86 @@ class PeopleController < ApplicationController
     label = node[:label].presence || person&.display_name.to_s
     return if href.blank? || label.blank?
 
+    shared_cases = person_lens_shared_cases_for(person)
+    shared_tags = person_lens_shared_terms_between(@person, person, kind: :tags)
+    shared_organizations = person_lens_shared_terms_between(@person, person, kind: :organizations)
+
     {
+      person_id: neighbor_id,
       label: label,
       href: href,
       kind_label: edge[:kindLabel].presence || RelationshipKindClassifier.label_for(edge[:kind]),
       tone_label: edge[:tone] == RelationshipGraphBuilder::DIVERSE_TONE ? "異質な組み合わせ" : "似たもの同士",
       strength_label: person_lens_strength_label(edge),
-      reason: edge[:reason].presence || edge[:kindDescription].presence || "近い接点があります。"
+      reason: edge[:reason].presence || edge[:kindDescription].presence || "近い接点があります。",
+      bridge: person_lens_bridge_edge?(edge),
+      shared_cases: shared_cases.first(3).map do |encounter_case|
+        {
+          title: encounter_case.title,
+          href: encounter_case_path(encounter_case)
+        }
+      end,
+      shared_tags: shared_tags.first(4),
+      shared_organizations: shared_organizations.first(3),
+      relation_points: build_person_lens_relation_points(
+        shared_cases: shared_cases,
+        shared_tags: shared_tags,
+        shared_organizations: shared_organizations
+      ),
+      next_step_reason: person_lens_next_step_reason(
+        edge,
+        shared_cases: shared_cases,
+        shared_tags: shared_tags,
+        shared_organizations: shared_organizations
+      )
     }
+  end
+
+  def build_person_lens_next_people(connections, primary_people)
+    primary_ids = primary_people.first(2).map { |connection| connection[:person_id] }
+    prioritized = connections.select { |connection| connection[:bridge] } +
+      connections.reject { |connection| primary_ids.include?(connection[:person_id]) }
+    prioritized = connections if prioritized.empty?
+
+    prioritized.uniq { |connection| connection[:person_id] }
+  end
+
+  def person_lens_explains_relationship?(connection)
+    connection[:relation_points].any? || connection[:reason].present?
+  end
+
+  def build_person_lens_relation_points(shared_cases:, shared_tags:, shared_organizations:)
+    points = []
+
+    if shared_cases.any?
+      points << "共通事例: #{shared_cases.first(2).map(&:title).join(' / ')}"
+    end
+
+    if shared_tags.any?
+      points << "共通テーマ: #{shared_tags.first(3).join(' / ')}"
+    end
+
+    if shared_organizations.any?
+      points << "共通所属: #{shared_organizations.first(2).join(' / ')}"
+    end
+
+    points
+  end
+
+  def person_lens_next_step_reason(edge, shared_cases:, shared_tags:, shared_organizations:)
+    if person_lens_bridge_edge?(edge)
+      "異分野側の接点が見えるため、この人から関係網を広げやすいです。"
+    elsif shared_cases.size >= 2
+      "複数の事例で重なっているため、この人物を追うと関係の核が見えます。"
+    elsif shared_tags.any? && shared_organizations.any?
+      "所属とテーマの両方が重なるので、周辺の関係者を読み解きやすいです。"
+    elsif shared_tags.any?
+      "同じテーマ軸で次の人物をたどりやすい相手です。"
+    elsif shared_organizations.any?
+      "同じ所属や組織文脈から関係者を広げやすい相手です。"
+    else
+      edge[:reason].presence || "次の接点候補として見ておく価値があります。"
+    end
   end
 
   def person_lens_bridge_edge?(edge)
@@ -529,6 +639,35 @@ class PeopleController < ApplicationController
         tags: encounter_case.tags.order(:name).map(&:name).first(3)
       }
     end
+  end
+
+  def person_lens_shared_cases_for(person)
+    direct_relationship_scope[:encounter_cases].select do |encounter_case|
+      participant_ids = encounter_case.case_participants.map(&:person_id)
+      participant_ids.include?(@person.id) && participant_ids.include?(person.id)
+    end.sort_by do |encounter_case|
+      [
+        encounter_case.happened_on || Date.new(1900, 1, 1),
+        encounter_case.published_at || Time.at(0),
+        encounter_case.created_at || Time.at(0)
+      ]
+    end.reverse
+  end
+
+  def person_lens_shared_terms_between(left, right, kind:)
+    person_lens_graph_metadata_for(left).fetch(kind) & person_lens_graph_metadata_for(right).fetch(kind)
+  end
+
+  def person_lens_graph_metadata_for(person)
+    local_metadata = local_graph_metadata_for(person)
+    return local_metadata unless person.id == @person.id
+
+    {
+      tags: normalize_graph_terms(local_metadata[:tags] + Array(@resolved_person_profile[:tags])),
+      organizations: normalize_graph_terms(
+        local_metadata[:organizations] + Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
+      )
+    }
   end
 
   def person_graph_fallback_metadata_index_for(people)

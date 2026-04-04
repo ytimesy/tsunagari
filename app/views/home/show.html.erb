@@ -1,7 +1,7 @@
 <% content_for :title, 'Tsunagari' %>
 
-<section class="hero-stage atlas-stage">
-  <article class="hero-card hero-copy atlas-hero-copy">
+<section class="hero-stage atlas-stage impact-stage">
+  <article class="hero-card hero-copy atlas-hero-copy impact-hero-copy">
     <p class="ribbon-label">First Principle</p>
     <h1 class="hero-title">出会いから、<br>より良くなる。</h1>
     <p class="lede">
@@ -27,14 +27,20 @@
       <% end %>
     </p>
 
-    <div class="feature-strip">
+    <div class="feature-strip feature-strip--impact">
       <span class="feature-pill">encounter</span>
       <span class="feature-pill">outcome</span>
       <span class="feature-pill">reproducibility</span>
     </div>
+
+    <div class="compact-stats impact-stats">
+      <span class="status-petal impact-petal"><strong><%= @people_count %></strong> 人物</span>
+      <span class="status-petal impact-petal"><strong><%= @case_count %></strong> 事例</span>
+      <span class="status-petal impact-petal"><strong><%= saved_people_count %></strong> 保存</span>
+    </div>
   </article>
 
-  <aside class="hero-card mascot-panel atlas-hero-aside">
+  <aside class="hero-card mascot-panel atlas-hero-aside impact-hero-aside">
     <div class="mascot-orb">
       <div class="mascot-core">ROOT</div>
     </div>

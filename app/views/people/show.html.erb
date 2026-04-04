@@ -29,6 +29,117 @@
 </section>
 
 <section class="dashboard-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide person-insight-panel">
+    <p class="eyebrow">Tsunagari Insight</p>
+    <h2>この人物の活用視点</h2>
+    <p class="meta">外部DBの説明ではなく、Tsunagari が補う判断材料です。</p>
+
+    <% if @person.quality_insight? %>
+      <div class="person-insight-grid">
+        <article class="person-insight-card">
+          <h3>役立つ文脈</h3>
+          <%= simple_format(@person.recommended_for.presence || "まだ未設定です。") %>
+        </article>
+
+        <article class="person-insight-card">
+          <h3>会う価値</h3>
+          <%= simple_format(@person.meeting_value.presence || "まだ未設定です。") %>
+        </article>
+
+        <article class="person-insight-card">
+          <h3>向いている用途</h3>
+          <% if @person.fit_modes_list.any? %>
+            <div class="tag-cloud">
+              <% @person.fit_modes_list.each do |fit_mode| %>
+                <span class="tag-pill person-fit-pill"><%= fit_mode %></span>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="empty-note">まだ用途タグは未設定です。</p>
+          <% end %>
+          <% if @person.last_reviewed_on.present? %>
+            <p class="meta person-review-meta"><%= "最終確認日: #{l(@person.last_reviewed_on)}" %></p>
+          <% end %>
+        </article>
+
+        <article class="person-insight-card">
+          <h3>紹介メモ</h3>
+          <%= simple_format(@person.introduction_note.presence || "まだ未設定です。") %>
+        </article>
+      </div>
+    <% else %>
+      <p class="empty-note">まだ Tsunagari 独自の活用視点は未設定です。</p>
+      <% if can_edit_content? %>
+        <div class="hero-actions">
+          <%= link_to "活用視点を編集する", edit_person_path(@person), class: "secondary-link" %>
+        </div>
+      <% end %>
+    <% end %>
+  </article>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel relationship-panel relationship-panel--wide person-estimate-panel">
+    <p class="eyebrow">Public Estimate</p>
+    <h2>公開情報ベースの見立て</h2>
+    <p class="meta"><%= @person_public_estimate[:notice] %></p>
+
+    <div class="person-estimate-grid">
+      <article class="person-estimate-card">
+        <h3>職業・役割候補</h3>
+        <% if @person_public_estimate[:roles].any? %>
+          <div class="tag-cloud">
+            <% @person_public_estimate[:roles].each do |role| %>
+              <span class="tag-pill person-estimate-pill"><%= role %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="empty-note">役割候補はまだ十分に推定できません。</p>
+        <% end %>
+      </article>
+
+      <article class="person-estimate-card">
+        <h3>活動テーマ</h3>
+        <% if @person_public_estimate[:themes].any? %>
+          <div class="tag-cloud">
+            <% @person_public_estimate[:themes].each do |theme| %>
+              <span class="tag-pill"><%= theme %></span>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="empty-note">テーマ情報を追加すると見立てが安定します。</p>
+        <% end %>
+      </article>
+
+      <article class="person-estimate-card">
+        <h3>関係の持ち方</h3>
+        <p class="person-estimate-label"><%= @person_public_estimate.dig(:network_position, :label) %></p>
+        <p class="person-lens-copy"><%= @person_public_estimate.dig(:network_position, :reason) %></p>
+      </article>
+
+      <article class="person-estimate-card">
+        <h3>会うときの入口</h3>
+        <p class="person-estimate-label"><%= @person_public_estimate.dig(:approach, :label) %></p>
+        <p class="person-lens-copy"><%= @person_public_estimate.dig(:approach, :reason) %></p>
+      </article>
+
+      <article class="person-estimate-card person-estimate-card--wide">
+        <h3>根拠</h3>
+        <% if @person_public_estimate[:evidence].any? %>
+          <ul class="person-lens-detail-list">
+            <% @person_public_estimate[:evidence].each do |point| %>
+              <li><%= point %></li>
+            <% end %>
+          </ul>
+        <% else %>
+          <p class="empty-note">タグ、所属、事例が増えると根拠も表示されます。</p>
+        <% end %>
+      </article>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-grid">
   <article
     class="panel soft-panel relationship-panel relationship-panel--wide"
     data-controller="relationship-depth"
@@ -97,14 +208,14 @@
   </article>
 </section>
 
-<section class="dashboard-grid person-lens-grid">
+<section class="dashboard-grid person-lens-grid person-lens-grid--exploration">
   <article class="panel soft-panel person-lens-card">
-    <p class="eyebrow">Nearby</p>
-    <h2>近い人物</h2>
-    <p class="meta">まずたどりやすい人物です。共通事例や近い文脈から、次に見る相手を選べます。</p>
-    <% if @person_navigation_lens[:near_people].any? %>
+    <p class="eyebrow">Related People</p>
+    <h2>主要関係者</h2>
+    <p class="meta">この人を理解するうえで先に押さえたい関係者です。強い接点から順に見られます。</p>
+    <% if @person_navigation_lens[:primary_people].any? %>
       <ul class="person-lens-list">
-        <% @person_navigation_lens[:near_people].each do |connection| %>
+        <% @person_navigation_lens[:primary_people].each do |connection| %>
           <li class="person-lens-item">
             <div class="person-lens-head">
               <%= link_to connection[:label], connection[:href] %>
@@ -112,40 +223,85 @@
             </div>
             <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
             <p class="person-lens-copy"><%= connection[:reason] %></p>
+            <% if connection[:shared_tags].any? || connection[:shared_organizations].any? %>
+              <div class="tag-cloud person-lens-tags">
+                <% connection[:shared_tags].each do |tag_name| %>
+                  <span class="tag-pill person-context-pill"><%= "共通テーマ: #{tag_name}" %></span>
+                <% end %>
+                <% connection[:shared_organizations].each do |organization_name| %>
+                  <span class="tag-pill person-context-pill"><%= "共通所属: #{organization_name}" %></span>
+                <% end %>
+              </div>
+            <% end %>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-note">まだこの人物の近い関係は十分に見つかっていません。</p>
+      <p class="empty-note">まだこの人物の主要関係者は十分に見つかっていません。</p>
     <% end %>
   </article>
 
   <article class="panel soft-panel person-lens-card">
-    <p class="eyebrow">Bridge</p>
-    <h2>越境人物</h2>
-    <p class="meta">異分野や橋渡しの接点が見える人物です。広げて見たいときの入口になります。</p>
-    <% if @person_navigation_lens[:bridge_people].any? %>
+    <p class="eyebrow">Why Connected</p>
+    <h2>関係の理由</h2>
+    <p class="meta">事例、テーマ、所属のどこで関係が生まれているかを短く読めます。</p>
+    <% if @person_navigation_lens[:relation_reasons].any? %>
       <ul class="person-lens-list">
-        <% @person_navigation_lens[:bridge_people].each do |connection| %>
+        <% @person_navigation_lens[:relation_reasons].each do |connection| %>
+          <li class="person-lens-item">
+            <div class="person-lens-head">
+              <%= link_to connection[:label], connection[:href] %>
+              <span class="tag-pill"><%= connection[:kind_label] %></span>
+            </div>
+            <p class="person-lens-copy"><%= connection[:reason] %></p>
+            <% if connection[:relation_points].any? %>
+              <ul class="person-lens-detail-list">
+                <% connection[:relation_points].each do |point| %>
+                  <li><%= point %></li>
+                <% end %>
+              </ul>
+            <% end %>
+            <% if connection[:shared_cases].any? %>
+              <div class="person-lens-link-row">
+                <% connection[:shared_cases].each do |shared_case| %>
+                  <%= link_to shared_case[:title], shared_case[:href], class: "person-lens-link-pill" %>
+                <% end %>
+              </div>
+            <% end %>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="empty-note">まだ関係理由を説明できる十分な材料がありません。</p>
+    <% end %>
+  </article>
+
+  <article class="panel soft-panel person-lens-card">
+    <p class="eyebrow">Next People</p>
+    <h2>次に見るべき人物</h2>
+    <p class="meta">この人の周辺を広げるなら、次にたどる価値が高い人物です。</p>
+    <% if @person_navigation_lens[:next_people].any? %>
+      <ul class="person-lens-list">
+        <% @person_navigation_lens[:next_people].each do |connection| %>
           <li class="person-lens-item">
             <div class="person-lens-head">
               <%= link_to connection[:label], connection[:href] %>
               <span class="tag-pill"><%= connection[:kind_label] %></span>
             </div>
             <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
-            <p class="person-lens-copy"><%= connection[:reason] %></p>
+            <p class="person-lens-copy"><%= connection[:next_step_reason] %></p>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-note">いまは越境が強い接点はまだ少ないです。</p>
+      <p class="empty-note">次に追うべき人物候補は、関係データが増えると表示されます。</p>
     <% end %>
   </article>
 
   <article class="panel soft-panel person-lens-card">
     <p class="eyebrow">Cases</p>
     <h2>関連事例</h2>
-    <p class="meta">この人物が関わった出会い事例です。図で気になった関係を、事例の文章で確かめられます。</p>
+    <p class="meta">関係の根拠になっている出会い事例です。文章で確かめたいときの入口になります。</p>
     <% if @person_navigation_lens[:related_cases].any? %>
       <ul class="person-lens-list">
         <% @person_navigation_lens[:related_cases].each do |entry| %>

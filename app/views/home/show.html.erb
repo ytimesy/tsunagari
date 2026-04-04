@@ -3,40 +3,39 @@
 <section class="hero-stage atlas-stage impact-stage">
   <article class="hero-card hero-copy atlas-hero-copy impact-hero-copy">
     <p class="ribbon-label">First Principle</p>
-    <h1 class="hero-title">出会いから、<br>より良くなる。</h1>
+    <h1 class="hero-title">人物から、<br>関係を読む。</h1>
     <p class="lede">
-      Tsunagari は、良い出会いの構造を記録し、その再現性を高めることで、
-      人と社会の前進を支えるための情報サイトです。
+      Tsunagari は、人物・関係・補足情報を整理して、
+      誰が誰に効くのかを読み取りやすくするための情報サイトです。
     </p>
 
     <div class="hero-actions">
       <% if can_edit_content? %>
-        <%= link_to '新規事例を作る', new_encounter_case_path, class: 'primary-link' %>
+        <%= link_to '新規人物を作る', new_person_path, class: 'primary-link' %>
       <% else %>
         <%= link_to '全体関係マップを見る', graph_people_path, class: 'primary-link' %>
       <% end %>
       <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
-      <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: 'secondary-link' %>
     </div>
 
     <p class="meta">
       <% if TsunagariFeatureFlags.strict_public_visibility? %>
-        Tsunagari は wiki 方式です。公開中の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。
+        Tsunagari は wiki 方式です。公開中の人物を誰でも閲覧でき、編集や追記はログイン後に行います。
       <% else %>
-        Tsunagari は wiki 方式です。アーカイブ前の人物と事例を誰でも閲覧でき、編集や追記はログイン後に行います。
+        Tsunagari は wiki 方式です。アーカイブ前の人物を誰でも閲覧でき、編集や追記はログイン後に行います。
       <% end %>
     </p>
 
     <div class="feature-strip feature-strip--impact">
-      <span class="feature-pill">encounter</span>
-      <span class="feature-pill">outcome</span>
-      <span class="feature-pill">reproducibility</span>
+      <span class="feature-pill">people</span>
+      <span class="feature-pill">relations</span>
+      <span class="feature-pill">insight</span>
     </div>
 
     <div class="compact-stats impact-stats">
       <span class="status-petal impact-petal"><strong><%= @people_count %></strong> 人物</span>
-      <span class="status-petal impact-petal"><strong><%= @case_count %></strong> 事例</span>
-      <span class="status-petal impact-petal"><strong><%= saved_people_count %></strong> 保存</span>
+      <span class="status-petal impact-petal"><strong><%= @quality_people_count %></strong> 活用視点あり</span>
+      <span class="status-petal impact-petal"><strong><%= @latest_people.count %></strong> 更新</span>
     </div>
   </article>
 
@@ -44,15 +43,15 @@
     <div class="mascot-orb">
       <div class="mascot-core">ROOT</div>
     </div>
-    <p class="mascot-name">Human Progress Through Encounters</p>
+    <p class="mascot-name">Human Signals Through People</p>
     <p class="mascot-copy">
-      ただ成功談を並べるのではなく、その出会いが何を前進させ、
-      どこでつまずき、次にどう活かせるのかまで読める形に整えていきます。
+      ただプロフィールを並べるのではなく、その人物が何に役立ち、
+      どの関係の中で効くのかまで読める形に整えていきます。
     </p>
     <ul class="speech-list">
       <li>人物録を辿る</li>
-      <li>前進と失敗の条件を探る</li>
-      <li>再現と回避のヒントを残す</li>
+      <li>関係の理由を探る</li>
+      <li>次に見るべき人物を残す</li>
     </ul>
   </aside>
 </section>
@@ -70,20 +69,20 @@
     </p>
   </article>
   <article class="panel soft-panel atlas-stat-panel">
-    <p class="eyebrow">Case Scope</p>
-    <h2><%= @case_count %> 事例</h2>
+    <p class="eyebrow">Map Scope</p>
+    <h2>全体関係マップ</h2>
     <p>
       <% if TsunagariFeatureFlags.strict_public_visibility? %>
-        出会い事例は公開中のものを一般公開し、成功だけでなく停滞や失敗も次に活かせる知見として残します。
+        全体関係マップは公開中の人物を土台に組み立て、人物群どうしの接点を俯瞰できるようにしています。
       <% else %>
-        出会い事例はアーカイブ前の記録をたどれます。完成前のメモを含めて、出会いから何が起きたかを追える構成です。
+        全体関係マップはアーカイブ前の人物を土台に組み立て、整理中の人物も含めて関係を育てられる構成です。
       <% end %>
     </p>
   </article>
   <article class="panel soft-panel atlas-stat-panel">
     <p class="eyebrow">How To Use</p>
     <h2><%= can_edit_content? ? 'その場で加筆する' : '公開ページを辿る' %></h2>
-    <p><%= can_edit_content? ? '気づいた情報があれば、そのまま人物や事例を編集し、追記メモを残してください。' : '人物録、出会い事例、全体関係マップを往復しながら、気になる関係を辿ってください。' %></p>
+    <p><%= can_edit_content? ? '気づいた情報があれば、そのまま人物を編集し、追記メモを残してください。' : '人物録と全体関係マップを往復しながら、気になる関係を辿ってください。' %></p>
   </article>
 </section>
 
@@ -104,17 +103,9 @@
     </article>
 
     <article class="panel soft-panel">
-      <p class="eyebrow">Case Status</p>
-      <h2>事例の公開状態</h2>
-      <p class="meta">出会い事例の状態別件数です。レビュー待ちや公開待ちの確認に使えます。</p>
-      <div class="status-summary-list">
-        <% EncounterCase::PUBLICATION_STATUSES.each do |status| %>
-          <%= link_to encounter_cases_path(publication_status: status), class: "status-summary-link" do %>
-            <span><%= publication_status_label(status) %></span>
-            <strong><%= @case_status_counts.fetch(status, 0) %> 件</strong>
-          <% end %>
-        <% end %>
-      </div>
+      <p class="eyebrow">Insight Coverage</p>
+      <h2>活用視点あり <%= @quality_people_count %> 人</h2>
+      <p class="meta">役立つ文脈や会う価値が入っている人物数です。情報の質を上げる作業量の目安として見ます。</p>
     </article>
 
     <article class="panel soft-panel">
@@ -126,37 +117,37 @@
 <% end %>
 
 <section class="dashboard-grid">
-  <article class="panel soft-panel saved-list-panel">
-    <p class="eyebrow">Saved List</p>
-    <h2>保存リストで自分用に使う</h2>
-    <p>気になる人物をこのブラウザにためて、企画候補、紹介先、登壇候補の下書きとして整理できます。ログイン不要で、CSVにも書き出せます。</p>
+  <article class="panel soft-panel membership-card membership-card--accent">
+    <p class="eyebrow">Insight</p>
+    <h2>情報の質で読む</h2>
+    <p>件数ではなく、この人物が何に役立つか、誰と組み合わせると価値が出るか、次に誰を追うべきかを読めることを前面に出します。</p>
     <div class="tag-cloud">
-      <span class="tag-pill">保存</span>
-      <span class="tag-pill">個人メモ</span>
-      <span class="tag-pill">CSV出力</span>
+      <span class="tag-pill">活用視点</span>
+      <span class="tag-pill">仮説の人物像</span>
+      <span class="tag-pill">関係の理由</span>
     </div>
     <div class="hero-actions">
-      <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: 'primary-link' %>
+      <%= link_to 'Insightを見る', insight_membership_path, class: 'primary-link' %>
       <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
     </div>
   </article>
 
   <article class="panel soft-panel">
-    <p class="eyebrow">Latest Cases</p>
-    <h2>最近更新された事例</h2>
-    <% if @latest_cases.any? %>
+    <p class="eyebrow">Latest People</p>
+    <h2>最近更新された人物</h2>
+    <% if @latest_people.any? %>
       <ul class="stack-list soft-list">
-        <% @latest_cases.each do |encounter_case| %>
+        <% @latest_people.each do |person| %>
           <li>
-            <strong><%= link_to encounter_case.title, encounter_case_destination_path(encounter_case) %></strong>
+            <strong><%= link_to person.display_name, person_destination_path(person) %></strong>
             <% if can_edit_content? %>
-              <span class="meta"><%= publication_status_label(encounter_case.publication_status) %></span>
+              <span class="meta"><%= publication_status_label(person.publication_status) %></span>
             <% end %>
           </li>
         <% end %>
       </ul>
     <% else %>
-      <p class="empty-note">まだ事例はありません。最初の出会い事例を作るところから始めましょう。</p>
+      <p class="empty-note">まだ人物はありません。最初の人物を登録するところから始めましょう。</p>
     <% end %>
   </article>
 
@@ -168,19 +159,13 @@
         <ul class="stack-list soft-list">
           <% @latest_notes.each do |note| %>
             <li>
-              <strong>
-                <% if note.person.present? %>
-                  <%= link_to note.person.display_name, person_destination_path(note.person) %>
-                <% elsif note.encounter_case.present? %>
-                  <%= link_to note.encounter_case.title, encounter_case_destination_path(note.encounter_case) %>
-                <% end %>
-              </strong>
+              <strong><%= link_to note.person.display_name, person_destination_path(note.person) %></strong>
               <span class="meta"><%= truncate(note.body, length: 70) %></span>
             </li>
           <% end %>
         </ul>
       <% else %>
-        <p class="empty-note">まだ追記メモはありません。人物や事例に仮説や補足を書き始めてください。</p>
+        <p class="empty-note">まだ追記メモはありません。人物に仮説や補足を書き始めてください。</p>
       <% end %>
     <% else %>
       <p class="empty-note">追記メモの閲覧と記入は、編集者ログイン後に利用できます。</p>

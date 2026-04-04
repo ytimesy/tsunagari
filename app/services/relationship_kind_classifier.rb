@@ -10,7 +10,7 @@ module RelationshipKindClassifier
     },
     "co_creation" => {
       label: "共創",
-      description: "同じ事例や成果を一緒に生み出す関係"
+      description: "同じ文脈から成果を一緒に生み出す関係"
     },
     "succession" => {
       label: "継承",
@@ -18,7 +18,7 @@ module RelationshipKindClassifier
     },
     "inspiration" => {
       label: "触発",
-      description: "出会いが転機や新しい視点を生む関係"
+      description: "接点が転機や新しい視点を生む関係"
     },
     "crossing" => {
       label: "越境",
@@ -98,7 +98,7 @@ module RelationshipKindClassifier
     reason_parts = [ "#{label_for(kind)}: #{description_for(kind)}" ]
     reason_parts << "共通所属: #{facts[:shared_organizations].first(2).join(', ')}" if facts[:shared_organizations].any?
     reason_parts << "共通タグ: #{facts[:shared_tags].first(2).join(', ')}" if facts[:shared_tags].any?
-    reason_parts << "#{facts[:shared_case_count]}件の事例で接点" if facts[:shared_case_count].positive?
+    reason_parts << "#{facts[:shared_case_count]}件の強い共同接点" if facts[:shared_case_count].positive?
     reason_parts.join(" / ")
   end
 

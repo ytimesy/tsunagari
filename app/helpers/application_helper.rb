@@ -177,20 +177,19 @@ module ApplicationHelper
     end
   end
 
-  def youtube_person_pitch(person, case_count: 0)
+  def youtube_person_pitch(person)
     return person.recommended_for if person.recommended_for.present?
     return person.meeting_value if person.meeting_value.present?
     return person.summary if person.summary.present?
     return truncate(person.bio, length: 110) if person.bio.present?
 
     topics = youtube_person_topics(person, limit: 3)
-    return "#{topics.join(' / ')} を切り口に紹介しやすい人物です。" if topics.any? && case_count.zero?
-    return "#{topics.join(' / ')} を切り口に、#{case_count}件の出会い事例とあわせて紹介しやすい人物です。" if topics.any?
+    return "#{topics.join(' / ')} を切り口に紹介しやすい人物です。" if topics.any?
 
     affiliation_name = person.primary_affiliation&.organization&.name
     return "#{affiliation_name} の文脈から紹介しやすい人物です。" if affiliation_name.present?
 
-    case_count.positive? ? "#{case_count}件の出会い事例を入口に紹介しやすい人物です。" : 'ローカル補足を足して動画企画の切り口を育てたい人物です。'
+    'ローカル補足を足して動画企画の切り口を育てたい人物です。'
   end
 
   def external_people_import_description(target_person: nil)
@@ -230,16 +229,6 @@ module ApplicationHelper
     entries.presence || [ { label: "ローカル編集情報", href: nil } ]
   end
 
-  def encounter_case_source_entries(encounter_case)
-    entries = encounter_case.sources.map do |source|
-      {
-        label: source.title.presence || source.url,
-        href: source.url
-      }
-    end
-
-    entries.presence || [ { label: "出典未設定", href: nil } ]
-  end
 
   def people_sort_options
     [
@@ -257,16 +246,10 @@ module ApplicationHelper
     ]
   end
 
-  def encounter_case_sort_options
-    [
-      [ '新しい順', 'newest' ],
-      [ '古い順', 'oldest' ],
-      [ '更新順', 'recently_updated' ]
-    ]
-  end
 
   def role_label(role)
     {
+      "member" => "Insight利用",
       "editor" => "編集者",
       "admin" => "管理者"
     }.fetch(role, role)

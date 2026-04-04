@@ -23,34 +23,35 @@
       <div class="shell nav-row">
         <%= link_to root_path, class: 'brand brand--impact' do %>
           <span class="brand-stamp">TSUNAGARI</span>
-          <span class="brand-mark">出会いの情報圧を上げる</span>
-          <span class="brand-sub">human progress through encounters</span>
+          <span class="brand-mark">誰が、誰に、効くのか。</span>
+          <span class="brand-sub">human progress through people and relations</span>
         <% end %>
 
         <nav class="nav-links nav-links--impact">
           <%= link_to 'トップ', root_path %>
           <%= link_to '人物録', people_path %>
           <%= link_to '全体関係マップ', graph_people_path %>
-          <%= link_to '出会い事例', encounter_cases_path %>
-          <%= link_to "保存リスト#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path %>
-          <% if can_edit_content? %>
+          <%= link_to 'Insight', insight_membership_path %>
+          <% if signed_in? %>
             <span class="nav-user"><%= "#{current_user.email} / #{role_label(current_user.role)}" %></span>
-            <%= link_to '新規人物', new_person_path %>
-            <%= link_to '新規事例', new_encounter_case_path, class: 'primary-link' %>
+            <% if can_edit_content? %>
+              <%= link_to '新規人物', new_person_path, class: 'primary-link' %>
+            <% end %>
             <%= link_to 'ログアウト', logout_path, data: { turbo_method: :delete } %>
           <% else %>
-            <%= link_to 'ログイン', login_path, class: 'primary-link' %>
+            <%= link_to '利用登録', new_member_signup_path, class: 'primary-link' %>
+            <%= link_to 'ログイン', login_path, class: 'secondary-link' %>
           <% end %>
         </nav>
       </div>
       <div class="signal-strip">
         <div class="shell signal-strip-inner">
           <span class="signal-label">LIVE SIGNAL</span>
-          <span class="signal-copy">人物・出会い・関係を、早く深く追うための記録面</span>
+          <span class="signal-copy">人物・関係・洞察を、一気に読むための記録面</span>
           <div class="signal-links">
             <%= link_to '人物録を見る', people_path %>
             <%= link_to '関係マップを見る', graph_people_path %>
-            <%= link_to '事例を追う', encounter_cases_path %>
+            <%= link_to 'Insightを見る', insight_membership_path %>
           </div>
         </div>
       </div>

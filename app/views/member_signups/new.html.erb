@@ -1,0 +1,40 @@
+<section class="form-panel cute-frame membership-signup-panel">
+  <p class="ribbon-label">Join Insight</p>
+  <h1>Insight利用登録</h1>
+  <p class="membership-lead">高品質な人物解説と関係の読み解きを見るための利用登録です。まずはローカルで動く基盤として、メールアドレスとパスワードで登録できます。</p>
+
+  <% if @member.errors.any? %>
+    <div class="error-summary">
+      <p>入力内容を確認してください。</p>
+      <ul>
+        <% @member.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: @member, url: member_signups_path do |form| %>
+    <%= hidden_field_tag :return_to, @return_to %>
+
+    <div class="field">
+      <%= form.label :email, 'メールアドレス' %>
+      <%= form.email_field :email, required: true, autocomplete: 'email', placeholder: 'member@example.com' %>
+    </div>
+
+    <div class="field">
+      <%= form.label :password, 'パスワード' %>
+      <%= form.password_field :password, required: true, autocomplete: 'new-password', placeholder: '8文字以上' %>
+    </div>
+
+    <div class="field">
+      <%= form.label :password_confirmation, 'パスワード確認' %>
+      <%= form.password_field :password_confirmation, required: true, autocomplete: 'new-password' %>
+    </div>
+
+    <div class="hero-actions membership-actions">
+      <%= form.submit '利用登録する', class: 'primary-button' %>
+      <%= link_to 'Insightへ戻る', insight_membership_path, class: 'secondary-link' %>
+    </div>
+  <% end %>
+</section>

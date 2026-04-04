@@ -1,0 +1,10 @@
+<div class="insight-lock-cta">
+  <p class="eyebrow">Insight</p>
+  <h3><%= local_assigns.fetch(:title, 'ここから先は Insight で読めます') %></h3>
+  <p><%= local_assigns.fetch(:copy, 'この先は、Tsunagari独自の深い人物解説と関係の読み解きです。利用登録すると全文を見られます。') %></p>
+  <div class="hero-actions membership-actions">
+    <%= link_to '利用登録', new_member_signup_path(return_to: request.fullpath), class: 'primary-link' %>
+    <%= link_to 'Insight', insight_membership_path, class: 'secondary-link' %>
+    <%= link_to 'ログイン', login_path, class: 'secondary-link' %>
+  </div>
+</div>

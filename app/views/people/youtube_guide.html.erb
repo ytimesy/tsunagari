@@ -4,11 +4,10 @@
   <div>
     <p class="ribbon-label">YouTube People Guide</p>
     <h1>YouTube人物図鑑</h1>
-    <p class="lede compact">動画で取り上げたい人物を、タグ、事例、ローカル補足から探すための専用一覧です。まずは企画の入口として使える形にしています。</p>
+    <p class="lede compact">動画で取り上げたい人物を、タグ、関係、ローカル補足から探すための専用一覧です。まずは企画の入口として使える形にしています。</p>
   </div>
   <div class="hero-actions">
     <%= link_to '人物録へ戻る', people_path, class: 'secondary-link' %>
-    <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: 'primary-link' %>
   </div>
 </section>
 
@@ -20,14 +19,14 @@
       <li><strong>人物紹介回:</strong> 誰か一人を深掘りして紹介する</li>
       <li><strong>テーマ解説回:</strong> タグを軸に複数人物を並べる</li>
       <li><strong>対談候補探し:</strong> 似ている人、越境する人を探す</li>
-      <li><strong>事例解説回:</strong> 出会い事例と一緒に人物を紹介する</li>
+      <li><strong>関係図解回:</strong> 主要関係者や周辺人物をたどって紹介する</li>
     </ul>
   </article>
 
   <article class="panel soft-panel">
     <p class="eyebrow">How To Read</p>
     <h2>見方</h2>
-    <p>人物カードでは、動画の切り口になりそうな一言、タグ、出会い事例数をまとめて見られます。気になる人物は詳細へ進み、さらに人脈や事例をたどれます。</p>
+    <p>人物カードでは、動画の切り口になりそうな一言、タグ、向いている用途をまとめて見られます。気になる人物は詳細へ進み、さらに人脈をたどれます。</p>
   </article>
 </section>
 
@@ -63,12 +62,11 @@
 <section class="results-grid">
   <% @people.each do |person| %>
     <% topics = youtube_person_topics(person) %>
-    <% case_count = @youtube_case_counts.fetch(person.id, 0) %>
     <article class="panel result-card youtube-card">
       <p class="eyebrow">YouTube Person</p>
       <h2><%= link_to person.display_name, person_destination_path(person) %></h2>
       <p class="meta"><%= youtube_person_context(person) %></p>
-      <p><%= youtube_person_pitch(person, case_count: case_count) %></p>
+      <p><%= youtube_person_pitch(person) %></p>
       <div class="tag-cloud">
         <% if topics.any? %>
           <% topics.each do |topic| %>
@@ -77,15 +75,15 @@
         <% else %>
           <span class="tag-pill muted">動画切り口はこれから補う</span>
         <% end %>
-        <span class="tag-pill muted"><%= "#{case_count} 件の事例" %></span>
+        <% if person.fit_modes_list.any? %>
+          <% person.fit_modes_list.first(2).each do |fit_mode| %>
+            <span class="tag-pill muted"><%= fit_mode %></span>
+          <% end %>
+        <% end %>
       </div>
       <div class="hero-actions youtube-card-actions">
         <%= link_to '人物詳細', person_destination_path(person), class: 'secondary-link' %>
-        <% if saved_person?(person) %>
-          <%= button_to '保存から外す', remove_saved_person_path(person), method: :delete, class: 'secondary-link button-link' %>
-        <% else %>
-          <%= button_to '保存リストへ', save_person_path(person), method: :post, class: 'secondary-link button-link' %>
-        <% end %>
+        <%= link_to 'Insight', insight_membership_path, class: 'secondary-link' %>
         <% if can_edit_content? %>
           <%= link_to external_people_import_title(target_person: person), new_person_import_path(q: person.display_name, person_id: person.id), class: 'secondary-link' %>
         <% end %>

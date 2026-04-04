@@ -334,10 +334,10 @@
   <article class="panel soft-panel relationship-panel relationship-panel--wide map-showcase-intro" data-graph-density-target="collapsible">
     <p class="eyebrow">Reference Views</p>
     <h2>参考ビュー</h2>
-    <p class="meta">全体俯瞰の下で使う補助図です。人物起点・出会いフロー・全体構造の見せ方を比較したいときだけ参照します。</p>
+    <p class="meta">全体俯瞰の下で使う補助図です。人物起点と主要クラスタの見せ方を比較したいときだけ参照します。</p>
     <div class="map-flow">
       <span class="map-flow-pill is-current">人物起点</span>
-      <span class="map-flow-pill">出会いフロー</span>
+      <span class="map-flow-pill">主要クラスタ</span>
       <span class="map-flow-pill">全体構造</span>
     </div>
   </article>
@@ -351,7 +351,7 @@
       <div class="map-showcase-head">
         <div>
           <strong><%= link_to focus[:person].display_name, person_path(focus[:person]) %></strong>
-          <p class="meta"><%= "関連事例 #{focus[:related_case_count]} 件" %></p>
+          <p class="meta"><%= "周辺人物 #{focus[:neighbor_count]} 人" %></p>
         </div>
         <%= link_to "人物詳細で見る", person_path(focus[:person]), class: "secondary-link" %>
       </div>
@@ -367,25 +367,12 @@
         </div>
       <% end %>
     <% else %>
-      <p class="empty-note">まず人物や事例が増えると、人物起点マップの候補をここに表示できます。</p>
+      <p class="empty-note">まず人物と関係が増えると、人物起点マップの候補をここに表示できます。</p>
     <% end %>
   </article>
 
   <article class="panel soft-panel map-showcase-card">
     <p class="eyebrow">Reference 2</p>
-    <h2>出会いフロー図</h2>
-    <p class="meta">"誰が関わり、何が起き、何が学びとして残ったか" を読むには、ネットワーク図よりフロー図のほうが向いています。</p>
-    <% if @diagram_showcase[:encounter_flow].present? %>
-      <% flow = @diagram_showcase[:encounter_flow] %>
-      <%= render "shared/encounter_flow_preview", flow: flow %>
-      <%= link_to "事例詳細で読む", encounter_case_path(flow[:encounter_case]), class: "secondary-link" %>
-    <% else %>
-      <p class="empty-note">2 人以上が関わる公開事例が増えると、ここに出会いフロー図を表示できます。</p>
-    <% end %>
-  </article>
-
-  <article class="panel soft-panel map-showcase-card">
-    <p class="eyebrow">Reference 3</p>
     <h2>全体構造図</h2>
     <p class="meta">全体構造図は、どこに大きな塊があり、どこで越境が起きているかを掴むための俯瞰図です。</p>
     <div class="map-structure-preview">

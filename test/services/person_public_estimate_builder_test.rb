@@ -14,7 +14,6 @@ class PersonPublicEstimateBuilderTest < ActiveSupport::TestCase
     organization = Organization.create!(slug: "analytical-society", name: "Analytical Society", category: "community")
     ada.person_affiliations.create!(organization: organization, title: "Researcher", primary_flag: true)
 
-    encounter_case = EncounterCase.create!(title: "Analytical exchange", publication_status: "published")
     builder = PersonPublicEstimateBuilder.new(
       person: ada,
       resolved_profile: {
@@ -23,8 +22,7 @@ class PersonPublicEstimateBuilderTest < ActiveSupport::TestCase
       },
       navigation_lens: {
         primary_people: [ { label: "Charles Babbage" } ],
-        bridge_people: [ { label: "Community Organizer" } ],
-        related_cases: [ { encounter_case: encounter_case } ]
+        bridge_people: [ { label: "Community Organizer" } ]
       }
     )
 
@@ -37,6 +35,9 @@ class PersonPublicEstimateBuilderTest < ActiveSupport::TestCase
     assert_match "性格や年収", estimate[:notice]
     assert_equal "AL", estimate.dig(:persona_sketch, :visual, :initials)
     assert_match "仮説スケッチ", estimate.dig(:persona_sketch, :notice)
-    assert estimate[:evidence].any? { |point| point.include?("関連事例") }
+    assert estimate[:evidence].any? { |point| point.include?("主要関係者") }
+    assert_equal 5, estimate.dig(:capability_profile, :metrics).length
+    assert_equal "分析性", estimate.dig(:capability_profile, :metrics, 0, :label)
+    assert_operator estimate.dig(:capability_profile, :metrics, 0, :value), :>=, 3
   end
 end

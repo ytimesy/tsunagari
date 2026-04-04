@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  ROLES = %w[editor admin].freeze
+  ROLES = %w[member editor admin].freeze
   STATUSES = %w[active disabled].freeze
 
   has_secure_password
@@ -12,6 +12,10 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 8 }, allow_nil: true
 
   scope :active, -> { where(status: 'active') }
+
+  def member?
+    role == "member"
+  end
 
   def editor?
     role.in?(%w[editor admin])
@@ -27,6 +31,10 @@ class User < ApplicationRecord
 
   def can_edit_content?
     editor? && active?
+  end
+
+  def can_view_deep_insight?
+    role.in?(%w[member editor admin]) && active?
   end
 
   private

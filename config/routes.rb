@@ -5,15 +5,13 @@ Rails.application.routes.draw do
 
   root 'home#show'
 
-  get 'saved-people' => 'saved_people#show', as: :saved_people
-  get 'saved-people/export' => 'saved_people#export', as: :export_saved_people
-  post 'people/:slug/save' => 'saved_people#create', as: :save_person
-  delete 'people/:slug/save' => 'saved_people#destroy', as: :remove_saved_person
-  patch 'people/:slug/save-note' => 'saved_people#update', as: :update_saved_person_note
-
   get 'login' => 'sessions#new'
   post 'login' => 'sessions#create'
   delete 'logout' => 'sessions#destroy'
+
+  get 'insight-membership' => 'memberships#show', as: :insight_membership
+  get 'join' => 'member_signups#new', as: :new_member_signup
+  post 'join' => 'member_signups#create', as: :member_signups
 
   resources :people, param: :slug do
     collection do
@@ -22,6 +20,5 @@ Rails.application.routes.draw do
     end
   end
   resources :person_imports, only: %i[new create]
-  resources :encounter_cases, path: 'cases', param: :slug
   resources :research_notes, only: :create
 end

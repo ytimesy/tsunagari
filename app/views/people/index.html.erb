@@ -14,7 +14,6 @@
   <div class="hero-actions">
     <%= link_to '全体関係マップ', graph_people_path, class: 'secondary-link' %>
     <%= link_to 'YouTube人物図鑑', youtube_guide_people_path, class: 'secondary-link' %>
-    <%= link_to "保存リスト#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: 'secondary-link' %>
     <% if can_edit_content? %>
       <%= link_to '外部DBから取り込む', new_person_import_path, class: 'secondary-link' %>
       <%= link_to '新規人物', new_person_path, class: 'primary-link' %>
@@ -100,17 +99,10 @@
         <% else %>
           <span class="tag-pill muted">タグ未設定</span>
         <% end %>
-        <% if saved_person?(person) %>
-          <span class="tag-pill">保存済み</span>
-        <% end %>
       </div>
       <div class="hero-actions result-card-actions">
         <%= link_to '人物詳細', person_destination_path(person), class: 'secondary-link' %>
-        <% if saved_person?(person) %>
-          <%= button_to '保存から外す', remove_saved_person_path(person), method: :delete, class: 'secondary-link button-link' %>
-        <% else %>
-          <%= button_to '保存リストへ', save_person_path(person), method: :post, class: 'secondary-link button-link' %>
-        <% end %>
+        <%= link_to 'Insight', insight_membership_path, class: 'secondary-link' %>
       </div>
     </article>
   <% end %>

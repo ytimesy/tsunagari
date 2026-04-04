@@ -1,10 +1,8 @@
-require_dependency Rails.root.join("app/services/relationship_graph_builder").to_s
 require_dependency Rails.root.join("app/services/imported_people_graph_builder").to_s
 require_dependency Rails.root.join("app/services/clustered_people_graph_builder").to_s
 require_dependency Rails.root.join("app/services/cluster_focus_graph_builder").to_s
 require_dependency Rails.root.join("app/services/people_graph_snapshot").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
-require_dependency Rails.root.join("app/services/person_case_graph_scope").to_s
 require_dependency Rails.root.join("app/services/person_public_estimate_builder").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
@@ -44,9 +42,7 @@ class PeopleController < ApplicationController
     @people = filter_people_by_tag(@people, @selected_tag)
     @people = apply_people_sort(@people, @selected_sort)
     @people = @people.limit(48)
-
     load_people_index_options
-    @youtube_case_counts = youtube_case_counts_for(@people)
   end
 
   def show
@@ -192,17 +188,6 @@ class PeopleController < ApplicationController
       .pluck(:category)
   end
 
-  def youtube_case_counts_for(people)
-    people_ids = Array(people).map(&:id)
-    return {} if people_ids.empty?
-
-    visible_case_scope = can_edit_content? ? EncounterCase.where.not(publication_status: 'archived') : EncounterCase.publicly_visible
-
-    visible_case_scope.joins(:people)
-      .where(people: { id: people_ids })
-      .group('people.id')
-      .count
-  end
 
   def filter_people_by_tag(scope, tag_name)
     return scope unless tag_name.present?
@@ -446,24 +431,9 @@ class PeopleController < ApplicationController
       tags: @resolved_person_profile[:tags],
       organizations: Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
     }
-    fallback_metadata_index = person_graph_fallback_metadata_index_for(candidate_people)
+    fallback_metadata_index = person_graph_fallback_metadata_index_for(candidate_people + [ @person ])
 
     1.upto(3).each_with_object({}) do |depth, graphs|
-      graphs[depth] = relationship_graph_for(depth, candidate_people:, focal_metadata:, fallback_metadata_index:)
-    end
-  end
-
-  def relationship_graph_for(depth, candidate_people:, focal_metadata:, fallback_metadata_index:)
-    graph_scope = depth == 1 ? direct_relationship_scope : PersonCaseGraphScope.new(focal_person: @person, depth:).build
-    graph_people = graph_scope[:people]
-    graph = RelationshipGraphBuilder.new(
-      people: graph_people,
-      encounter_cases: graph_scope[:encounter_cases],
-      focal_person: @person,
-      profile_metadata_by_person_id: profile_resolver.metadata_index_for(graph_people)
-    ).payload
-
-    if graph[:edges].empty?
       graph = PersonNeighborhoodGraphBuilder.new(
         focal_person: @person,
         candidates: candidate_people,
@@ -471,11 +441,11 @@ class PeopleController < ApplicationController
         depth:,
         profile_metadata_by_person_id: fallback_metadata_index
       ).payload
-    end
 
-    graph[:labelMode] = "all"
-    decorate_graph_with_cluster_context!(graph, graph_people + candidate_people + [ @person ], @cluster_context_slug)
-    graph
+      graph[:labelMode] = "all"
+      decorate_graph_with_cluster_context!(graph, candidate_people + [ @person ], @cluster_context_slug)
+      graphs[depth] = graph
+    end
   end
 
   def graph_candidate_people
@@ -489,14 +459,10 @@ class PeopleController < ApplicationController
     base_scope.where.not(id: @person.id).limit(600).to_a
   end
 
-  def direct_relationship_scope
-    @direct_relationship_scope ||= PersonCaseGraphScope.new(focal_person: @person, depth: 1).build
-  end
-
   def build_person_navigation_lens
     primary_graph = @relationship_graphs.fetch(1)
     nodes_by_id = Array(primary_graph[:nodes]).index_by { |node| node[:id] }
-    people_by_id = (direct_relationship_scope[:people] + graph_candidate_people + [ @person ]).compact.uniq { |person| person.id }.index_by(&:id)
+    people_by_id = (graph_candidate_people + [ @person ]).compact.uniq { |person| person.id }.index_by(&:id)
     focal_edges = Array(primary_graph[:edges]).select { |edge| edge[:source] == @person.id || edge[:target] == @person.id }
     sorted_edges = focal_edges.sort_by do |edge|
       [ -person_lens_edge_strength(edge), other_node_label_for(edge), edge[:kind].to_s ]
@@ -510,8 +476,7 @@ class PeopleController < ApplicationController
       relation_reasons: primary_people.select { |connection| person_lens_explains_relationship?(connection) }.first(4),
       next_people: next_people.first(4),
       near_people: primary_people,
-      bridge_people: connections.select { |connection| connection[:bridge] }.first(4),
-      related_cases: build_person_lens_cases
+      bridge_people: connections.select { |connection| connection[:bridge] }.first(4)
     }
   end
 
@@ -523,7 +488,6 @@ class PeopleController < ApplicationController
     label = node[:label].presence || person&.display_name.to_s
     return if href.blank? || label.blank?
 
-    shared_cases = person_lens_shared_cases_for(person)
     shared_tags = person_lens_shared_terms_between(@person, person, kind: :tags)
     shared_organizations = person_lens_shared_terms_between(@person, person, kind: :organizations)
 
@@ -532,26 +496,19 @@ class PeopleController < ApplicationController
       label: label,
       href: href,
       kind_label: edge[:kindLabel].presence || RelationshipKindClassifier.label_for(edge[:kind]),
-      tone_label: edge[:tone] == RelationshipGraphBuilder::DIVERSE_TONE ? "異質な組み合わせ" : "似たもの同士",
+      tone_label: edge[:tone] == "diverse" ? "異質な組み合わせ" : "似たもの同士",
       strength_label: person_lens_strength_label(edge),
       reason: edge[:reason].presence || edge[:kindDescription].presence || "近い接点があります。",
       bridge: person_lens_bridge_edge?(edge),
-      shared_cases: shared_cases.first(3).map do |encounter_case|
-        {
-          title: encounter_case.title,
-          href: encounter_case_path(encounter_case)
-        }
-      end,
       shared_tags: shared_tags.first(4),
       shared_organizations: shared_organizations.first(3),
       relation_points: build_person_lens_relation_points(
-        shared_cases: shared_cases,
+        edge: edge,
         shared_tags: shared_tags,
         shared_organizations: shared_organizations
       ),
       next_step_reason: person_lens_next_step_reason(
         edge,
-        shared_cases: shared_cases,
         shared_tags: shared_tags,
         shared_organizations: shared_organizations
       )
@@ -571,11 +528,13 @@ class PeopleController < ApplicationController
     connection[:relation_points].any? || connection[:reason].present?
   end
 
-  def build_person_lens_relation_points(shared_cases:, shared_tags:, shared_organizations:)
+  def build_person_lens_relation_points(edge:, shared_tags:, shared_organizations:)
     points = []
 
-    if shared_cases.any?
-      points << "共通事例: #{shared_cases.first(2).map(&:title).join(' / ')}"
+    if edge[:weight].to_i >= 8
+      points << "接点の近さ: 強め"
+    elsif edge[:weight].to_i.positive?
+      points << "接点の近さ: あり"
     end
 
     if shared_tags.any?
@@ -589,13 +548,13 @@ class PeopleController < ApplicationController
     points
   end
 
-  def person_lens_next_step_reason(edge, shared_cases:, shared_tags:, shared_organizations:)
+  def person_lens_next_step_reason(edge, shared_tags:, shared_organizations:)
     if person_lens_bridge_edge?(edge)
       "異分野側の接点が見えるため、この人から関係網を広げやすいです。"
-    elsif shared_cases.size >= 2
-      "複数の事例で重なっているため、この人物を追うと関係の核が見えます。"
     elsif shared_tags.any? && shared_organizations.any?
       "所属とテーマの両方が重なるので、周辺の関係者を読み解きやすいです。"
+    elsif edge[:weight].to_i >= 8
+      "共通項が多く、この人物を追うと周辺の輪郭が早く見えます。"
     elsif shared_tags.any?
       "同じテーマ軸で次の人物をたどりやすい相手です。"
     elsif shared_organizations.any?
@@ -606,52 +565,28 @@ class PeopleController < ApplicationController
   end
 
   def person_lens_bridge_edge?(edge)
-    edge[:tone] == RelationshipGraphBuilder::DIVERSE_TONE || %w[crossing inspiration sharpening].include?(edge[:kind].to_s)
+    edge[:tone] == "diverse" || %w[crossing inspiration sharpening].include?(edge[:kind].to_s)
   end
 
   def person_lens_edge_strength(edge)
-    return edge[:sharedCaseCount].to_i if edge[:sharedCaseCount].to_i.positive?
     return edge[:weight].to_i if edge[:weight].to_i.positive?
 
     1
   end
 
   def person_lens_strength_label(edge)
-    return "共通事例 #{edge[:sharedCaseCount]} 件" if edge[:sharedCaseCount].to_i.positive?
-    return "タグ・所属の近さから推定" if edge[:weight].to_i.positive?
-
-    "接点あり"
+    case edge[:kind].to_s
+    when "same_organization"
+      "同じ所属圏"
+    when "same_field"
+      "同じテーマ圏"
+    else
+      edge[:weight].to_i.positive? ? "近い接点あり" : "接点あり"
+    end
   end
 
   def other_node_label_for(edge)
     edge[:source] == @person.id ? edge[:targetLabel].to_s : edge[:sourceLabel].to_s
-  end
-
-  def build_person_lens_cases
-    @person.encounter_cases.publicly_visible.includes(:tags, :case_outcomes, case_participants: :person)
-           .order(happened_on: :desc, published_at: :desc, created_at: :desc)
-           .limit(4)
-           .map do |encounter_case|
-      {
-        encounter_case: encounter_case,
-        participants: encounter_case.case_participants.reject { |participant| participant.person_id == @person.id }.first(3),
-        outcome: encounter_case.case_outcomes.first,
-        tags: encounter_case.tags.order(:name).map(&:name).first(3)
-      }
-    end
-  end
-
-  def person_lens_shared_cases_for(person)
-    direct_relationship_scope[:encounter_cases].select do |encounter_case|
-      participant_ids = encounter_case.case_participants.map(&:person_id)
-      participant_ids.include?(@person.id) && participant_ids.include?(person.id)
-    end.sort_by do |encounter_case|
-      [
-        encounter_case.happened_on || Date.new(1900, 1, 1),
-        encounter_case.published_at || Time.at(0),
-        encounter_case.created_at || Time.at(0)
-      ]
-    end.reverse
   end
 
   def person_lens_shared_terms_between(left, right, kind:)
@@ -729,7 +664,6 @@ class PeopleController < ApplicationController
   def build_diagram_showcase
     {
       person_focus: build_person_focus_showcase,
-      encounter_flow: build_encounter_flow_showcase,
       structure_clusters: @graph_summary[:largest_clusters].first(4)
     }
   end
@@ -744,25 +678,12 @@ class PeopleController < ApplicationController
     {
       person: person,
       graph: graph,
-      related_case_count: person.encounter_cases.publicly_visible.count,
+      neighbor_count: [ graph.fetch(:nodes, []).size - 1, 0 ].max,
       tags: local_graph_metadata_for(person)[:tags].first(4),
       organizations: local_graph_metadata_for(person)[:organizations].first(3)
     }
   end
 
-  def build_encounter_flow_showcase
-    encounter_case = showcase_encounter_case
-    return unless encounter_case
-
-    {
-      encounter_case: encounter_case,
-      participants: encounter_case.case_participants.first(4),
-      remaining_participant_count: [ encounter_case.case_participants.size - 4, 0 ].max,
-      outcome: encounter_case.case_outcomes.first,
-      insight: encounter_case.case_insights.first,
-      tags: encounter_case.tags.sort_by(&:name).map(&:name).first(4)
-    }
-  end
 
   def showcase_person_focus
     @showcase_person_focus ||= begin
@@ -783,13 +704,11 @@ class PeopleController < ApplicationController
   def ranked_showcase_people
     @ranked_showcase_people ||= begin
       pool = showcase_people_pool
-      case_counts = CaseParticipant.where(person_id: pool.map(&:id)).group(:person_id).count
 
       pool.sort_by do |person|
         metadata = local_graph_metadata_for(person)
 
         [
-          -case_counts.fetch(person.id, 0),
           -(metadata[:tags].size + metadata[:organizations].size),
           person.display_name
         ]
@@ -800,25 +719,14 @@ class PeopleController < ApplicationController
   def showcase_graph_for(person)
     @showcase_graphs ||= {}
     @showcase_graphs[person.id] ||= begin
-      graph_scope = PersonCaseGraphScope.new(focal_person: person, depth: 1).build
-      graph_people = graph_scope[:people]
-      graph = RelationshipGraphBuilder.new(
-        people: graph_people,
-        encounter_cases: graph_scope[:encounter_cases],
+      candidate_people = showcase_people_pool.reject { |candidate| candidate.id == person.id }.first(80)
+      graph = PersonNeighborhoodGraphBuilder.new(
         focal_person: person,
-        profile_metadata_by_person_id: local_profile_metadata_index_for(graph_people)
+        candidates: candidate_people,
+        focal_metadata: local_graph_metadata_for(person),
+        depth: 1,
+        profile_metadata_by_person_id: local_profile_metadata_index_for(candidate_people)
       ).payload
-
-      if graph[:edges].empty?
-        candidate_people = showcase_people_pool.reject { |candidate| candidate.id == person.id }.first(80)
-        graph = PersonNeighborhoodGraphBuilder.new(
-          focal_person: person,
-          candidates: candidate_people,
-          focal_metadata: local_graph_metadata_for(person),
-          depth: 1,
-          profile_metadata_by_person_id: local_profile_metadata_index_for(candidate_people)
-        ).payload
-      end
 
       graph[:labelMode] = "all"
       graph
@@ -832,21 +740,6 @@ class PeopleController < ApplicationController
     end
   end
 
-  def showcase_encounter_case
-    candidate_scope = EncounterCase.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
-    person_cases = if showcase_person.present?
-      showcase_person.encounter_cases.publicly_visible.includes(:tags, :case_outcomes, :case_insights, case_participants: :person)
-                   .order(happened_on: :desc, published_at: :desc)
-                   .limit(8)
-                   .to_a
-    else
-      []
-    end
-
-    person_cases.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
-      candidate_scope.publicly_visible.order(happened_on: :desc, published_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 } ||
-      candidate_scope.order(happened_on: :desc, published_at: :desc, created_at: :desc).limit(12).to_a.find { |encounter_case| encounter_case.case_participants.size >= 2 }
-  end
 
   def local_profile_metadata_index_for(people)
     Array(people).compact.uniq { |person| person.id }.index_with do |person|

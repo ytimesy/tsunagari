@@ -30,6 +30,7 @@ class PersonPublicEstimateBuilder
       network_position: network_position,
       approach: approach,
       evidence: evidence_points,
+      capability_profile: capability_profile(roles:, themes:, network_position:, approach:),
       persona_sketch: persona_sketch(roles:, themes:, network_position:, approach:)
     }
   end
@@ -55,22 +56,21 @@ class PersonPublicEstimateBuilder
   def network_position_estimate
     bridge_count = Array(@navigation_lens[:bridge_people]).size
     primary_count = Array(@navigation_lens[:primary_people]).size
-    case_count = Array(@navigation_lens[:related_cases]).size
 
     if bridge_count.positive?
       {
         label: "橋渡し型",
         reason: "異分野の接点が見えていて、関係網を横に広げる役割が強めです。"
       }
-    elsif case_count >= 2
-      {
-        label: "事例蓄積型",
-        reason: "公開されている事例が複数あり、実践の蓄積から人物像を読めます。"
-      }
     elsif primary_count >= 2
       {
         label: "近接ネットワーク型",
         reason: "近い関係者が複数いるので、専門やテーマの近接圏で輪郭をつかみやすいです。"
+      }
+    elsif theme_estimates.any? || organization_names.any?
+      {
+        label: "テーマ集約型",
+        reason: "テーマや所属の手がかりがあり、近い文脈から人物像を組み立てやすいです。"
       }
     else
       {
@@ -99,9 +99,34 @@ class PersonPublicEstimateBuilder
     else
       {
         label: "公開情報を追加中",
-        reason: "まずは人物概要と関連事例から手がかりを増やす段階です。"
+        reason: "まずは人物概要、タグ、所属から手がかりを増やす段階です。"
       }
     end
+  end
+
+  def capability_profile(roles:, themes:, network_position:, approach:)
+    {
+      notice: "IQや身体能力ではなく、公開情報から読める活動特性を補助表示します。数値は診断ではなく、人物の使いどころを掴むための目安です。",
+      metrics: [
+        capability_metric("分析性", analytical_score(roles, themes), analytical_reason(roles, themes)),
+        capability_metric("発信力", communication_score(roles), communication_reason),
+        capability_metric("越境性", crossing_score(themes, network_position), crossing_reason(network_position)),
+        capability_metric("接続力", connection_score(network_position), connection_reason(network_position)),
+        capability_metric("実装志向", execution_score(roles, approach), execution_reason(approach))
+      ]
+    }
+  end
+
+  def capability_metric(label, value, reason)
+    safe_value = value.to_i.clamp(1, 5)
+
+    {
+      label: label,
+      value: safe_value,
+      max: 5,
+      percent: safe_value * 20,
+      reason: reason
+    }
   end
 
   def persona_sketch(roles:, themes:, network_position:, approach:)
@@ -192,15 +217,15 @@ class PersonPublicEstimateBuilder
         label: "異分野のあいだを往復する",
         reason: "近い人だけでなく、少し離れた領域同士をつなぐと価値が出やすいです。"
       }
-    when "事例蓄積型"
-      {
-        label: "実践ベースで信頼を作る",
-        reason: "事例を起点に話すと、人物像と役割が伝わりやすくなります。"
-      }
     when "近接ネットワーク型"
       {
         label: "近い専門圏で連携する",
         reason: "専門やテーマが近い相手と組ませると輪郭が早く見えます。"
+      }
+    when "テーマ集約型"
+      {
+        label: "同じ関心圏からつながる",
+        reason: "共通テーマや所属から入ると、会話の入口を作りやすいです。"
       }
     else
       {
@@ -253,16 +278,104 @@ class PersonPublicEstimateBuilder
     }
   end
 
+  def analytical_score(roles, themes)
+    score = 1
+    score += 1 if dominant_role_label(roles).match?(/研究|分析|Researcher/i)
+    score += 1 if themes.any? { |theme| theme.match?(/研究|分析|計算|math|science|data|comput/i) }
+    score += 1 if primary_affiliation_title.to_s.match?(/research|analyst|scientist|editor|研究|分析/i)
+    score += 1 if @person.recommended_for.present? || @person.meeting_value.present?
+    score
+  end
+
+  def communication_score(roles)
+    score = 1
+    score += 1 if dominant_role_label(roles).match?(/編集|発信|editor|writer|journal|教育|コミュニティ/i)
+    score += 1 if @person.fit_modes_list.any? { |mode| mode.match?(/登壇|取材/) }
+    score += 1 if source_text.length >= 120
+    score += 1 if @person.introduction_note.present?
+    score
+  end
+
+  def crossing_score(themes, network_position)
+    score = 1
+    score += 2 if network_position[:label] == "橋渡し型"
+    score += 1 if dedupe(organization_names).size >= 2
+    score += 1 if themes.size >= 3
+    score
+  end
+
+  def connection_score(network_position)
+    score = 1
+    score += 2 if Array(@navigation_lens[:primary_people]).size >= 3
+    score += 1 if network_position[:label].in?(["橋渡し型", "近接ネットワーク型"])
+    score += 1 if @person.fit_modes_list.any? { |mode| mode.match?(/相談|共同研究/) } || @person.introduction_note.present?
+    score
+  end
+
+  def execution_score(roles, approach)
+    score = 1
+    score += 1 if dominant_role_label(roles).match?(/事業|プロダクト|business|product|政策|公共/i)
+    score += 1 if @person.fit_modes_list.any? { |mode| mode.match?(/共同研究|相談/) }
+    score += 1 if @person.meeting_value.present?
+    score += 1 if approach[:label].to_s != "公開情報を追加中"
+    score
+  end
+
+  def analytical_reason(roles, themes)
+    if dominant_role_label(roles).match?(/研究|分析|Researcher/i)
+      "研究・分析寄りの手がかりが強く、論点を深く扱う人物として読みやすいです。"
+    elsif themes.any?
+      "専門タグが見えていて、テーマを軸に深掘りする人物像を組み立てやすいです。"
+    else
+      "プロフィール断片は少ないですが、補足情報が増えるほど分析性の見立てが安定します。"
+    end
+  end
+
+  def communication_reason
+    if @person.fit_modes_list.any? { |mode| mode.match?(/登壇|取材/) }
+      "公開発信の用途が見えていて、人に伝える場面で力を出しやすい人物として読めます。"
+    elsif @person.introduction_note.present?
+      "紹介メモや補足があり、伝え方の輪郭を作りやすい状態です。"
+    else
+      "文章や用途の補足が増えるほど、発信力の見立ては上がります。"
+    end
+  end
+
+  def crossing_reason(network_position)
+    if network_position[:label] == "橋渡し型"
+      "異分野のあいだをつなぐ手がかりがあり、越境的に機能する可能性が高めです。"
+    elsif dedupe(organization_names).size >= 2
+      "複数の所属文脈が見えていて、異なる場をまたぐ動きが読み取れます。"
+    else
+      "越境の兆しはあるものの、まだ公開情報は少なめです。"
+    end
+  end
+
+  def connection_reason(network_position)
+    if Array(@navigation_lens[:primary_people]).size >= 3
+      "主要関係者が複数見えていて、周辺人物を束ねる接続点になりやすいです。"
+    elsif network_position[:label] == "近接ネットワーク型"
+      "近い関係圏の中で、安定してつながる役割を担いやすい人物像です。"
+    else
+      "関係データが増えるほど、誰をつなぐ人物かの見立てがはっきりします。"
+    end
+  end
+
+  def execution_reason(approach)
+    if @person.fit_modes_list.any? { |mode| mode.match?(/共同研究|相談/) }
+      "話を聞くだけでなく、次の具体行動へ落とし込みやすい人物として読めます。"
+    elsif approach[:label].to_s != "公開情報を追加中"
+      "用途や価値の補足があり、企画や実装の場に乗せやすい状態です。"
+    else
+      "まずは会う価値や用途メモが増えると、実装志向の見立てが安定します。"
+    end
+  end
+
   def evidence_points
     points = []
     points << "タグ: #{dedupe(local_tags + remote_tags).first(3).join(' / ')}" if (local_tags + remote_tags).any?
     points << "所属: #{organization_names.first(2).join(' / ')}" if organization_names.any?
     points << "用途メモ: #{@person.fit_modes_list.first(2).join(' / ')}" if @person.fit_modes_list.any?
-
-    related_case_titles = Array(@navigation_lens[:related_cases]).filter_map do |entry|
-      entry.dig(:encounter_case)&.title
-    end
-    points << "関連事例: #{related_case_titles.first(2).join(' / ')}" if related_case_titles.any?
 
     related_people = Array(@navigation_lens[:primary_people]).filter_map { |entry| entry[:label] }
     points << "主要関係者: #{related_people.first(2).join(' / ')}" if related_people.any?

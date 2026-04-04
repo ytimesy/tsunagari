@@ -1,4 +1,5 @@
 <% content_for :title, @person.display_name %>
+<% deep_insight = deep_insight_access? %>
 
 <section class="profile-hero">
   <div class="profile-badge">
@@ -15,12 +16,8 @@
   </div>
 
   <div class="hero-actions">
-    <% if saved_person?(@person) %>
-      <%= button_to '保存リストから外す', remove_saved_person_path(@person), method: :delete, class: 'secondary-link button-link' %>
-    <% else %>
-      <%= button_to '保存リストに追加', save_person_path(@person), method: :post, class: 'secondary-link button-link' %>
-    <% end %>
-    <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: "secondary-link" %>
+    <%= link_to "全体関係マップ", graph_people_path, class: "secondary-link" %>
+    <%= link_to "Insight", insight_membership_path, class: "secondary-link" %>
     <% if can_edit_content? %>
       <%= link_to external_people_import_title(target_person: @person), new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
       <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
@@ -35,38 +32,63 @@
     <p class="meta">外部DBの説明ではなく、Tsunagari が補う判断材料です。</p>
 
     <% if @person.quality_insight? %>
-      <div class="person-insight-grid">
-        <article class="person-insight-card">
-          <h3>役立つ文脈</h3>
-          <%= simple_format(@person.recommended_for.presence || "まだ未設定です。") %>
-        </article>
+      <% if deep_insight %>
+        <div class="person-insight-grid">
+          <article class="person-insight-card">
+            <h3>役立つ文脈</h3>
+            <%= simple_format(@person.recommended_for.presence || "まだ未設定です。") %>
+          </article>
 
-        <article class="person-insight-card">
-          <h3>会う価値</h3>
-          <%= simple_format(@person.meeting_value.presence || "まだ未設定です。") %>
-        </article>
+          <article class="person-insight-card">
+            <h3>会う価値</h3>
+            <%= simple_format(@person.meeting_value.presence || "まだ未設定です。") %>
+          </article>
 
-        <article class="person-insight-card">
-          <h3>向いている用途</h3>
-          <% if @person.fit_modes_list.any? %>
-            <div class="tag-cloud">
-              <% @person.fit_modes_list.each do |fit_mode| %>
-                <span class="tag-pill person-fit-pill"><%= fit_mode %></span>
-              <% end %>
-            </div>
-          <% else %>
-            <p class="empty-note">まだ用途タグは未設定です。</p>
-          <% end %>
-          <% if @person.last_reviewed_on.present? %>
-            <p class="meta person-review-meta"><%= "最終確認日: #{l(@person.last_reviewed_on)}" %></p>
-          <% end %>
-        </article>
+          <article class="person-insight-card">
+            <h3>向いている用途</h3>
+            <% if @person.fit_modes_list.any? %>
+              <div class="tag-cloud">
+                <% @person.fit_modes_list.each do |fit_mode| %>
+                  <span class="tag-pill person-fit-pill"><%= fit_mode %></span>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="empty-note">まだ用途タグは未設定です。</p>
+            <% end %>
+            <% if @person.last_reviewed_on.present? %>
+              <p class="meta person-review-meta"><%= "最終確認日: #{l(@person.last_reviewed_on)}" %></p>
+            <% end %>
+          </article>
 
-        <article class="person-insight-card">
-          <h3>紹介メモ</h3>
-          <%= simple_format(@person.introduction_note.presence || "まだ未設定です。") %>
-        </article>
-      </div>
+          <article class="person-insight-card">
+            <h3>紹介メモ</h3>
+            <%= simple_format(@person.introduction_note.presence || "まだ未設定です。") %>
+          </article>
+        </div>
+      <% else %>
+        <div class="person-insight-grid person-insight-grid--locked">
+          <article class="person-insight-card">
+            <h3>役立つ文脈</h3>
+            <%= simple_format(truncate(@person.recommended_for.presence || "まだ未設定です。", length: 80)) %>
+          </article>
+
+          <article class="person-insight-card insight-locked-card">
+            <h3>会う価値</h3>
+            <p class="insight-locked-copy">この人物に会う意味づけと、相談しやすい論点は Insight で読めます。</p>
+          </article>
+
+          <article class="person-insight-card insight-locked-card">
+            <h3>向いている用途</h3>
+            <p class="insight-locked-copy"><%= @person.fit_modes_list.any? ? "#{@person.fit_modes_list.first} までは公開中。残りの用途タグは登録後に読めます。" : "用途タグの整理は Insight で読めます。" %></p>
+          </article>
+
+          <article class="person-insight-card insight-locked-card">
+            <h3>紹介メモ</h3>
+            <p class="insight-locked-copy">紹介時の切り口、注意点、相性の良い相手は利用登録後に見られます。</p>
+          </article>
+        </div>
+        <%= render "shared/insight_membership_cta", title: "活用視点の全文は Insight で読めます", copy: "無料では概要だけを見せ、会う価値や紹介メモは利用登録後に表示します。" %>
+      <% end %>
     <% else %>
       <p class="empty-note">まだ Tsunagari 独自の活用視点は未設定です。</p>
       <% if can_edit_content? %>
@@ -106,31 +128,52 @@
       <div class="persona-sketch-copy">
         <p class="persona-sketch-summary"><%= persona_sketch[:summary] %></p>
 
-        <div class="persona-sketch-grid">
-          <article class="persona-sketch-card">
-            <h3>仕事の進め方</h3>
-            <p class="persona-sketch-label"><%= persona_sketch.dig(:work_style, :label) %></p>
-            <p class="person-lens-copy"><%= persona_sketch.dig(:work_style, :reason) %></p>
-          </article>
+        <% if deep_insight %>
+          <div class="persona-sketch-grid">
+            <article class="persona-sketch-card">
+              <h3>仕事の進め方</h3>
+              <p class="persona-sketch-label"><%= persona_sketch.dig(:work_style, :label) %></p>
+              <p class="person-lens-copy"><%= persona_sketch.dig(:work_style, :reason) %></p>
+            </article>
 
-          <article class="persona-sketch-card">
-            <h3>関わり方の印象</h3>
-            <p class="persona-sketch-label"><%= persona_sketch.dig(:interaction_style, :label) %></p>
-            <p class="person-lens-copy"><%= persona_sketch.dig(:interaction_style, :reason) %></p>
-          </article>
+            <article class="persona-sketch-card">
+              <h3>関わり方の印象</h3>
+              <p class="persona-sketch-label"><%= persona_sketch.dig(:interaction_style, :label) %></p>
+              <p class="person-lens-copy"><%= persona_sketch.dig(:interaction_style, :reason) %></p>
+            </article>
 
-          <article class="persona-sketch-card">
-            <h3>動きやすい場面</h3>
-            <p class="persona-sketch-label"><%= persona_sketch.dig(:momentum, :label) %></p>
-            <p class="person-lens-copy"><%= persona_sketch.dig(:momentum, :reason) %></p>
-          </article>
-        </div>
+            <article class="persona-sketch-card">
+              <h3>動きやすい場面</h3>
+              <p class="persona-sketch-label"><%= persona_sketch.dig(:momentum, :label) %></p>
+              <p class="person-lens-copy"><%= persona_sketch.dig(:momentum, :reason) %></p>
+            </article>
+          </div>
+        <% else %>
+          <div class="persona-sketch-grid">
+            <article class="persona-sketch-card insight-locked-card">
+              <h3>仕事の進め方</h3>
+              <p class="insight-locked-copy">この人物が深掘り型か、実装型か、翻訳型かの読み解きは登録後に読めます。</p>
+            </article>
+
+            <article class="persona-sketch-card insight-locked-card">
+              <h3>関わり方の印象</h3>
+              <p class="insight-locked-copy">異分野をつなぐか、近い専門圏で動くかの仮説は登録後に読めます。</p>
+            </article>
+
+            <article class="persona-sketch-card insight-locked-card">
+              <h3>動きやすい場面</h3>
+              <p class="insight-locked-copy">どんな場面でこの人物が活きるかの仮説は利用登録後に見られます。</p>
+            </article>
+          </div>
+          <%= render "shared/insight_membership_cta", title: "仮説の人物像の詳細は Insight で読めます", copy: "抽象ポートレートは公開しつつ、仕事の進め方や動きやすい場面は利用登録後に表示します。" %>
+        <% end %>
       </div>
     </div>
   </article>
 </section>
 
 <section class="dashboard-grid">
+  <% capability_profile = @person_public_estimate[:capability_profile] || {} %>
   <article class="panel soft-panel relationship-panel relationship-panel--wide person-estimate-panel">
     <p class="eyebrow">Public Estimate</p>
     <h2>公開情報ベースの見立て</h2>
@@ -175,6 +218,25 @@
         <p class="person-lens-copy"><%= @person_public_estimate.dig(:approach, :reason) %></p>
       </article>
 
+      <article class="person-estimate-card person-estimate-card--wide capability-profile-card">
+        <h3>活動特性スケール</h3>
+        <p class="meta"><%= capability_profile[:notice] %></p>
+        <div class="capability-profile-grid">
+          <% Array(capability_profile[:metrics]).each do |metric| %>
+            <article class="capability-profile-item">
+              <div class="capability-profile-head">
+                <strong><%= metric[:label] %></strong>
+                <span class="meta"><%= "#{metric[:value]}/#{metric[:max]}" %></span>
+              </div>
+              <div class="capability-meter" aria-hidden="true">
+                <span class="capability-meter-fill" style="width: <%= metric[:percent] %>%"></span>
+              </div>
+              <p class="capability-profile-reason"><%= metric[:reason] %></p>
+            </article>
+          <% end %>
+        </div>
+      </article>
+
       <article class="person-estimate-card person-estimate-card--wide">
         <h3>根拠</h3>
         <% if @person_public_estimate[:evidence].any? %>
@@ -184,7 +246,7 @@
             <% end %>
           </ul>
         <% else %>
-          <p class="empty-note">タグ、所属、事例が増えると根拠も表示されます。</p>
+          <p class="empty-note">タグ、所属、関係データが増えると根拠も表示されます。</p>
         <% end %>
       </article>
     </div>
@@ -203,7 +265,7 @@
     ] %>
     <p class="eyebrow">Person Lens</p>
     <h2>人物起点マップ</h2>
-    <p class="meta">人物関係図を入口に、この人物に近い人、越境的につながる人、関連事例へ進みます。</p>
+    <p class="meta">人物関係図を入口に、この人物に近い人、越境的につながる人、次に追うべき人へ進みます。</p>
     <div class="relationship-map-layout">
       <div class="relationship-depth-rail">
         <div class="relationship-depth-picker" role="navigation" aria-label="人物関係図の表示範囲">
@@ -236,28 +298,6 @@
     </div>
   </article>
 
-</section>
-
-<section class="dashboard-grid">
-  <article class="panel soft-panel">
-    <p class="eyebrow">My List</p>
-    <h2>保存リスト用メモ</h2>
-    <% if saved_person?(@person) %>
-      <p class="meta">このブラウザだけに残る個人メモです。企画案、紹介理由、比較観点を書けます。</p>
-      <%= form_with scope: :saved_person, url: update_saved_person_note_path(@person), method: :patch, class: 'saved-note-form' do |form| %>
-        <div class="field">
-          <%= form.label :note, 'メモ' %>
-          <%= form.text_area :note, value: saved_person_note(@person), rows: 4, placeholder: '登壇候補、紹介向き、相談したい論点など' %>
-        </div>
-        <div class="hero-actions saved-person-toolbar">
-          <%= form.submit 'メモを保存', class: 'primary-button' %>
-          <%= link_to '保存リストを見る', saved_people_path, class: 'secondary-link' %>
-        </div>
-      <% end %>
-    <% else %>
-      <p class="empty-note">先に保存リストへ追加すると、この人物にだけ付ける個人メモを残せます。</p>
-    <% end %>
-  </article>
 </section>
 
 <section class="dashboard-grid person-lens-grid person-lens-grid--exploration">
@@ -296,35 +336,33 @@
   <article class="panel soft-panel person-lens-card">
     <p class="eyebrow">Why Connected</p>
     <h2>関係の理由</h2>
-    <p class="meta">事例、テーマ、所属のどこで関係が生まれているかを短く読めます。</p>
-    <% if @person_navigation_lens[:relation_reasons].any? %>
-      <ul class="person-lens-list">
-        <% @person_navigation_lens[:relation_reasons].each do |connection| %>
-          <li class="person-lens-item">
-            <div class="person-lens-head">
-              <%= link_to connection[:label], connection[:href] %>
-              <span class="tag-pill"><%= connection[:kind_label] %></span>
-            </div>
-            <p class="person-lens-copy"><%= connection[:reason] %></p>
-            <% if connection[:relation_points].any? %>
-              <ul class="person-lens-detail-list">
-                <% connection[:relation_points].each do |point| %>
-                  <li><%= point %></li>
-                <% end %>
-              </ul>
-            <% end %>
-            <% if connection[:shared_cases].any? %>
-              <div class="person-lens-link-row">
-                <% connection[:shared_cases].each do |shared_case| %>
-                  <%= link_to shared_case[:title], shared_case[:href], class: "person-lens-link-pill" %>
-                <% end %>
+    <p class="meta">接点の強さ、テーマ、所属のどこで関係が生まれているかを短く読めます。</p>
+    <% if deep_insight %>
+      <% if @person_navigation_lens[:relation_reasons].any? %>
+        <ul class="person-lens-list">
+          <% @person_navigation_lens[:relation_reasons].each do |connection| %>
+            <li class="person-lens-item">
+              <div class="person-lens-head">
+                <%= link_to connection[:label], connection[:href] %>
+                <span class="tag-pill"><%= connection[:kind_label] %></span>
               </div>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
+              <p class="person-lens-copy"><%= connection[:reason] %></p>
+              <% if connection[:relation_points].any? %>
+                <ul class="person-lens-detail-list">
+                  <% connection[:relation_points].each do |point| %>
+                    <li><%= point %></li>
+                  <% end %>
+                </ul>
+              <% end %>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">まだ関係理由を説明できる十分な材料がありません。</p>
+      <% end %>
     <% else %>
-      <p class="empty-note">まだ関係理由を説明できる十分な材料がありません。</p>
+      <p class="insight-locked-copy"><%= @person_navigation_lens[:relation_reasons].any? ? "#{@person_navigation_lens[:relation_reasons].size}件の関係理由があります。どの接点・テーマ・所属でつながるかの全文は登録後に読めます。" : "関係理由はデータが増えると表示されます。全文表示は登録後に読めます。" %></p>
+      <%= render "shared/insight_membership_cta", title: "関係の理由は Insight で読めます", copy: "人物同士がなぜつながるのかを文章で読む部分は、利用登録後の深掘りです。" %>
     <% end %>
   </article>
 
@@ -332,55 +370,26 @@
     <p class="eyebrow">Next People</p>
     <h2>次に見るべき人物</h2>
     <p class="meta">この人の周辺を広げるなら、次にたどる価値が高い人物です。</p>
-    <% if @person_navigation_lens[:next_people].any? %>
-      <ul class="person-lens-list">
-        <% @person_navigation_lens[:next_people].each do |connection| %>
-          <li class="person-lens-item">
-            <div class="person-lens-head">
-              <%= link_to connection[:label], connection[:href] %>
-              <span class="tag-pill"><%= connection[:kind_label] %></span>
-            </div>
-            <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
-            <p class="person-lens-copy"><%= connection[:next_step_reason] %></p>
-          </li>
-        <% end %>
-      </ul>
-    <% else %>
-      <p class="empty-note">次に追うべき人物候補は、関係データが増えると表示されます。</p>
-    <% end %>
-  </article>
-
-  <article class="panel soft-panel person-lens-card">
-    <p class="eyebrow">Cases</p>
-    <h2>関連事例</h2>
-    <p class="meta">関係の根拠になっている出会い事例です。文章で確かめたいときの入口になります。</p>
-    <% if @person_navigation_lens[:related_cases].any? %>
-      <ul class="person-lens-list">
-        <% @person_navigation_lens[:related_cases].each do |entry| %>
-          <% encounter_case = entry[:encounter_case] %>
-          <li class="person-lens-item">
-            <div class="person-lens-head">
-              <%= link_to encounter_case.title, encounter_case_path(encounter_case) %>
-              <% if entry[:outcome].present? %>
-                <span class="tag-pill"><%= outcome_direction_label(entry[:outcome].outcome_direction) %></span>
-              <% end %>
-            </div>
-            <p class="meta"><%= [ encounter_case.happened_on, encounter_case.place.presence ].compact.join(" / ").presence || "時期・場所未設定" %></p>
-            <% if entry[:participants].any? %>
-              <p class="person-lens-copy"><%= "一緒に関わった人物: #{entry[:participants].map { |participant| participant.person.display_name }.join(' / ')}" %></p>
-            <% end %>
-            <% if entry[:tags].any? %>
-              <div class="tag-cloud person-lens-tags">
-                <% entry[:tags].each do |tag_name| %>
-                  <span class="tag-pill"><%= tag_name %></span>
-                <% end %>
+    <% if deep_insight %>
+      <% if @person_navigation_lens[:next_people].any? %>
+        <ul class="person-lens-list">
+          <% @person_navigation_lens[:next_people].each do |connection| %>
+            <li class="person-lens-item">
+              <div class="person-lens-head">
+                <%= link_to connection[:label], connection[:href] %>
+                <span class="tag-pill"><%= connection[:kind_label] %></span>
               </div>
-            <% end %>
-          </li>
-        <% end %>
-      </ul>
+              <p class="meta"><%= [ connection[:tone_label], connection[:strength_label] ].join(" / ") %></p>
+              <p class="person-lens-copy"><%= connection[:next_step_reason] %></p>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="empty-note">次に追うべき人物候補は、関係データが増えると表示されます。</p>
+      <% end %>
     <% else %>
-      <p class="empty-note">この人物に紐づく出会い事例はまだありません。</p>
+      <p class="insight-locked-copy"><%= @person_navigation_lens[:next_people].any? ? "次にたどる価値が高い人物候補が#{@person_navigation_lens[:next_people].size}人あります。選定理由は登録後に読めます。" : "人物候補は関係データが増えると表示されます。選定理由は登録後に読めます。" %></p>
+      <%= render "shared/insight_membership_cta", title: "次に見るべき人物は Insight で読めます", copy: "どの人物を次に追うべきか、その理由ごと読む部分は利用登録後に表示します。" %>
     <% end %>
   </article>
 </section>

@@ -8,6 +8,7 @@
   </div>
   <div class="hero-actions">
     <%= link_to '全体関係マップ', graph_people_path, class: 'secondary-link' %>
+    <%= link_to 'YouTube人物図鑑', youtube_guide_people_path, class: 'secondary-link' %>
     <% if can_edit_content? %>
       <%= link_to '外部DBから取り込む', new_person_import_path, class: 'secondary-link' %>
       <%= link_to '新規人物', new_person_path, class: 'primary-link' %>

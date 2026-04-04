@@ -32,6 +32,22 @@ class PeopleController < ApplicationController
     load_people_index_options
   end
 
+  def youtube_guide
+    @query = params[:q].to_s.strip
+    @selected_tag = params[:tag].to_s.strip.presence
+    @selected_sort = params[:sort].to_s.in?(PEOPLE_SORTS) ? params[:sort].to_s : 'name_asc'
+    @people_filters_active = [@query, @selected_tag].any?(&:present?) || @selected_sort != 'name_asc'
+
+    @people = base_scope
+    @people = apply_search(@people, @query) if @query.present?
+    @people = filter_people_by_tag(@people, @selected_tag)
+    @people = apply_people_sort(@people, @selected_sort)
+    @people = @people.limit(48)
+
+    load_people_index_options
+    @youtube_case_counts = youtube_case_counts_for(@people)
+  end
+
   def show
     @cluster_context_slug = params[:cluster].to_s.presence
     @graph_depth = graph_depth_param
@@ -168,6 +184,18 @@ class PeopleController < ApplicationController
       .distinct
       .order(:category)
       .pluck(:category)
+  end
+
+  def youtube_case_counts_for(people)
+    people_ids = Array(people).map(&:id)
+    return {} if people_ids.empty?
+
+    visible_case_scope = can_edit_content? ? EncounterCase.where.not(publication_status: 'archived') : EncounterCase.publicly_visible
+
+    visible_case_scope.joins(:people)
+      .where(people: { id: people_ids })
+      .group('people.id')
+      .count
   end
 
   def filter_people_by_tag(scope, tag_name)

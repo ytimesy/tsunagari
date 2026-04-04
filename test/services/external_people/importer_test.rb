@@ -51,4 +51,24 @@ class ExternalPeople::ImporterTest < ActiveSupport::TestCase
     assert_equal "Handwritten bio", imported_person.bio
     assert_empty imported_person.tags
   end
+
+  test "imports a person with a non-latin display name by generating a fallback slug" do
+    profile = {
+      source_name: "wikidata",
+      external_id: "Q16198885",
+      source_url: "https://www.wikidata.org/wiki/Q16198885",
+      fetched_at: Time.current,
+      display_name: "野中藍",
+      summary: "Japanese YouTuber",
+      bio: "Japanese YouTuber",
+      tags: [ "YouTube", "YouTuber" ],
+      affiliations: []
+    }
+
+    person = ExternalPeople::Importer.import!(profile: profile)
+
+    assert_equal "野中藍", person.display_name
+    assert_match(/\Aperson-/, person.slug)
+    assert_equal "Q16198885", person.person_external_profiles.first.external_id
+  end
 end

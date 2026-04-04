@@ -43,6 +43,73 @@ namespace :people do
     puts "Imported #{imported_count} / #{profiles.length} people."
   end
 
+  desc "Import YouTubers from Wikidata into the local database in batches"
+  task :import_wikidata_youtubers, [:total, :batch_size, :start_offset] => :environment do |_task, args|
+    target_new_people = [ args[:total].presence&.to_i || 500, 1 ].max
+    batch_size = (args[:batch_size].presence&.to_i || 50).clamp(1, ExternalPeople::WikidataYoutuberClient::MAX_BATCH_SIZE)
+    start_offset = [ args[:start_offset].presence&.to_i || 0, 0 ].max
+
+    examined_count = 0
+    new_people_count = 0
+    existing_count = 0
+    failed_count = 0
+    batch_index = 0
+
+    ExternalPeople::WikidataYoutuberClient::CREATOR_OCCUPATIONS.each do |occupation|
+      break if new_people_count >= target_new_people
+
+      offset = start_offset
+
+      loop do
+        break if new_people_count >= target_new_people
+
+        profiles = ExternalPeople::WikidataYoutuberClient.fetch_people(
+          occupation_qid: occupation.fetch(:qid),
+          occupation_label: occupation.fetch(:label),
+          limit: batch_size,
+          offset: offset
+        )
+        break if profiles.empty?
+
+        batch_index += 1
+        batch_new = 0
+        batch_existing = 0
+        batch_failed = 0
+
+        profiles.each do |profile|
+          examined_count += 1
+          already_registered = PersonExternalProfile.exists?(source_name: profile[:source_name], external_id: profile[:external_id])
+          ExternalPeople::Importer.import!(profile: profile)
+
+          if already_registered
+            existing_count += 1
+            batch_existing += 1
+            puts "Already registered #{profile[:display_name]} (#{profile[:external_id]})"
+          else
+            new_people_count += 1
+            batch_new += 1
+            puts "Imported #{profile[:display_name]} (#{profile[:external_id]})"
+          end
+        rescue StandardError => error
+          failed_count += 1
+          batch_failed += 1
+          warn "Skipped #{profile[:display_name]}: #{error.message}"
+        end
+
+        puts "Batch #{batch_index} [#{occupation.fetch(:label)} @ offset #{offset}]: fetched #{profiles.length}, new #{batch_new}, existing #{batch_existing}, failed #{batch_failed}"
+        break if profiles.length < batch_size
+
+        offset += batch_size
+      end
+    end
+
+    puts "Examined #{examined_count} creator candidates."
+    puts "New people: #{new_people_count}"
+    puts "Already registered: #{existing_count}"
+    puts "Failed: #{failed_count}"
+    puts "Target reached: #{new_people_count >= target_new_people}"
+  end
+
   desc "Import sample people from OpenAlex into the local database"
   task :import_openalex_sample, [:limit] => :environment do |_task, args|
     limit = args[:limit].presence&.to_i || 100

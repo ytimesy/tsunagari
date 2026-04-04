@@ -104,4 +104,25 @@ class ListFilteringTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_operator response.body.index('Older Coordination Case'), :<, response.body.index('Draft Coordination Case')
   end
+
+
+  test 'youtube guide shows visible people and filters by tag' do
+    public_person = Person.create!(display_name: 'Public Analyst', publication_status: 'published', summary: '動画で紹介しやすい人物です。')
+    archived_person = Person.create!(display_name: 'Archived Analyst', publication_status: 'archived')
+    computing = Tag.create!(name: 'Computing')
+    public_person.tags << computing
+    archived_person.tags << computing
+
+    encounter_case = EncounterCase.create!(title: 'Public Interview Case', publication_status: 'published')
+    encounter_case.case_participants.create!(person: public_person, participation_role: 'guest')
+
+    get youtube_guide_people_path, params: { tag: 'Computing' }
+
+    assert_response :success
+    assert_match 'YouTube人物図鑑', response.body
+    assert_match 'Public Analyst', response.body
+    assert_no_match 'Archived Analyst', response.body
+    assert_match '人物リストを依頼する', response.body
+    assert_match '1 件の事例', response.body
+  end
 end

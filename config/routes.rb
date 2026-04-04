@@ -12,6 +12,7 @@ Rails.application.routes.draw do
   resources :people, param: :slug do
     collection do
       get :graph
+      get :youtube_guide
     end
   end
   resources :person_imports, only: %i[new create]

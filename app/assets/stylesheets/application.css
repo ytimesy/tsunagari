@@ -470,6 +470,19 @@ a {
   margin-top: 14px;
 }
 
+.youtube-guide-grid {
+  align-items: start;
+}
+
+.youtube-card {
+  display: grid;
+  gap: 12px;
+}
+
+.youtube-card-actions {
+  margin-top: auto;
+}
+
 .profile-hero {
   padding: 28px;
   border: 1px solid var(--line);

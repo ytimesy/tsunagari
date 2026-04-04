@@ -25,7 +25,11 @@ class Person < ApplicationRecord
   scope :publicly_visible, -> { TsunagariFeatureFlags.strict_public_visibility? ? where(publication_status: 'published') : where.not(publication_status: 'archived') }
 
   def self.slug_candidate(value)
-    value.to_s.parameterize
+    parameterized = value.to_s.parameterize
+    return parameterized if parameterized.present?
+
+    encoded = value.to_s.unpack1("H*").to_s.first(20)
+    encoded.present? ? "person-#{encoded}" : ""
   end
 
   def to_param

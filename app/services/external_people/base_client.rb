@@ -9,13 +9,13 @@ module ExternalPeople
 
     private
 
-    def fetch_json(url, params: nil)
+    def fetch_json(url, params: nil, open_timeout: OPEN_TIMEOUT_SECONDS, read_timeout: READ_TIMEOUT_SECONDS)
       uri = url.is_a?(URI) ? url.dup : URI(url)
       uri.query = URI.encode_www_form(params) if params.present?
 
       response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
-        http.open_timeout = OPEN_TIMEOUT_SECONDS
-        http.read_timeout = READ_TIMEOUT_SECONDS
+        http.open_timeout = open_timeout
+        http.read_timeout = read_timeout
         request = Net::HTTP::Get.new(uri)
         request["Accept"] = "application/json"
         request["User-Agent"] = "Tsunagari/1.0"

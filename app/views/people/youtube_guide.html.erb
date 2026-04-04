@@ -1,0 +1,96 @@
+<% content_for :title, "YouTube人物図鑑" %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">YouTube People Guide</p>
+    <h1>YouTube人物図鑑</h1>
+    <p class="lede compact">動画で取り上げたい人物を、タグ、事例、ローカル補足から探すための専用一覧です。まずは企画の入口として使える形にしています。</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to '人物録へ戻る', people_path, class: 'secondary-link' %>
+    <%= link_to '人物リストを依頼する', new_list_request_path, class: 'primary-link' %>
+  </div>
+</section>
+
+<section class="dashboard-grid youtube-guide-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Video Angles</p>
+    <h2>使いどころ</h2>
+    <ul class="stack-list soft-list compact-list">
+      <li><strong>人物紹介回:</strong> 誰か一人を深掘りして紹介する</li>
+      <li><strong>テーマ解説回:</strong> タグを軸に複数人物を並べる</li>
+      <li><strong>対談候補探し:</strong> 似ている人、越境する人を探す</li>
+      <li><strong>事例解説回:</strong> 出会い事例と一緒に人物を紹介する</li>
+    </ul>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">How To Read</p>
+    <h2>見方</h2>
+    <p>人物カードでは、動画の切り口になりそうな一言、タグ、出会い事例数をまとめて見られます。気になる人物は詳細へ進み、さらに人脈や事例をたどれます。</p>
+  </article>
+</section>
+
+<section class="panel soft-panel">
+  <%= form_with url: youtube_guide_people_path, method: :get, class: 'page-stack' do |form| %>
+    <div class="inline-form">
+      <div class="field field--wide">
+        <%= form.label :q, 'キーワード' %>
+        <%= form.search_field :q, value: @query, placeholder: '人物名、要約、タグ、所属で探す' %>
+      </div>
+
+      <div class="field">
+        <%= form.label :tag, 'タグ' %>
+        <%= form.select :tag, options_for_select([[ 'すべてのタグ', '' ]] + @available_tag_names.map { |name| [ name, name ] }, @selected_tag) %>
+      </div>
+
+      <div class="field field--narrow">
+        <%= form.label :sort, '並び順' %>
+        <%= form.select :sort, options_for_select(people_sort_options, @selected_sort) %>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <%= form.submit '絞り込む', class: 'primary-button' %>
+      <% if @people_filters_active %>
+        <%= link_to '条件をリセット', youtube_guide_people_path, class: 'secondary-link' %>
+      <% end %>
+      <span class="meta"><%= "#{@people.count} 人を表示" %></span>
+    </div>
+  <% end %>
+</section>
+
+<section class="results-grid">
+  <% @people.each do |person| %>
+    <% topics = youtube_person_topics(person) %>
+    <% case_count = @youtube_case_counts.fetch(person.id, 0) %>
+    <article class="panel result-card youtube-card">
+      <p class="eyebrow">YouTube Person</p>
+      <h2><%= link_to person.display_name, person_destination_path(person) %></h2>
+      <p class="meta"><%= youtube_person_context(person) %></p>
+      <p><%= youtube_person_pitch(person, case_count: case_count) %></p>
+      <div class="tag-cloud">
+        <% if topics.any? %>
+          <% topics.each do |topic| %>
+            <span class="tag-pill"><%= topic %></span>
+          <% end %>
+        <% else %>
+          <span class="tag-pill muted">動画切り口はこれから補う</span>
+        <% end %>
+        <span class="tag-pill muted"><%= "#{case_count} 件の事例" %></span>
+      </div>
+      <div class="hero-actions youtube-card-actions">
+        <%= link_to '人物詳細', person_destination_path(person), class: 'secondary-link' %>
+        <% if can_edit_content? %>
+          <%= link_to external_people_import_title(target_person: person), new_person_import_path(q: person.display_name, person_id: person.id), class: 'secondary-link' %>
+        <% end %>
+      </div>
+    </article>
+  <% end %>
+
+  <% if @people.empty? %>
+    <article class="panel empty-state">
+      <p>条件に一致する人物は見つかりませんでした。別のタグやキーワードで探してみてください。</p>
+    </article>
+  <% end %>
+</section>

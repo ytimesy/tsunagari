@@ -178,6 +178,39 @@ module ApplicationHelper
     target_person.present? ? "#{base}で補う" : "外部データから人物を取り込む"
   end
 
+  def youtube_person_topics(person, limit: 4)
+    topics = person.tags.map(&:name) + person.person_external_profiles.flat_map(&:graph_tags)
+
+    topics.filter_map { |topic| topic.to_s.strip.presence }.uniq.first(limit)
+  end
+
+  def youtube_person_context(person)
+    affiliation = person.primary_affiliation
+    external_profile = person.primary_external_profile
+
+    if affiliation&.organization&.name.present?
+      [affiliation.organization.name, affiliation.title.presence].compact.join(' / ')
+    elsif external_profile.present?
+      "#{external_source_label(external_profile.source_name)} / #{external_profile.external_id}"
+    else
+      'ローカル情報のみ'
+    end
+  end
+
+  def youtube_person_pitch(person, case_count: 0)
+    return person.summary if person.summary.present?
+    return truncate(person.bio, length: 110) if person.bio.present?
+
+    topics = youtube_person_topics(person, limit: 3)
+    return "#{topics.join(' / ')} を切り口に紹介しやすい人物です。" if topics.any? && case_count.zero?
+    return "#{topics.join(' / ')} を切り口に、#{case_count}件の出会い事例とあわせて紹介しやすい人物です。" if topics.any?
+
+    affiliation_name = person.primary_affiliation&.organization&.name
+    return "#{affiliation_name} の文脈から紹介しやすい人物です。" if affiliation_name.present?
+
+    case_count.positive? ? "#{case_count}件の出会い事例を入口に紹介しやすい人物です。" : 'ローカル補足を足して動画企画の切り口を育てたい人物です。'
+  end
+
   def external_people_import_description(target_person: nil)
     source_text = enabled_external_source_names_text(separator: " と ")
 

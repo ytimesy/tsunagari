@@ -1,7 +1,7 @@
 <% content_for :title, "全体関係マップ" %>
 
-<div class="page-stack graph-density-shell" data-controller="graph-density" data-graph-density-storage-key-value="people-graph-density">
-<section class="page-header dreamy-header">
+<div class="page-stack graph-density-shell atlas-map-page" data-controller="graph-density" data-graph-density-storage-key-value="people-graph-density">
+<section class="page-header dreamy-header atlas-header">
   <div>
     <p class="ribbon-label">Relationship Map</p>
     <h1>全体関係マップ</h1>
@@ -18,7 +18,7 @@
   </div>
 </section>
 
-<section class="panel soft-panel">
+<section class="panel soft-panel atlas-control-panel">
   <%= form_with url: graph_people_path, method: :get, class: "inline-form" do |form| %>
     <% if @selected_cluster_slug.present? %>
       <%= form.hidden_field :cluster, value: @selected_cluster_slug %>

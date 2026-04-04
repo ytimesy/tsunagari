@@ -1704,3 +1704,340 @@ a {
   display: grid;
   gap: 14px;
 }
+
+
+.hero-actions .button_to,
+.result-card-actions .button_to,
+.saved-person-toolbar .button_to {
+  margin: 0;
+}
+
+.button-link {
+  cursor: pointer;
+  font: inherit;
+}
+
+.result-card-actions {
+  margin-top: 14px;
+}
+
+.saved-list-grid {
+  align-items: start;
+}
+
+.saved-list-card {
+  display: grid;
+  gap: 14px;
+}
+
+.saved-note-form {
+  display: grid;
+  gap: 14px;
+}
+
+.saved-note-form textarea {
+  min-height: 108px;
+}
+
+.saved-person-toolbar {
+  margin-top: 0;
+}
+
+
+:root {
+  --atlas-paper: rgba(247, 242, 229, 0.92);
+  --atlas-paper-strong: rgba(250, 246, 237, 0.96);
+  --atlas-ink: #26322b;
+  --atlas-brass: #9a6a3f;
+  --atlas-forest: #556c5c;
+  --atlas-line: rgba(53, 64, 57, 0.14);
+}
+
+body {
+  color: var(--atlas-ink);
+  background:
+    radial-gradient(circle at 16% 14%, rgba(255, 251, 243, 0.92), transparent 0 26%),
+    radial-gradient(circle at 84% 18%, rgba(214, 198, 162, 0.26), transparent 0 20%),
+    radial-gradient(circle at 78% 72%, rgba(102, 128, 110, 0.15), transparent 0 24%),
+    linear-gradient(180deg, #f2eddf 0%, #e7dfcf 52%, #ddd6c8 100%);
+}
+
+body::before {
+  top: 78px;
+  left: -110px;
+  width: 360px;
+  height: 360px;
+  border-radius: 53% 47% 59% 41%;
+  background:
+    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.58), transparent 0 28%),
+    linear-gradient(160deg, rgba(190, 176, 145, 0.24), rgba(132, 157, 138, 0.14));
+  filter: blur(14px);
+}
+
+body::after {
+  right: -140px;
+  bottom: 7%;
+  width: 420px;
+  height: 420px;
+  border-radius: 42% 58% 61% 39%;
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255, 255, 255, 0.46), transparent 0 24%),
+    linear-gradient(155deg, rgba(158, 175, 149, 0.18), rgba(168, 133, 93, 0.14));
+  filter: blur(18px);
+}
+
+.page-glow {
+  opacity: 0.6;
+  background-image:
+    linear-gradient(rgba(82, 96, 86, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82, 96, 86, 0.06) 1px, transparent 1px),
+    radial-gradient(circle at 12% 30%, rgba(255, 255, 255, 0.62) 0 3px, transparent 4px),
+    radial-gradient(circle at 78% 16%, rgba(255, 255, 255, 0.48) 0 3px, transparent 4px),
+    radial-gradient(circle at 30% 84%, rgba(255, 255, 255, 0.35) 0 2px, transparent 3px),
+    radial-gradient(circle at 68% 74%, rgba(255, 255, 255, 0.52) 0 2px, transparent 3px);
+  background-size: 32px 32px, 32px 32px, auto, auto, auto, auto;
+  mix-blend-mode: multiply;
+}
+
+.site-header {
+  border-bottom: 1px solid rgba(82, 96, 86, 0.18);
+  background:
+    linear-gradient(180deg, rgba(248, 243, 232, 0.92), rgba(241, 236, 224, 0.84));
+  box-shadow: 0 14px 28px rgba(60, 68, 58, 0.06);
+}
+
+.brand-mark {
+  letter-spacing: 0.04em;
+}
+
+.hero-card,
+.panel,
+.form-panel,
+.entry-aside {
+  border-color: rgba(90, 101, 86, 0.18);
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.85), transparent 0 28%),
+    linear-gradient(180deg, rgba(249, 246, 239, 0.9), rgba(243, 237, 226, 0.88));
+  box-shadow:
+    0 24px 60px rgba(82, 92, 78, 0.11),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+}
+
+.hero-card::before,
+.panel::before,
+.form-panel::before,
+.entry-aside::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 0 0, rgba(255, 255, 255, 0.28), transparent 0 18%),
+    repeating-radial-gradient(circle at 120% -10%, transparent 0 15px, rgba(110, 121, 106, 0.035) 16px 17px);
+  opacity: 0.9;
+}
+
+.hero-card,
+.panel,
+.form-panel,
+.entry-aside,
+.map-lens-card,
+.map-legend-card,
+.map-edge-card,
+.map-structure-node,
+.status-summary-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-title,
+.page-header h1,
+.form-panel h1,
+.form-panel h2,
+.profile-hero h1,
+.panel h2,
+.panel h3 {
+  color: #223028;
+  letter-spacing: 0.015em;
+}
+
+.ribbon-label,
+.eyebrow,
+.record-provenance-label {
+  color: var(--atlas-brass);
+}
+
+.ribbon-label::before,
+.ribbon-label::after {
+  background: linear-gradient(90deg, var(--atlas-brass), var(--atlas-forest));
+}
+
+.atlas-stage {
+  align-items: stretch;
+}
+
+.atlas-hero-copy {
+  min-height: 100%;
+  background:
+    linear-gradient(140deg, rgba(251, 247, 239, 0.95), rgba(238, 232, 217, 0.93));
+}
+
+.atlas-hero-copy::after {
+  content: "FIELD NOTES";
+  position: absolute;
+  right: 26px;
+  top: 22px;
+  font-size: 0.7rem;
+  letter-spacing: 0.28em;
+  color: rgba(154, 106, 63, 0.55);
+}
+
+.atlas-hero-aside {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.94), transparent 0 26%),
+    linear-gradient(180deg, rgba(241, 237, 226, 0.96), rgba(228, 235, 224, 0.92));
+}
+
+.atlas-summary-grid .atlas-stat-panel {
+  background:
+    linear-gradient(180deg, rgba(248, 244, 236, 0.95), rgba(239, 234, 223, 0.9));
+}
+
+.atlas-map-page {
+  position: relative;
+}
+
+.atlas-map-page::before {
+  content: "";
+  position: absolute;
+  inset: 8px -8px auto;
+  height: 460px;
+  border-radius: 36px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.74), transparent 0 20%),
+    repeating-radial-gradient(circle at 70% 10%, rgba(108, 118, 104, 0.06) 0 2px, transparent 3px 20px),
+    linear-gradient(180deg, rgba(243, 238, 226, 0.68), rgba(232, 226, 214, 0.28));
+  z-index: 0;
+}
+
+.atlas-map-page > * {
+  position: relative;
+  z-index: 1;
+}
+
+.atlas-header {
+  padding: 32px;
+  border: 1px solid rgba(95, 107, 91, 0.18);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 14% 18%, rgba(255, 255, 255, 0.92), transparent 0 24%),
+    linear-gradient(145deg, rgba(248, 243, 231, 0.94), rgba(232, 229, 219, 0.88));
+}
+
+.atlas-header .lede {
+  max-width: 42rem;
+}
+
+.atlas-control-panel {
+  background:
+    linear-gradient(180deg, rgba(246, 241, 232, 0.94), rgba(235, 230, 220, 0.9));
+}
+
+.atlas-map-page .map-showcase-intro,
+.atlas-map-page .map-showcase-card,
+.atlas-map-page .map-overview-panel,
+.atlas-map-page .map-detail-shell,
+.atlas-map-page .map-bridge-panel,
+.atlas-map-page .map-neighbor-view {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.88), transparent 0 30%),
+    linear-gradient(160deg, rgba(247, 243, 234, 0.95), rgba(236, 230, 219, 0.9));
+}
+
+.atlas-map-page .map-flow-pill,
+.atlas-map-page .map-question-pill,
+.atlas-map-page .map-lens-number,
+.atlas-map-page .tag-pill,
+.atlas-map-page .stat-chip,
+.atlas-map-page .status-summary-link {
+  border-color: rgba(86, 102, 88, 0.18);
+  background: rgba(255, 250, 241, 0.76);
+}
+
+.atlas-map-page .map-flow-pill.is-current,
+.atlas-map-page .map-lens-card.is-available,
+.atlas-map-page .status-summary-link:hover,
+.atlas-map-page .status-summary-link:focus-visible {
+  background: linear-gradient(140deg, rgba(226, 233, 225, 0.94), rgba(240, 231, 214, 0.95));
+  border-color: rgba(84, 103, 90, 0.28);
+}
+
+.atlas-map-page .map-lens-card.is-awaiting {
+  background: rgba(248, 243, 234, 0.76);
+}
+
+.atlas-map-page .map-structure-preview {
+  padding: 18px;
+  border: 1px dashed rgba(95, 107, 91, 0.2);
+  border-radius: 24px;
+  background:
+    linear-gradient(rgba(78, 91, 81, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78, 91, 81, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(250, 247, 241, 0.86), rgba(240, 235, 225, 0.88));
+  background-size: 24px 24px, 24px 24px, auto;
+}
+
+.atlas-map-page .map-structure-node {
+  border: 1px solid rgba(91, 107, 92, 0.16);
+  box-shadow: 0 12px 24px rgba(80, 88, 77, 0.08);
+}
+
+.atlas-map-page .map-structure-connector {
+  color: var(--atlas-brass);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.atlas-map-page .relationship-canvas--cluster_overview,
+.atlas-map-page .relationship-canvas--cluster_focus,
+.atlas-map-page .relationship-canvas--person_focus {
+  background:
+    linear-gradient(rgba(78, 91, 81, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78, 91, 81, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 12% 15%, rgba(255, 255, 255, 0.92), transparent 0 24%),
+    linear-gradient(180deg, rgba(247, 243, 234, 0.92), rgba(233, 227, 215, 0.84));
+  background-size: 26px 26px, 26px 26px, auto, auto;
+}
+
+.atlas-map-page .graph-inspector,
+.atlas-map-page .map-legend-card,
+.atlas-map-page .map-edge-card,
+.saved-list-panel {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 0 28%),
+    linear-gradient(180deg, rgba(249, 245, 237, 0.94), rgba(236, 232, 221, 0.9));
+}
+
+.saved-list-panel .tag-pill {
+  background: rgba(255, 252, 245, 0.82);
+}
+
+@media (max-width: 720px) {
+  .atlas-header {
+    padding: 24px;
+  }
+
+  .atlas-map-page::before {
+    inset: 0;
+    height: 300px;
+    border-radius: 28px;
+  }
+
+  .atlas-hero-copy::after {
+    right: 22px;
+    top: 18px;
+    font-size: 0.62rem;
+  }
+}

@@ -14,12 +14,18 @@
     <%= render "shared/record_provenance", source_entries: person_source_entries(@person), edit_histories: @edit_histories %>
   </div>
 
-  <% if can_edit_content? %>
-    <div class="hero-actions">
+  <div class="hero-actions">
+    <% if saved_person?(@person) %>
+      <%= button_to '保存リストから外す', remove_saved_person_path(@person), method: :delete, class: 'secondary-link button-link' %>
+    <% else %>
+      <%= button_to '保存リストに追加', save_person_path(@person), method: :post, class: 'secondary-link button-link' %>
+    <% end %>
+    <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: "secondary-link" %>
+    <% if can_edit_content? %>
       <%= link_to external_people_import_title(target_person: @person), new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>
       <%= link_to "編集", edit_person_path(@person), class: "primary-link" %>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </section>
 
 <section class="dashboard-grid">
@@ -65,6 +71,29 @@
         <% end %>
       </div>
     </div>
+  </article>
+
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">My List</p>
+    <h2>保存リスト用メモ</h2>
+    <% if saved_person?(@person) %>
+      <p class="meta">このブラウザだけに残る個人メモです。企画案、紹介理由、比較観点を書けます。</p>
+      <%= form_with scope: :saved_person, url: update_saved_person_note_path(@person), method: :patch, class: 'saved-note-form' do |form| %>
+        <div class="field">
+          <%= form.label :note, 'メモ' %>
+          <%= form.text_area :note, value: saved_person_note(@person), rows: 4, placeholder: '登壇候補、紹介向き、相談したい論点など' %>
+        </div>
+        <div class="hero-actions saved-person-toolbar">
+          <%= form.submit 'メモを保存', class: 'primary-button' %>
+          <%= link_to '保存リストを見る', saved_people_path, class: 'secondary-link' %>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="empty-note">先に保存リストへ追加すると、この人物にだけ付ける個人メモを残せます。</p>
+    <% end %>
   </article>
 </section>
 

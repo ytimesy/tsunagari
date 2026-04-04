@@ -8,7 +8,7 @@
   </div>
   <div class="hero-actions">
     <%= link_to '人物録へ戻る', people_path, class: 'secondary-link' %>
-    <%= link_to '人物リストを依頼する', new_list_request_path, class: 'primary-link' %>
+    <%= link_to "保存リストを見る#{saved_people_count.positive? ? " (#{saved_people_count})" : ''}", saved_people_path, class: 'primary-link' %>
   </div>
 </section>
 
@@ -81,6 +81,11 @@
       </div>
       <div class="hero-actions youtube-card-actions">
         <%= link_to '人物詳細', person_destination_path(person), class: 'secondary-link' %>
+        <% if saved_person?(person) %>
+          <%= button_to '保存から外す', remove_saved_person_path(person), method: :delete, class: 'secondary-link button-link' %>
+        <% else %>
+          <%= button_to '保存リストへ', save_person_path(person), method: :post, class: 'secondary-link button-link' %>
+        <% end %>
         <% if can_edit_content? %>
           <%= link_to external_people_import_title(target_person: person), new_person_import_path(q: person.display_name, person_id: person.id), class: 'secondary-link' %>
         <% end %>

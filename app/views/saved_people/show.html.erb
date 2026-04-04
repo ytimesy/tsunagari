@@ -1,0 +1,80 @@
+
+<% content_for :title, '保存リスト' %>
+
+<section class="page-header dreamy-header">
+  <div>
+    <p class="ribbon-label">Saved List</p>
+    <h1>保存リスト</h1>
+    <p class="lede compact">このブラウザで気になった人物を一時保存して、比較、メモ、CSV出力に使えます。ログイン不要で使える軽い作業台です。</p>
+  </div>
+  <div class="hero-actions">
+    <%= link_to '人物録へ戻る', people_path, class: 'secondary-link' %>
+    <%= link_to 'YouTube人物図鑑', youtube_guide_people_path, class: 'secondary-link' %>
+    <% if @saved_people.any? %>
+      <%= link_to 'CSVを書き出す', export_saved_people_path(format: :csv), class: 'primary-link' %>
+    <% end %>
+  </div>
+</section>
+
+<section class="dashboard-grid">
+  <article class="panel soft-panel">
+    <p class="eyebrow">Saved People</p>
+    <h2><%= @saved_people.size %> 人を保持中</h2>
+    <p>気になる人物を一覧からためて、あとで比較したり、企画候補や紹介先の下書きに使えます。</p>
+    <div class="tag-cloud">
+      <span class="tag-pill">ログイン不要</span>
+      <span class="tag-pill">このブラウザだけに保持</span>
+      <span class="tag-pill">CSV出力</span>
+    </div>
+  </article>
+
+  <article class="panel soft-panel">
+    <p class="eyebrow">How To Use</p>
+    <h2>使い方</h2>
+    <ul class="stack-list soft-list compact-list">
+      <li>人物詳細や一覧で保存リストへ追加する</li>
+      <li>ここでメモを書き足して候補を絞る</li>
+      <li>CSVに出して営業先、登壇候補、紹介候補のたたき台に使う</li>
+    </ul>
+    <% if @hidden_saved_count.positive? %>
+      <p class="meta"><%= "現在の公開条件では #{@hidden_saved_count} 人が非表示です。" %></p>
+    <% end %>
+  </article>
+</section>
+
+<section class="results-grid saved-list-grid">
+  <% @saved_people.each do |person| %>
+    <article class="panel result-card saved-list-card">
+      <p class="eyebrow">Saved Person</p>
+      <h2><%= link_to person.display_name, person_destination_path(person) %></h2>
+      <p class="meta"><%= person.primary_affiliation&.organization&.name.presence || '所属未設定' %></p>
+      <p><%= truncate(person.summary.presence || person.bio.presence || 'まだローカル補足は少ない人物です。', length: 150) %></p>
+      <div class="tag-cloud">
+        <% if person.tags.any? %>
+          <% person.tags.order(:name).each do |tag| %>
+            <span class="tag-pill"><%= tag.name %></span>
+          <% end %>
+        <% else %>
+          <span class="tag-pill muted">タグ未設定</span>
+        <% end %>
+      </div>
+
+      <%= form_with scope: :saved_person, url: update_saved_person_note_path(person), method: :patch, class: 'saved-note-form' do |form| %>
+        <div class="field">
+          <%= form.label :note, '保存メモ' %>
+          <%= form.text_area :note, value: saved_person_note(person), rows: 4, placeholder: 'この人を何に使いたいか、紹介理由、比較メモなど' %>
+        </div>
+        <div class="hero-actions saved-person-toolbar">
+          <%= form.submit 'メモを保存', class: 'primary-button' %>
+          <%= link_to '保存リストから外す', remove_saved_person_path(person), data: { turbo_method: :delete }, class: 'secondary-link' %>
+        </div>
+      <% end %>
+    </article>
+  <% end %>
+
+  <% if @saved_people.empty? %>
+    <article class="panel empty-state">
+      <p>まだ保存した人物はありません。人物録や人物詳細から気になる人物を追加してください。</p>
+    </article>
+  <% end %>
+</section>

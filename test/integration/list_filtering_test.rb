@@ -122,7 +122,7 @@ class ListFilteringTest < ActionDispatch::IntegrationTest
     assert_match 'YouTube人物図鑑', response.body
     assert_match 'Public Analyst', response.body
     assert_no_match 'Archived Analyst', response.body
-    assert_match '人物リストを依頼する', response.body
+    assert_match '保存リスト', response.body
     assert_match '1 件の事例', response.body
   end
 end

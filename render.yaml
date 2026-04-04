@@ -17,7 +17,3 @@ services:
         value: "1"
       - key: RAILS_MAX_THREADS
         value: "3"
-      - key: TSUNAGARI_LIST_REQUEST_STARTER_PAYMENT_URL
-        sync: false
-      - key: TSUNAGARI_LIST_REQUEST_CURATED_PAYMENT_URL
-        sync: false

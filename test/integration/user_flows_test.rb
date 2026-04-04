@@ -510,6 +510,26 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match "org-civic-lab", response.body
   end
 
+  test "graph page chooses a non-isolated person for the person focus map when available" do
+    isolated = Person.create!(display_name: "Isolated Star", publication_status: "published")
+    5.times do |index|
+      encounter_case = EncounterCase.create!(title: "Solo appearance #{index}", publication_status: "published")
+      encounter_case.case_participants.create!(person: isolated, participation_role: "speaker")
+    end
+
+    connected_host = Person.create!(display_name: "Connected Host", publication_status: "published")
+    connected_guest = Person.create!(display_name: "Connected Guest", publication_status: "published")
+    organization = Organization.create!(name: "Community Lab", slug: "community-lab", category: "community")
+    PersonAffiliation.create!(person: connected_host, organization: organization, primary_flag: true)
+    PersonAffiliation.create!(person: connected_guest, organization: organization, primary_flag: true)
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match person_path(connected_host), response.body
+    assert_no_match person_path(isolated), response.body
+  end
+
   test "graph page shows concrete diagram candidates" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")

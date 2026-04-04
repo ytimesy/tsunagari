@@ -596,35 +596,16 @@ class PeopleController < ApplicationController
   end
 
   def build_person_focus_showcase
-    person = showcase_person
-    return unless person
+    focus = showcase_person_focus
+    return unless focus
 
-    graph_scope = PersonCaseGraphScope.new(focal_person: person, depth: 1).build
-    graph_people = graph_scope[:people]
-    graph = RelationshipGraphBuilder.new(
-      people: graph_people,
-      encounter_cases: graph_scope[:encounter_cases],
-      focal_person: person,
-      profile_metadata_by_person_id: local_profile_metadata_index_for(graph_people)
-    ).payload
-
-    if graph[:edges].empty?
-      candidate_people = showcase_people_pool.reject { |candidate| candidate.id == person.id }.first(80)
-      graph = PersonNeighborhoodGraphBuilder.new(
-        focal_person: person,
-        candidates: candidate_people,
-        focal_metadata: local_graph_metadata_for(person),
-        depth: 1,
-        profile_metadata_by_person_id: local_profile_metadata_index_for(candidate_people)
-      ).payload
-    end
-
-    graph[:labelMode] = "all"
+    person = focus.fetch(:person)
+    graph = focus.fetch(:graph)
 
     {
       person: person,
       graph: graph,
-      related_case_count: person.encounter_cases.count,
+      related_case_count: person.encounter_cases.publicly_visible.count,
       tags: local_graph_metadata_for(person)[:tags].first(4),
       organizations: local_graph_metadata_for(person)[:organizations].first(3)
     }
@@ -644,24 +625,64 @@ class PeopleController < ApplicationController
     }
   end
 
-  def showcase_person
-    @showcase_person ||= begin
-      pool = showcase_people_pool
-      if pool.empty?
-        nil
-      else
-        case_counts = CaseParticipant.where(person_id: pool.map(&:id)).group(:person_id).count
-
-        pool.min_by do |person|
-          metadata = local_graph_metadata_for(person)
-
-          [
-            -case_counts.fetch(person.id, 0),
-            -(metadata[:tags].size + metadata[:organizations].size),
-            person.display_name
-          ]
-        end
+  def showcase_person_focus
+    @showcase_person_focus ||= begin
+      ranked_showcase_people.each do |person|
+        graph = showcase_graph_for(person)
+        return { person: person, graph: graph } if graph[:nodes].size > 1 || graph[:edges].any?
       end
+
+      person = ranked_showcase_people.first
+      person.present? ? { person: person, graph: showcase_graph_for(person) } : nil
+    end
+  end
+
+  def showcase_person
+    showcase_person_focus&.fetch(:person)
+  end
+
+  def ranked_showcase_people
+    @ranked_showcase_people ||= begin
+      pool = showcase_people_pool
+      case_counts = CaseParticipant.where(person_id: pool.map(&:id)).group(:person_id).count
+
+      pool.sort_by do |person|
+        metadata = local_graph_metadata_for(person)
+
+        [
+          -case_counts.fetch(person.id, 0),
+          -(metadata[:tags].size + metadata[:organizations].size),
+          person.display_name
+        ]
+      end
+    end
+  end
+
+  def showcase_graph_for(person)
+    @showcase_graphs ||= {}
+    @showcase_graphs[person.id] ||= begin
+      graph_scope = PersonCaseGraphScope.new(focal_person: person, depth: 1).build
+      graph_people = graph_scope[:people]
+      graph = RelationshipGraphBuilder.new(
+        people: graph_people,
+        encounter_cases: graph_scope[:encounter_cases],
+        focal_person: person,
+        profile_metadata_by_person_id: local_profile_metadata_index_for(graph_people)
+      ).payload
+
+      if graph[:edges].empty?
+        candidate_people = showcase_people_pool.reject { |candidate| candidate.id == person.id }.first(80)
+        graph = PersonNeighborhoodGraphBuilder.new(
+          focal_person: person,
+          candidates: candidate_people,
+          focal_metadata: local_graph_metadata_for(person),
+          depth: 1,
+          profile_metadata_by_person_id: local_profile_metadata_index_for(candidate_people)
+        ).payload
+      end
+
+      graph[:labelMode] = "all"
+      graph
     end
   end
 

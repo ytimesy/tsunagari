@@ -79,6 +79,58 @@
 </section>
 
 <section class="dashboard-grid">
+  <% persona_sketch = @person_public_estimate[:persona_sketch] || {} %>
+  <% persona_visual = persona_sketch[:visual] || {} %>
+  <article class="panel soft-panel relationship-panel relationship-panel--wide persona-sketch-panel">
+    <p class="eyebrow">Imagined Portrait</p>
+    <h2>仮説の人物像</h2>
+    <p class="meta"><%= persona_sketch[:notice] %></p>
+
+    <div class="persona-sketch-layout">
+      <div class="persona-portrait persona-portrait--<%= persona_visual[:palette] %> persona-portrait--<%= persona_visual[:motif] %>">
+        <div class="persona-portrait-core">
+          <p class="persona-portrait-kicker">Public Clues</p>
+          <p class="persona-portrait-initials"><%= persona_visual[:initials] %></p>
+          <p class="persona-portrait-title"><%= persona_sketch[:title] %></p>
+        </div>
+
+        <% if persona_visual[:orbit_labels].present? %>
+          <div class="persona-portrait-orbits">
+            <% persona_visual[:orbit_labels].each do |label| %>
+              <span class="persona-portrait-orbit"><%= label %></span>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="persona-sketch-copy">
+        <p class="persona-sketch-summary"><%= persona_sketch[:summary] %></p>
+
+        <div class="persona-sketch-grid">
+          <article class="persona-sketch-card">
+            <h3>仕事の進め方</h3>
+            <p class="persona-sketch-label"><%= persona_sketch.dig(:work_style, :label) %></p>
+            <p class="person-lens-copy"><%= persona_sketch.dig(:work_style, :reason) %></p>
+          </article>
+
+          <article class="persona-sketch-card">
+            <h3>関わり方の印象</h3>
+            <p class="persona-sketch-label"><%= persona_sketch.dig(:interaction_style, :label) %></p>
+            <p class="person-lens-copy"><%= persona_sketch.dig(:interaction_style, :reason) %></p>
+          </article>
+
+          <article class="persona-sketch-card">
+            <h3>動きやすい場面</h3>
+            <p class="persona-sketch-label"><%= persona_sketch.dig(:momentum, :label) %></p>
+            <p class="person-lens-copy"><%= persona_sketch.dig(:momentum, :reason) %></p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="dashboard-grid">
   <article class="panel soft-panel relationship-panel relationship-panel--wide person-estimate-panel">
     <p class="eyebrow">Public Estimate</p>
     <h2>公開情報ベースの見立て</h2>

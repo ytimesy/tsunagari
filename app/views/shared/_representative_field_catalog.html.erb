@@ -1,0 +1,30 @@
+<section class="field-catalog">
+  <div class="field-catalog-header">
+    <div>
+      <p class="eyebrow">Representative Fields</p>
+      <h3>標準分野カタログ</h3>
+      <p class="field-hint">全世界の情報を追う入口として、代表的な100分野を用意しています。クリックするとタグ欄へ追加されます。</p>
+    </div>
+    <p class="field-catalog-count"><strong><%= RepresentativeFieldCatalog.count %></strong> 分野</p>
+  </div>
+
+  <div class="field-catalog-grid">
+    <% RepresentativeFieldCatalog.groups.each do |group| %>
+      <article class="field-catalog-group">
+        <h4><%= group[:label] %></h4>
+        <div class="field-catalog-pills">
+          <% group[:fields].each do |field_name| %>
+            <button
+              type="button"
+              class="field-catalog-button"
+              data-tag-catalog-target="button"
+              data-action="tag-catalog#append"
+              data-tag-name="<%= field_name %>">
+              <%= field_name %>
+            </button>
+          <% end %>
+        </div>
+      </article>
+    <% end %>
+  </div>
+</section>

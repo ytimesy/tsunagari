@@ -13,7 +13,7 @@
     </div>
   <% end %>
 
-  <%= form_with model: @encounter_case, url: @encounter_case.new_record? ? encounter_cases_path : encounter_case_path(@encounter_case) do |form| %>
+  <%= form_with model: @encounter_case, url: @encounter_case.new_record? ? encounter_cases_path : encounter_case_path(@encounter_case), data: { controller: "tag-catalog" } do |form| %>
     <div class="field">
       <%= form.label :title, "事例タイトル" %>
       <%= form.text_field :title, required: true, placeholder: "研究者と地域が出会い、新しい実験が始まった" %>
@@ -51,8 +51,11 @@
 
     <div class="field">
       <%= form.label :tag_list, "事例タグ" %>
-      <%= form.text_field :tag_list, value: @tag_list, placeholder: "mentorship, collaboration, civic-tech" %>
+      <%= form.text_field :tag_list, value: @tag_list, placeholder: "mentorship, collaboration, civic-tech", data: { tag_catalog_target: "input", action: "input->tag-catalog#refresh" } %>
+      <p class="field-hint">分野タグもここへ入れられます。下の標準分野カタログからクリック追加できます。</p>
     </div>
+
+    <%= render "shared/representative_field_catalog" %>
 
     <div class="field">
       <%= form.label :participant_names, "参加人物" %>

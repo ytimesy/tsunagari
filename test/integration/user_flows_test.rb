@@ -6,6 +6,10 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     get new_person_path
     assert_response :success
+    assert_match "標準分野カタログ", response.body
+    assert_match "100", response.body
+    assert_match "社会・公共", response.body
+    assert_match "AI", response.body
 
     post people_path, params: {
       person: {
@@ -62,6 +66,7 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     get person_path(person)
     assert_response :success
     assert_match "この人物の活用視点", response.body
+    assert_match "仮説の人物像", response.body
     assert_match "公開情報ベースの見立て", response.body
     assert_match "性格や年収などの私的属性は推定しません", response.body
     assert_match "技術史と編集の接点を考える企画", response.body
@@ -70,6 +75,8 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
 
     get new_encounter_case_path
     assert_response :success
+    assert_match "標準分野カタログ", response.body
+    assert_match "YouTube", response.body
 
     post encounter_cases_path, params: {
       encounter_case: {

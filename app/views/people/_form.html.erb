@@ -13,7 +13,7 @@
     </div>
   <% end %>
 
-  <%= form_with model: @person do |form| %>
+  <%= form_with model: @person, data: { controller: "tag-catalog" } do |form| %>
     <div class="field">
       <%= form.label :display_name, "人物名" %>
       <%= form.text_field :display_name, required: true, placeholder: "Ada Lovelace / 佐藤太郎" %>
@@ -69,9 +69,11 @@
 
     <div class="field">
       <%= form.label :tag_list, "タグ（ローカル補足）" %>
-      <%= form.text_field :tag_list, value: @tag_list, placeholder: "research, community, mentorship" %>
+      <%= form.text_field :tag_list, value: @tag_list, placeholder: "research, community, mentorship", data: { tag_catalog_target: "input", action: "input->tag-catalog#refresh" } %>
       <p class="field-hint">カンマ区切りで入力します。外部DBのタグではなく、Tsunagari 内で補いたい観点だけを残します。</p>
     </div>
+
+    <%= render "shared/representative_field_catalog" %>
 
     <div class="field">
       <%= form.label :primary_organization_name, "主な所属名（ローカル補足）" %>

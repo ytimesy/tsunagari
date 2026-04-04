@@ -35,6 +35,8 @@ class PersonPublicEstimateBuilderTest < ActiveSupport::TestCase
     assert_includes estimate[:themes], "Computing"
     assert_equal "橋渡し型", estimate.dig(:network_position, :label)
     assert_match "性格や年収", estimate[:notice]
+    assert_equal "AL", estimate.dig(:persona_sketch, :visual, :initials)
+    assert_match "仮説スケッチ", estimate.dig(:persona_sketch, :notice)
     assert estimate[:evidence].any? { |point| point.include?("関連事例") }
   end
 end

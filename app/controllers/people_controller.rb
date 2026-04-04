@@ -61,7 +61,7 @@ class PeopleController < ApplicationController
   def graph
     @query = params[:q].to_s.strip
     @selected_cluster_slug = params[:cluster].to_s.presence
-    @people = imported_scope
+    @people = graph_people_scope
     @people = apply_search(@people, @query) if @query.present?
     @people = @people.order(:display_name).load
     snapshot = PeopleGraphSnapshot.new(
@@ -238,8 +238,8 @@ class PeopleController < ApplicationController
     end
   end
 
-  def imported_scope
-    base_scope.joins(:person_external_profiles).distinct
+  def graph_people_scope
+    base_scope.distinct
   end
 
   def apply_search(scope, query)
@@ -567,7 +567,7 @@ class PeopleController < ApplicationController
 
   def cluster_context
     @cluster_context ||= begin
-      people = imported_scope.order(:display_name).load
+      people = graph_people_scope.order(:display_name).load
       ClusteredPeopleGraphBuilder.new(
         people: people,
         selected_cluster_slug: @cluster_context_slug

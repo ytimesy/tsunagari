@@ -379,6 +379,21 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_match 'data-graph-density-target="collapsible"', response.body
   end
 
+  test "global people graph includes local-only people with shared affiliations" do
+    ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
+    babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")
+
+    organization = Organization.create!(name: "Community Lab", slug: "community-lab", category: "community")
+    PersonAffiliation.create!(person: ada, organization: organization, primary_flag: true)
+    PersonAffiliation.create!(person: babbage, organization: organization, primary_flag: true)
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match "Community Lab", response.body
+    assert_match "org-community-lab", response.body
+  end
+
   test "global people graph shows imported network" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")

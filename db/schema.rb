@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_04_130000) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_04_173000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -109,7 +109,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_04_130000) do
     t.string "payment_status", default: "pending", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "package_key", default: "starter_10", null: false
     t.index ["created_at"], name: "index_list_requests_on_created_at"
+    t.index ["package_key"], name: "index_list_requests_on_package_key"
     t.index ["payment_status"], name: "index_list_requests_on_payment_status"
     t.index ["status"], name: "index_list_requests_on_status"
   end

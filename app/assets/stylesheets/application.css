@@ -1623,3 +1623,84 @@ a {
     align-items: stretch;
   }
 }
+
+
+.request-offer-grid {
+  align-items: start;
+}
+
+.request-offer-card {
+  display: grid;
+  gap: 12px;
+}
+
+.request-offer-card.is-selected {
+  border-color: rgba(95, 116, 86, 0.45);
+  box-shadow: 0 18px 36px rgba(95, 116, 86, 0.14);
+}
+
+.offer-price {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.request-confirmation-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.request-package-options {
+  display: grid;
+  gap: 10px;
+}
+
+.request-package-options--summary {
+  margin-top: 12px;
+}
+
+.request-package-option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid rgba(124, 144, 112, 0.24);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.request-package-option input {
+  width: auto;
+  margin-top: 3px;
+}
+
+.request-package-option strong,
+.request-package-option small {
+  display: block;
+}
+
+.request-package-option small {
+  margin-top: 4px;
+  color: var(--earth);
+}
+
+.request-package-option.is-selected,
+.request-package-option:hover,
+.request-package-option:focus-within,
+.request-package-option.is-link:hover,
+.request-package-option.is-link:focus-visible {
+  border-color: rgba(95, 116, 86, 0.4);
+  background: rgba(247, 249, 244, 0.94);
+  outline: none;
+}
+
+.request-package-option.is-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.monetization-panel {
+  display: grid;
+  gap: 14px;
+}

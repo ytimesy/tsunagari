@@ -120,10 +120,20 @@
 <% end %>
 
 <section class="dashboard-grid">
-  <article class="panel soft-panel">
+  <article class="panel soft-panel monetization-panel">
     <p class="eyebrow">List Request</p>
-    <h2>人物リスト作成依頼</h2>
-    <p>テーマや用途を送ると、Tsunagari を使って人物候補を整理した一覧を作る入口です。まずは小さな依頼から受け付けます。</p>
+    <h2>人物リストを売上に変える</h2>
+    <p>Tsunagari を使って、テーマ別の人物候補リストを手作業で納品する導線です。まずは価格を固定した 3 商品で回し、売れる依頼を学習します。</p>
+    <div class="request-package-options request-package-options--summary">
+      <% ListRequest::PACKAGES.each do |package_key, package| %>
+        <%= link_to new_list_request_path(package: package_key), class: 'request-package-option is-link' do %>
+          <span>
+            <strong><%= package[:label] %></strong>
+            <small><%= package[:price_label] %> / <%= package[:requested_count] %> 人目安</small>
+          </span>
+        <% end %>
+      <% end %>
+    </div>
     <div class="hero-actions">
       <%= link_to '依頼フォームへ', new_list_request_path, class: 'primary-link' %>
       <% if can_edit_content? %>

@@ -1,6 +1,6 @@
 require_dependency Rails.root.join("app/services/person_graph_metadata_builder").to_s
 class PeopleGraphSnapshot
-  CACHE_NAMESPACE = "people-graph/v2".freeze
+  CACHE_NAMESPACE = "people-graph/v3".freeze
   CACHE_TTL = 30.minutes
 
   def initialize(people:, selected_cluster_slug: nil, query: nil, profile_resolver: ExternalPeople::ProfileResolver.new)

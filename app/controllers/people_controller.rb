@@ -231,7 +231,7 @@ class PeopleController < ApplicationController
   end
 
   def graph_people_scope
-    base_scope.distinct
+    all_people_scope.where.not(publication_status: 'archived').distinct
   end
 
   def apply_search(scope, query)

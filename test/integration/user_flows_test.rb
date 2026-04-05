@@ -136,6 +136,27 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     end
   end
 
+test "global people graph still uses non-archived people when strict public visibility is enabled" do
+  published_person = Person.create!(display_name: "Strict Visible Person", publication_status: "published")
+  draft_person = Person.create!(display_name: "Strict Draft Collaborator", publication_status: "draft")
+  archived_person = Person.create!(display_name: "Strict Archived Collaborator", publication_status: "archived")
+
+  organization = Organization.create!(name: "Community Lab", slug: "community-lab", category: "community")
+  PersonAffiliation.create!(person: published_person, organization: organization, primary_flag: true)
+  PersonAffiliation.create!(person: draft_person, organization: organization, primary_flag: true)
+  PersonAffiliation.create!(person: archived_person, organization: organization, primary_flag: true)
+
+  with_stubbed_method(TsunagariFeatureFlags, :strict_public_visibility?, true) do
+    get graph_people_path(cluster: "org-community-lab")
+
+    assert_response :success
+    assert_match "Community Lab", response.body
+    assert_match "Strict Visible Person", response.body
+    assert_match "Strict Draft Collaborator", response.body
+    assert_no_match "Strict Archived Collaborator", response.body
+  end
+end
+
   test "editor can add research notes to person" do
     sign_in_as(create_user)
 

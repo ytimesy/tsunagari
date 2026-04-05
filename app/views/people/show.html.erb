@@ -16,7 +16,7 @@
   </div>
 
   <div class="hero-actions">
-    <%= link_to "全体関係マップ", graph_people_path, class: "secondary-link" %>
+    <%= link_to "全体関係マップ", graph_people_path, data: { turbo: false }, class: "secondary-link" %>
     <%= link_to "Insight", insight_membership_path, class: "secondary-link" %>
     <% if can_edit_content? %>
       <%= link_to external_people_import_title(target_person: @person), new_person_import_path(q: @person.display_name, person_id: @person.id), class: "secondary-link" %>

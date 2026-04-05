@@ -13,7 +13,7 @@
       <% if can_edit_content? %>
         <%= link_to '新規人物を作る', new_person_path, class: 'primary-link' %>
       <% else %>
-        <%= link_to '全体関係マップを見る', graph_people_path, class: 'primary-link' %>
+        <%= link_to '全体関係マップを見る', graph_people_path, data: { turbo: false }, class: 'primary-link' %>
       <% end %>
       <%= link_to '人物録を見る', people_path, class: 'secondary-link' %>
     </div>

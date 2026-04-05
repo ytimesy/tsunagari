@@ -372,6 +372,8 @@ end
     assert_response :success
     assert_match "全体関係マップ", response.body
     assert_match "構造レンズ", response.body
+    assert_match 'meta name="turbo-visit-control" content="reload"', response.body
+    assert_match 'meta name="turbo-cache-control" content="no-cache"', response.body
     assert_match "主要クラスタ", response.body
     assert_match "org-analytical-society", response.body
     assert_match "org-civic-lab", response.body

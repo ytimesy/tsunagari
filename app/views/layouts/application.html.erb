@@ -30,7 +30,7 @@
         <nav class="nav-links nav-links--impact">
           <%= link_to 'トップ', root_path %>
           <%= link_to '人物録', people_path %>
-          <%= link_to '全体関係マップ', graph_people_path %>
+          <%= link_to '全体関係マップ', graph_people_path, data: { turbo: false } %>
           <%= link_to 'Insight', insight_membership_path %>
           <% if signed_in? %>
             <span class="nav-user"><%= "#{current_user.email} / #{role_label(current_user.role)}" %></span>
@@ -50,7 +50,7 @@
           <span class="signal-copy">人物・関係・洞察を、一気に読むための記録面</span>
           <div class="signal-links">
             <%= link_to '人物録を見る', people_path %>
-            <%= link_to '関係マップを見る', graph_people_path %>
+            <%= link_to '関係マップを見る', graph_people_path, data: { turbo: false } %>
             <%= link_to 'Insightを見る', insight_membership_path %>
           </div>
         </div>

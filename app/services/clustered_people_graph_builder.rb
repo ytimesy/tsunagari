@@ -230,60 +230,172 @@ class ClusteredPeopleGraphBuilder
     end.transform_values(&:uniq)
   end
 
-  def clusters
-    @clusters ||= begin
-      buckets = all_cluster_candidates.each_with_object({}) do |candidate, hash|
-        hash[candidate[:slug]] = Cluster.new(
-          slug: candidate[:slug],
-          label: candidate[:label],
-          category: candidate[:category],
-          people: []
-        )
-      end
-
-      buckets[OTHER_CLUSTER_SLUG] = Cluster.new(
-        slug: OTHER_CLUSTER_SLUG,
-        label: "その他",
-        category: "other",
+def clusters
+  @clusters ||= begin
+    buckets = all_cluster_candidates.each_with_object({}) do |candidate, hash|
+      hash[candidate[:slug]] = Cluster.new(
+        slug: candidate[:slug],
+        label: candidate[:label],
+        category: candidate[:category],
         people: []
       )
-
-      @people.each do |person|
-        cluster_slug = preferred_cluster_slug_for(person) || network_cluster_slug_for(person) || OTHER_CLUSTER_SLUG
-        buckets.fetch(cluster_slug).people << person
-      end
-
-      buckets.values.reject { |cluster| cluster.people.empty? }
     end
-  end
 
-  def cluster_index
-    @cluster_index ||= clusters.index_by(&:slug)
-  end
+    buckets[OTHER_CLUSTER_SLUG] = Cluster.new(
+      slug: OTHER_CLUSTER_SLUG,
+      label: "その他",
+      category: "other",
+      people: []
+    )
 
-  def candidate_clusters
-    @candidate_clusters ||= begin
-      organization_candidates = grouped_terms(:organizations).filter_map do |term, person_ids|
-        next if person_ids.size < MIN_ORGANIZATION_CLUSTER_SIZE
-
-        cluster_candidate_for(term:, category: "organization", people_count: person_ids.size)
-      end
-
-      tag_candidates = grouped_terms(:tags).filter_map do |term, person_ids|
-        next if person_ids.size < MIN_TAG_CLUSTER_SIZE
-
-        cluster_candidate_for(term:, category: "tag", people_count: person_ids.size)
-      end
-
-      (organization_candidates + tag_candidates)
-        .sort_by { |candidate| [ -candidate[:score], -candidate[:people_count], candidate[:label] ] }
-        .first(MAX_CLUSTERS - 1)
+    @people.each do |person|
+      cluster_slug = preferred_cluster_slug_for(person) || network_cluster_slug_for(person) || OTHER_CLUSTER_SLUG
+      buckets.fetch(cluster_slug).people << person
     end
+
+    resolved_clusters = buckets.values.reject { |cluster| cluster.people.empty? }
+    fallback_clusters_for(resolved_clusters)
+  end
+end
+
+def cluster_index
+  @cluster_index ||= clusters.index_by(&:slug)
+end
+
+def candidate_clusters
+  @candidate_clusters ||= begin
+    organization_candidates = grouped_terms(:organizations).filter_map do |term, person_ids|
+      next if person_ids.size < MIN_ORGANIZATION_CLUSTER_SIZE
+
+      cluster_candidate_for(term:, category: "organization", people_count: person_ids.size)
+    end
+
+    tag_candidates = grouped_terms(:tags).filter_map do |term, person_ids|
+      next if person_ids.size < MIN_TAG_CLUSTER_SIZE
+
+      cluster_candidate_for(term:, category: "tag", people_count: person_ids.size)
+    end
+
+    (organization_candidates + tag_candidates)
+      .sort_by { |candidate| [ -candidate[:score], -candidate[:people_count], candidate[:label] ] }
+      .first(MAX_CLUSTERS - 1)
+  end
+end
+
+def all_cluster_candidates
+  @all_cluster_candidates ||= candidate_clusters + network_component_clusters
+end
+
+def fallback_clusters_for(resolved_clusters)
+  return resolved_clusters unless @selected_cluster_slug.blank? && resolved_clusters.length <= 1 && @people.length >= 4
+
+  supplemental_clusters = supplemental_term_clusters(resolved_clusters)
+  return supplemental_clusters if supplemental_clusters.length >= 2
+
+  source_clusters = source_name_clusters
+  return source_clusters if source_clusters.length >= 2
+
+  balanced_fallback_clusters
+end
+
+def supplemental_term_clusters(resolved_clusters)
+  candidates = supplemental_cluster_candidates(resolved_clusters).first([MAX_CLUSTERS - 1, 4].min)
+  return [] if candidates.empty?
+
+  buckets = candidates.each_with_object({}) do |candidate, hash|
+    hash[candidate[:slug]] = Cluster.new(
+      slug: candidate[:slug],
+      label: candidate[:label],
+      category: candidate[:category],
+      people: []
+    )
   end
 
-  def all_cluster_candidates
-    @all_cluster_candidates ||= candidate_clusters + network_component_clusters
+  buckets[OTHER_CLUSTER_SLUG] = Cluster.new(
+    slug: OTHER_CLUSTER_SLUG,
+    label: "その他",
+    category: "other",
+    people: []
+  )
+
+  @people.each do |person|
+    matched_candidate = candidates.select do |candidate|
+      metadata_index.fetch(person.id).fetch(candidate_term_bucket(candidate)).include?(candidate[:label])
+    end.max_by { |candidate| [ candidate[:score], candidate[:people_count], candidate[:label] ] }
+
+    buckets.fetch(matched_candidate&.dig(:slug) || OTHER_CLUSTER_SLUG).people << person
   end
+
+  buckets.values.reject { |cluster| cluster.people.empty? }
+end
+
+def supplemental_cluster_candidates(resolved_clusters)
+  used_labels = resolved_clusters.map(&:label).to_set
+
+  organization_candidates = grouped_terms(:organizations).filter_map do |term, person_ids|
+    next if person_ids.size < 2 || person_ids.size >= @people.length
+    next if used_labels.include?(term)
+
+    cluster_candidate_for(term:, category: "organization", people_count: person_ids.size)
+  end
+
+  tag_candidates = grouped_terms(:tags).filter_map do |term, person_ids|
+    next if person_ids.size < 2 || person_ids.size >= @people.length
+    next if used_labels.include?(term)
+
+    cluster_candidate_for(term:, category: "tag", people_count: person_ids.size)
+  end
+
+  (organization_candidates + tag_candidates)
+    .sort_by { |candidate| [ -candidate[:score], -candidate[:people_count], candidate[:label] ] }
+end
+
+def source_name_clusters
+  groups = @people.group_by do |person|
+    source_name = metadata_index.fetch(person.id).fetch(:source_names).first.presence || "manual"
+    source_cluster_label(source_name)
+  end
+
+  return [] if groups.length < 2
+
+  groups.sort_by { |label, people| [ -people.length, label ] }.each_with_index.map do |(label, people), index|
+    Cluster.new(
+      slug: "src-#{label.parameterize.presence || index}",
+      label: label,
+      category: "network",
+      people: people.sort_by(&:display_name)
+    )
+  end
+end
+
+def source_cluster_label(source_name)
+  {
+    "wikidata" => "Wikidata",
+    "openalex" => "OpenAlex",
+    "manual" => "ローカル人物"
+  }.fetch(source_name.to_s, source_name.to_s.titleize)
+end
+
+def balanced_fallback_clusters
+  sorted_people = @people.sort_by(&:display_name)
+  cluster_count = if sorted_people.length >= 18
+    4
+  elsif sorted_people.length >= 8
+    3
+  else
+    2
+  end
+  chunk_size = (sorted_people.length.to_f / cluster_count).ceil
+
+  sorted_people.each_slice(chunk_size).each_with_index.map do |people, index|
+    Cluster.new(
+      slug: "net-fallback-#{index + 1}",
+      label: "人物群 #{index + 1}",
+      category: "network",
+      people: people
+    )
+  end
+end
 
   def cluster_candidate_for(term:, category:, people_count:)
     prefix = category == "organization" ? "org" : "tag"

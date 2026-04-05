@@ -116,6 +116,30 @@ class ClusteredPeopleGraphBuilderTest < ActiveSupport::TestCase
     assert_not_includes labels, "その他"
   end
 
+test "falls back to multiple overview clusters when everyone collapses into one dominant cluster" do
+  people = 4.times.map do |index|
+    person = Person.create!(display_name: format("Creator %02d", index), publication_status: "published")
+    person.person_external_profiles.create!(
+      source_name: "wikidata",
+      external_id: "Q#{index}",
+      source_url: "https://www.wikidata.org/wiki/Q#{index}",
+      fetched_at: Time.current,
+      graph_tags: [ "YouTube" ],
+      graph_organizations: [ "Creator Hub" ]
+    )
+    person
+  end
+
+  builder = ClusteredPeopleGraphBuilder.new(people: people)
+  payload = builder.payload
+  summary = builder.summary
+
+  assert_operator summary[:cluster_count], :>=, 2
+  assert_operator payload[:nodes].length, :>=, 2
+  assert_includes payload[:nodes].map { |node| node[:label] }, "人物群 1"
+  assert_includes payload[:nodes].map { |node| node[:label] }, "人物群 2"
+end
+
   test "builds cluster overview from resolved metadata when lightweight cache is empty" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")

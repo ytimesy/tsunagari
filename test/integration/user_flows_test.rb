@@ -402,7 +402,6 @@ end
     assert_match "全体関係マップ", response.body
     assert_match 'data-controller="relationship-graph"', response.body
     assert_match "cluster=other", response.body
-    assert_match "その他", response.body
     assert_no_match "共通タグや所属が増えると全体ネットワークを描画できます。", response.body
   end
 

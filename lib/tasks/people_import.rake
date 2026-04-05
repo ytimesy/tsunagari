@@ -137,6 +137,24 @@ namespace :people do
     puts "Target reached: #{new_people_count >= target_new_people}"
   end
 
+  desc "Import diverse people from checked-in seed data"
+  task :import_diverse_seed, [:path] => :environment do |_task, args|
+    path = args[:path].presence || Rails.root.join('db/seed_data/diverse_people_profiles.json')
+    summary = ExternalPeople::SeedProfileImporter.import!(path: path)
+
+    puts "Seed total: #{summary[:total]}"
+    puts "Imported: #{summary[:imported_count]}"
+    puts "Already registered: #{summary[:existing_count]}"
+    if summary[:failed].any?
+      summary[:failed].first(10).each do |failure|
+        warn "Failed #{failure[:external_id]}: #{failure[:message]}"
+      end
+      puts "Failed total: #{summary[:failed].length}"
+    else
+      puts "Failed total: 0"
+    end
+  end
+
   desc "Import YouTubers from Wikidata into the local database in batches"
   task :import_wikidata_youtubers, [:total, :batch_size, :start_offset] => :environment do |_task, args|
     target_new_people = [ args[:total].presence&.to_i || 500, 1 ].max

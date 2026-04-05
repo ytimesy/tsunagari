@@ -43,6 +43,100 @@ namespace :people do
     puts "Imported #{imported_count} / #{profiles.length} people."
   end
 
+  desc "Import diverse people from Wikidata across multiple genres"
+  task :import_wikidata_diverse, [:total, :per_genre, :batch_size, :start_offset] => :environment do |_task, args|
+    target_new_people = [ args[:total].presence&.to_i || 200, 1 ].max
+    client = ExternalPeople::WikidataDiverseClient.new
+    presets = client.presets
+    per_genre_target = [ args[:per_genre].presence&.to_i || (target_new_people.to_f / presets.length).ceil, 1 ].max
+    batch_size = (args[:batch_size].presence&.to_i || 10).clamp(1, ExternalPeople::WikidataDiverseClient::MAX_BATCH_SIZE)
+    start_offset = [ args[:start_offset].presence&.to_i || 0, 0 ].max
+
+    examined_count = 0
+    new_people_count = 0
+    existing_count = 0
+    failed_count = 0
+    processed_ids = {}
+    per_genre_summary = {}
+
+    presets.each do |preset|
+      break if new_people_count >= target_new_people
+
+      genre_new = 0
+      offset = start_offset
+      per_genre_summary[preset.fetch(:key)] = { label: preset.fetch(:label), new: 0, existing: 0, failed: 0 }
+
+      loop do
+        break if new_people_count >= target_new_people || genre_new >= per_genre_target
+
+        requested = [ batch_size, per_genre_target - genre_new, target_new_people - new_people_count ].min
+        break if requested <= 0
+
+        begin
+          profiles = client.fetch_people_for_preset(
+            preset_key: preset.fetch(:key),
+            limit: requested,
+            offset: offset
+          )
+        rescue StandardError => error
+          failed_count += requested
+          per_genre_summary[preset.fetch(:key)][:failed] += requested
+          warn "Genre #{preset.fetch(:label)} @ offset #{offset} failed: #{error.message}"
+          break
+        end
+        break if profiles.empty?
+
+        batch_new = 0
+        batch_existing = 0
+        batch_failed = 0
+
+        profiles.each do |profile|
+          if processed_ids[profile[:external_id]]
+            next
+          end
+
+          processed_ids[profile[:external_id]] = true
+          examined_count += 1
+          already_registered = PersonExternalProfile.exists?(source_name: profile[:source_name], external_id: profile[:external_id])
+          ExternalPeople::Importer.import!(profile: profile)
+
+          if already_registered
+            existing_count += 1
+            batch_existing += 1
+            per_genre_summary[preset.fetch(:key)][:existing] += 1
+            puts "Already registered #{profile[:display_name]} (#{profile[:external_id]}) [#{preset.fetch(:label)}]"
+          else
+            new_people_count += 1
+            genre_new += 1
+            batch_new += 1
+            per_genre_summary[preset.fetch(:key)][:new] += 1
+            puts "Imported #{profile[:display_name]} (#{profile[:external_id]}) [#{preset.fetch(:label)}]"
+          end
+        rescue StandardError => error
+          failed_count += 1
+          batch_failed += 1
+          per_genre_summary[preset.fetch(:key)][:failed] += 1
+          warn "Skipped #{profile[:display_name]} [#{preset.fetch(:label)}]: #{error.message}"
+        end
+
+        puts "Genre #{preset.fetch(:label)} @ offset #{offset}: fetched #{profiles.length}, new #{batch_new}, existing #{batch_existing}, failed #{batch_failed}"
+        break if profiles.length < requested
+
+        offset += requested
+      end
+    end
+
+    per_genre_summary.each_value do |summary|
+      puts "Summary #{summary.fetch(:label)}: new #{summary.fetch(:new)}, existing #{summary.fetch(:existing)}, failed #{summary.fetch(:failed)}"
+    end
+
+    puts "Examined #{examined_count} candidates."
+    puts "New people: #{new_people_count}"
+    puts "Already registered: #{existing_count}"
+    puts "Failed: #{failed_count}"
+    puts "Target reached: #{new_people_count >= target_new_people}"
+  end
+
   desc "Import YouTubers from Wikidata into the local database in batches"
   task :import_wikidata_youtubers, [:total, :batch_size, :start_offset] => :environment do |_task, args|
     target_new_people = [ args[:total].presence&.to_i || 500, 1 ].max

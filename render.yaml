@@ -4,7 +4,7 @@ services:
     runtime: ruby
     plan: free
     buildCommand: bundle exec rails assets:precompile
-    preDeployCommand: bundle exec rails db:prepare
+    preDeployCommand: bundle exec rails db:prepare && bundle exec rails "people:import_wikidata_diverse[200,18,10,0]"
     startCommand: bundle exec puma -C config/puma.rb
     healthCheckPath: /up
     envVars:

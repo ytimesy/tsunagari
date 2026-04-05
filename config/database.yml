@@ -80,6 +80,7 @@ test:
 #
 production:
   <<: *default
-  database: tsunagari_production
-  username: tsunagari
+  url: <%= ENV["DATABASE_URL"].presence %>
+  database: <%= ENV.fetch("TSUNAGARI_DATABASE_NAME", "tsunagari_production") %>
+  username: <%= ENV.fetch("TSUNAGARI_DATABASE_USERNAME", "tsunagari") %>
   password: <%= ENV["TSUNAGARI_DATABASE_PASSWORD"] %>

@@ -1,6 +1,2806 @@
 [
   {
     "source_name": "wikidata",
+    "external_id": "Q61774302",
+    "source_url": "https://www.wikidata.org/wiki/Q61774302",
+    "fetched_at": "2026-04-05T03:30:47Z",
+    "display_name": "Anna Janeczko",
+    "summary": "スポーツ",
+    "bio": "スポーツ, athlete",
+    "tags": [
+      "スポーツ",
+      "athlete"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2354905",
+    "source_url": "https://www.wikidata.org/wiki/Q2354905",
+    "fetched_at": "2026-04-05T03:30:47Z",
+    "display_name": "ジャバ・カンカバ",
+    "summary": "スポーツ",
+    "bio": "スポーツ, athlete",
+    "tags": [
+      "スポーツ",
+      "athlete"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q435475",
+    "source_url": "https://www.wikidata.org/wiki/Q435475",
+    "fetched_at": "2026-04-05T03:30:46Z",
+    "display_name": "イーサン・フィリップス",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4907192",
+    "source_url": "https://www.wikidata.org/wiki/Q4907192",
+    "fetched_at": "2026-04-05T03:30:46Z",
+    "display_name": "Bijay Mohanty",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1383202",
+    "source_url": "https://www.wikidata.org/wiki/Q1383202",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "レオ・ホワイト",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2440503",
+    "source_url": "https://www.wikidata.org/wiki/Q2440503",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "ポーリーン・ブッシュ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1387724",
+    "source_url": "https://www.wikidata.org/wiki/Q1387724",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "ユーヴァン・シャンカール・ラージャ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3530874",
+    "source_url": "https://www.wikidata.org/wiki/Q3530874",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "Tom Santschi",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q77112",
+    "source_url": "https://www.wikidata.org/wiki/Q77112",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "デイヴィッド・フォスター",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1322453",
+    "source_url": "https://www.wikidata.org/wiki/Q1322453",
+    "fetched_at": "2026-04-05T03:30:40Z",
+    "display_name": "プラカーシュ・ラージ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3047291",
+    "source_url": "https://www.wikidata.org/wiki/Q3047291",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "エディー・リオンズ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3530860",
+    "source_url": "https://www.wikidata.org/wiki/Q3530860",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "トム・リケッツ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q948201",
+    "source_url": "https://www.wikidata.org/wiki/Q948201",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "バタ・ジヴコヴィッチ",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q788060",
+    "source_url": "https://www.wikidata.org/wiki/Q788060",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "Ove Sprogøe",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q16198459",
+    "source_url": "https://www.wikidata.org/wiki/Q16198459",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "ベック・ベネット",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q661079",
+    "source_url": "https://www.wikidata.org/wiki/Q661079",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "アーサー・V・ジョンソン",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q253977",
+    "source_url": "https://www.wikidata.org/wiki/Q253977",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "ロクサン・ドースン",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2522555",
+    "source_url": "https://www.wikidata.org/wiki/Q2522555",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "ビクター・ポテル",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1173200",
+    "source_url": "https://www.wikidata.org/wiki/Q1173200",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "デイブ・フライシャー",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q313789",
+    "source_url": "https://www.wikidata.org/wiki/Q313789",
+    "fetched_at": "2026-04-05T03:30:39Z",
+    "display_name": "ロバート・ピカード",
+    "summary": "映画",
+    "bio": "映画, actor",
+    "tags": [
+      "映画",
+      "actor"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4030",
+    "source_url": "https://www.wikidata.org/wiki/Q4030",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "デューク・エリントン",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q34969",
+    "source_url": "https://www.wikidata.org/wiki/Q34969",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "ベンジャミン・フランクリン",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1251704",
+    "source_url": "https://www.wikidata.org/wiki/Q1251704",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "ニコライ・クリビン",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q107171642",
+    "source_url": "https://www.wikidata.org/wiki/Q107171642",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "Jon Bernstein",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1276",
+    "source_url": "https://www.wikidata.org/wiki/Q1276",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "レナード・コーエン",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2643",
+    "source_url": "https://www.wikidata.org/wiki/Q2643",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "ジョージ・ハリスン",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5826445",
+    "source_url": "https://www.wikidata.org/wiki/Q5826445",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "Anders Jacobsson",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q179257",
+    "source_url": "https://www.wikidata.org/wiki/Q179257",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "ティンバランド",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q103946",
+    "source_url": "https://www.wikidata.org/wiki/Q103946",
+    "fetched_at": "2026-04-05T03:30:38Z",
+    "display_name": "キーファー・サザーランド",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q93341",
+    "source_url": "https://www.wikidata.org/wiki/Q93341",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "マイルス・デイヴィス",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q80513",
+    "source_url": "https://www.wikidata.org/wiki/Q80513",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "聖セシリア",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6775788",
+    "source_url": "https://www.wikidata.org/wiki/Q6775788",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "Martin Jacoby",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q548359",
+    "source_url": "https://www.wikidata.org/wiki/Q548359",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "イジー・シュリトル",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6028050",
+    "source_url": "https://www.wikidata.org/wiki/Q6028050",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "Sören Olsson",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q44414",
+    "source_url": "https://www.wikidata.org/wiki/Q44414",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "トレイ・パーカー",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q313605",
+    "source_url": "https://www.wikidata.org/wiki/Q313605",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "王維",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q471542",
+    "source_url": "https://www.wikidata.org/wiki/Q471542",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "キショール・クマール",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q636",
+    "source_url": "https://www.wikidata.org/wiki/Q636",
+    "fetched_at": "2026-04-05T03:30:36Z",
+    "display_name": "ケイト・ブッシュ",
+    "summary": "音楽",
+    "bio": "音楽, musician",
+    "tags": [
+      "音楽",
+      "musician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11070999",
+    "source_url": "https://www.wikidata.org/wiki/Q11070999",
+    "fetched_at": "2026-04-05T03:30:35Z",
+    "display_name": "徐鉉",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5956587",
+    "source_url": "https://www.wikidata.org/wiki/Q5956587",
+    "fetched_at": "2026-04-05T03:30:35Z",
+    "display_name": "蘇テイ",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q71831",
+    "source_url": "https://www.wikidata.org/wiki/Q71831",
+    "fetched_at": "2026-04-05T03:30:35Z",
+    "display_name": "Reinhold Conrad Muschler",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2368398",
+    "source_url": "https://www.wikidata.org/wiki/Q2368398",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "Aleksandr Grossheim",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3084142",
+    "source_url": "https://www.wikidata.org/wiki/Q3084142",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "韓アク",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q907462",
+    "source_url": "https://www.wikidata.org/wiki/Q907462",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "ジョージ・ポイナー博士",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11084989",
+    "source_url": "https://www.wikidata.org/wiki/Q11084989",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "方苞",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q847745",
+    "source_url": "https://www.wikidata.org/wiki/Q847745",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "盧綸",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q66720",
+    "source_url": "https://www.wikidata.org/wiki/Q66720",
+    "fetched_at": "2026-04-05T03:30:33Z",
+    "display_name": "ヘルマン・ヴェントラント",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11709114",
+    "source_url": "https://www.wikidata.org/wiki/Q11709114",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "Henryk Zbierzchowski",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1564707",
+    "source_url": "https://www.wikidata.org/wiki/Q1564707",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "李嶠",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q954928",
+    "source_url": "https://www.wikidata.org/wiki/Q954928",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "ウィリアム・ハーバート",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1175924",
+    "source_url": "https://www.wikidata.org/wiki/Q1175924",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "孟郊",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q365203",
+    "source_url": "https://www.wikidata.org/wiki/Q365203",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "権徳輿",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q836849",
+    "source_url": "https://www.wikidata.org/wiki/Q836849",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "張籍",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q16730221",
+    "source_url": "https://www.wikidata.org/wiki/Q16730221",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "K. S. Jayaraman",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2879252",
+    "source_url": "https://www.wikidata.org/wiki/Q2879252",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "Baha' al-din Zuhair",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2640952",
+    "source_url": "https://www.wikidata.org/wiki/Q2640952",
+    "fetched_at": "2026-04-05T03:30:32Z",
+    "display_name": "ロレンツォ・ミラーニ",
+    "summary": "文学",
+    "bio": "文学, writer",
+    "tags": [
+      "文学",
+      "writer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q62567270",
+    "source_url": "https://www.wikidata.org/wiki/Q62567270",
+    "fetched_at": "2026-04-05T03:30:30Z",
+    "display_name": "Alexandra Witze",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q7793083",
+    "source_url": "https://www.wikidata.org/wiki/Q7793083",
+    "fetched_at": "2026-04-05T03:30:30Z",
+    "display_name": "トーマス・ペケット・プレスト",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q908187",
+    "source_url": "https://www.wikidata.org/wiki/Q908187",
+    "fetched_at": "2026-04-05T03:30:29Z",
+    "display_name": "フィリップ・ボール",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q78492",
+    "source_url": "https://www.wikidata.org/wiki/Q78492",
+    "fetched_at": "2026-04-05T03:30:29Z",
+    "display_name": "トマーシュ・マサリク",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q743133",
+    "source_url": "https://www.wikidata.org/wiki/Q743133",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "スコット・ヤナウ",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q183713",
+    "source_url": "https://www.wikidata.org/wiki/Q183713",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "テオフィル・ゴーティエ",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5725423",
+    "source_url": "https://www.wikidata.org/wiki/Q5725423",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "ヘンリー・マナーズ・チチェスター",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q112107821",
+    "source_url": "https://www.wikidata.org/wiki/Q112107821",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "Caitlin Ostroff",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q112671166",
+    "source_url": "https://www.wikidata.org/wiki/Q112671166",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "Patience Haggin",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q113557486",
+    "source_url": "https://www.wikidata.org/wiki/Q113557486",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "Margot Patrick",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3103449",
+    "source_url": "https://www.wikidata.org/wiki/Q3103449",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "Georges Rouy",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q78492039",
+    "source_url": "https://www.wikidata.org/wiki/Q78492039",
+    "fetched_at": "2026-04-05T03:30:27Z",
+    "display_name": "Talha Burki",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6306664",
+    "source_url": "https://www.wikidata.org/wiki/Q6306664",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "ジュリア・ポラク",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q377",
+    "source_url": "https://www.wikidata.org/wiki/Q377",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "ヤンカ・クパーラ",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q61036087",
+    "source_url": "https://www.wikidata.org/wiki/Q61036087",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "Colin Macilwain",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q57386",
+    "source_url": "https://www.wikidata.org/wiki/Q57386",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "クルト・トゥホルスキー",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q297821",
+    "source_url": "https://www.wikidata.org/wiki/Q297821",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "Lena Adelsohn Liljeroth",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q27925285",
+    "source_url": "https://www.wikidata.org/wiki/Q27925285",
+    "fetched_at": "2026-04-05T03:30:26Z",
+    "display_name": "Benoît Faucon",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
+    "tags": [
+      "ジャーナリズム",
+      "journalist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q12735",
+    "source_url": "https://www.wikidata.org/wiki/Q12735",
+    "fetched_at": "2026-04-05T03:30:25Z",
+    "display_name": "コメニウス",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1277047",
+    "source_url": "https://www.wikidata.org/wiki/Q1277047",
+    "fetched_at": "2026-04-05T03:30:23Z",
+    "display_name": "Earl Edward Sherff",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q37378984",
+    "source_url": "https://www.wikidata.org/wiki/Q37378984",
+    "fetched_at": "2026-04-05T03:30:23Z",
+    "display_name": "Naveed Sattar",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q28421846",
+    "source_url": "https://www.wikidata.org/wiki/Q28421846",
+    "fetched_at": "2026-04-05T03:30:23Z",
+    "display_name": "Kenneth C. Anderson",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11434986",
+    "source_url": "https://www.wikidata.org/wiki/Q11434986",
+    "fetched_at": "2026-04-05T03:30:22Z",
+    "display_name": "大島隆義",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1192",
+    "source_url": "https://www.wikidata.org/wiki/Q1192",
+    "fetched_at": "2026-04-05T03:30:22Z",
+    "display_name": "ジャン＝バティスト・リュリ",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q15975618",
+    "source_url": "https://www.wikidata.org/wiki/Q15975618",
+    "fetched_at": "2026-04-05T03:30:22Z",
+    "display_name": "August Brand",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q19001826",
+    "source_url": "https://www.wikidata.org/wiki/Q19001826",
+    "fetched_at": "2026-04-05T03:30:22Z",
+    "display_name": "Rudolf Schmid",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q77463",
+    "source_url": "https://www.wikidata.org/wiki/Q77463",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "ヨハン・ヴィルヘルム・マイゲン",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q67418649",
+    "source_url": "https://www.wikidata.org/wiki/Q67418649",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "Dwipesh Majumder",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q55068622",
+    "source_url": "https://www.wikidata.org/wiki/Q55068622",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "アルフレッド・モカン＝タンドン",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q44907",
+    "source_url": "https://www.wikidata.org/wiki/Q44907",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "José Mariano de Conceição Vellozo",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q77704",
+    "source_url": "https://www.wikidata.org/wiki/Q77704",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "Hermann Loew",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q43977",
+    "source_url": "https://www.wikidata.org/wiki/Q43977",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "ヤン・フス",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q20513630",
+    "source_url": "https://www.wikidata.org/wiki/Q20513630",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "Albert M. Sirunyan",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2547400",
+    "source_url": "https://www.wikidata.org/wiki/Q2547400",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "Walther Ruge",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q39829",
+    "source_url": "https://www.wikidata.org/wiki/Q39829",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "スティーヴン・キング",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q7153226",
+    "source_url": "https://www.wikidata.org/wiki/Q7153226",
+    "fetched_at": "2026-04-05T03:30:20Z",
+    "display_name": "Paul Ridker",
+    "summary": "教育",
+    "bio": "教育, teacher",
+    "tags": [
+      "教育",
+      "teacher"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q56805388",
+    "source_url": "https://www.wikidata.org/wiki/Q56805388",
+    "fetched_at": "2026-04-05T03:30:19Z",
+    "display_name": "Reinhard Klette",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q12288421",
+    "source_url": "https://www.wikidata.org/wiki/Q12288421",
+    "fetched_at": "2026-04-05T03:30:19Z",
+    "display_name": "Nikola Kasabov",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1243222",
+    "source_url": "https://www.wikidata.org/wiki/Q1243222",
+    "fetched_at": "2026-04-05T03:30:19Z",
+    "display_name": "Thomas Lengauer",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6776811",
+    "source_url": "https://www.wikidata.org/wiki/Q6776811",
+    "fetched_at": "2026-04-05T03:30:19Z",
+    "display_name": "Martin Vetterli",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q102442",
+    "source_url": "https://www.wikidata.org/wiki/Q102442",
+    "fetched_at": "2026-04-05T03:30:18Z",
+    "display_name": "Burkard Hillebrands",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q7259325",
+    "source_url": "https://www.wikidata.org/wiki/Q7259325",
+    "fetched_at": "2026-04-05T03:30:18Z",
+    "display_name": "Pulickel Ajayan",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1228730",
+    "source_url": "https://www.wikidata.org/wiki/Q1228730",
+    "fetched_at": "2026-04-05T03:30:18Z",
+    "display_name": "Wolfgang Marquardt",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1221290",
+    "source_url": "https://www.wikidata.org/wiki/Q1221290",
+    "fetched_at": "2026-04-05T03:30:18Z",
+    "display_name": "ディエルク・ラーベ",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q15063504",
+    "source_url": "https://www.wikidata.org/wiki/Q15063504",
+    "fetched_at": "2026-04-05T03:30:16Z",
+    "display_name": "Qiang Yang",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q26709023",
+    "source_url": "https://www.wikidata.org/wiki/Q26709023",
+    "fetched_at": "2026-04-05T03:30:16Z",
+    "display_name": "Klaus-Robert Müller",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q50286281",
+    "source_url": "https://www.wikidata.org/wiki/Q50286281",
+    "fetched_at": "2026-04-05T03:30:16Z",
+    "display_name": "Mark A. Musen",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q29340771",
+    "source_url": "https://www.wikidata.org/wiki/Q29340771",
+    "fetched_at": "2026-04-05T03:30:16Z",
+    "display_name": "Edwin Hancock",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q38803588",
+    "source_url": "https://www.wikidata.org/wiki/Q38803588",
+    "fetched_at": "2026-04-05T03:30:16Z",
+    "display_name": "Mario Gerardo Piattini Velthuis",
+    "summary": "技術",
+    "bio": "技術, computer scientist",
+    "tags": [
+      "技術",
+      "computer scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11473904",
+    "source_url": "https://www.wikidata.org/wiki/Q11473904",
+    "fetched_at": "2026-04-05T03:30:15Z",
+    "display_name": "岡野光夫",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q29573",
+    "source_url": "https://www.wikidata.org/wiki/Q29573",
+    "fetched_at": "2026-04-05T03:30:15Z",
+    "display_name": "ミルドレッド・ドレッセルハウス",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5740653",
+    "source_url": "https://www.wikidata.org/wiki/Q5740653",
+    "fetched_at": "2026-04-05T03:30:15Z",
+    "display_name": "Josef Fransson",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q281998",
+    "source_url": "https://www.wikidata.org/wiki/Q281998",
+    "fetched_at": "2026-04-05T03:30:15Z",
+    "display_name": "ジャン＝バティスト・ドブレ",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q87618198",
+    "source_url": "https://www.wikidata.org/wiki/Q87618198",
+    "fetched_at": "2026-04-05T03:30:15Z",
+    "display_name": "Xia Younan",
+    "summary": "技術",
+    "bio": "技術, engineer",
+    "tags": [
+      "技術",
+      "engineer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2627241",
+    "source_url": "https://www.wikidata.org/wiki/Q2627241",
+    "fetched_at": "2026-04-05T03:30:13Z",
+    "display_name": "Antoine Laurent Apollinaire Fée",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q22069468",
+    "source_url": "https://www.wikidata.org/wiki/Q22069468",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "アルバート・マントヴァーニ",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q155824",
+    "source_url": "https://www.wikidata.org/wiki/Q155824",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "ジュセリーノ・クビチェック",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5559617",
+    "source_url": "https://www.wikidata.org/wiki/Q5559617",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "Gideon Koren",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q983408",
+    "source_url": "https://www.wikidata.org/wiki/Q983408",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "ヒュー・アルジャーノン・ウィーデル",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q78881",
+    "source_url": "https://www.wikidata.org/wiki/Q78881",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "ヨーゼフ・アウグスト・シュルテス",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q28356235",
+    "source_url": "https://www.wikidata.org/wiki/Q28356235",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "Anne Tjønneland",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q13578863",
+    "source_url": "https://www.wikidata.org/wiki/Q13578863",
+    "fetched_at": "2026-04-05T03:30:12Z",
+    "display_name": "Erik De Clercq",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5685",
+    "source_url": "https://www.wikidata.org/wiki/Q5685",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "アントン・チェーホフ",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1387276",
+    "source_url": "https://www.wikidata.org/wiki/Q1387276",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "ジュール・エミール・プランション",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q45791880",
+    "source_url": "https://www.wikidata.org/wiki/Q45791880",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "Giuseppe Lippi",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5747854",
+    "source_url": "https://www.wikidata.org/wiki/Q5747854",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "Kjell Fuxe",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q57230",
+    "source_url": "https://www.wikidata.org/wiki/Q57230",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "ヨハン・フリードリヒ・グメリン",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q215466",
+    "source_url": "https://www.wikidata.org/wiki/Q215466",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "ヨハン・ハインリヒ・フリードリヒ・リンク",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5585214",
+    "source_url": "https://www.wikidata.org/wiki/Q5585214",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "ゴードン・ガイアット",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q340247",
+    "source_url": "https://www.wikidata.org/wiki/Q340247",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "アシル・リシャール",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1346660",
+    "source_url": "https://www.wikidata.org/wiki/Q1346660",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "ジョン・トーリー",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q141147",
+    "source_url": "https://www.wikidata.org/wiki/Q141147",
+    "fetched_at": "2026-04-05T03:30:10Z",
+    "display_name": "アンドルー・ウィクター・シャリー",
+    "summary": "医学",
+    "bio": "医学, physician",
+    "tags": [
+      "医学",
+      "physician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q20657126",
+    "source_url": "https://www.wikidata.org/wiki/Q20657126",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "ロブ・ナイト",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q57423091",
+    "source_url": "https://www.wikidata.org/wiki/Q57423091",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Miroslav Hrabovsky",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4776661",
+    "source_url": "https://www.wikidata.org/wiki/Q4776661",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Antonio Giordano",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1097806",
+    "source_url": "https://www.wikidata.org/wiki/Q1097806",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Claudia Spies",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q22114836",
+    "source_url": "https://www.wikidata.org/wiki/Q22114836",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Piotr Ponikowski",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q98525792",
+    "source_url": "https://www.wikidata.org/wiki/Q98525792",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Gong Ping Yeh",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q105243769",
+    "source_url": "https://www.wikidata.org/wiki/Q105243769",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "Mark Richards",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6389837",
+    "source_url": "https://www.wikidata.org/wiki/Q6389837",
+    "fetched_at": "2026-04-05T03:30:09Z",
+    "display_name": "ケネス・ブルース・ストーリー",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q26464741",
+    "source_url": "https://www.wikidata.org/wiki/Q26464741",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Nima Rezaei",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q21096692",
+    "source_url": "https://www.wikidata.org/wiki/Q21096692",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Boris Anatolievich Dolgoshein",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q56993383",
+    "source_url": "https://www.wikidata.org/wiki/Q56993383",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Tomáš Jakoubek",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q31332118",
+    "source_url": "https://www.wikidata.org/wiki/Q31332118",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Jan Balzarini",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q65807",
+    "source_url": "https://www.wikidata.org/wiki/Q65807",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "ラインハルト・ゲンツェル",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q57648099",
+    "source_url": "https://www.wikidata.org/wiki/Q57648099",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Lydia Roos",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q26856925",
+    "source_url": "https://www.wikidata.org/wiki/Q26856925",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Rui L. Reis",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q66730599",
+    "source_url": "https://www.wikidata.org/wiki/Q66730599",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Dinggang Shen",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q762",
+    "source_url": "https://www.wikidata.org/wiki/Q762",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "レオナルド・ダ・ヴィンチ",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q60417104",
+    "source_url": "https://www.wikidata.org/wiki/Q60417104",
+    "fetched_at": "2026-04-05T03:30:08Z",
+    "display_name": "Jitender P. Dubey",
+    "summary": "科学",
+    "bio": "科学, scientist",
+    "tags": [
+      "科学",
+      "scientist"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q114079547",
+    "source_url": "https://www.wikidata.org/wiki/Q114079547",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "Fop Smit",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q21532110",
+    "source_url": "https://www.wikidata.org/wiki/Q21532110",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "Troyen Brennan",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q15839644",
+    "source_url": "https://www.wikidata.org/wiki/Q15839644",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "Patrick Couvreur",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q565134",
+    "source_url": "https://www.wikidata.org/wiki/Q565134",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "松浦勝人",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q104109",
+    "source_url": "https://www.wikidata.org/wiki/Q104109",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "メアリー・ピックフォード",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q106508",
+    "source_url": "https://www.wikidata.org/wiki/Q106508",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "ジェラール・ドパルデュー",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q880181",
+    "source_url": "https://www.wikidata.org/wiki/Q880181",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "Kai Simons",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5983177",
+    "source_url": "https://www.wikidata.org/wiki/Q5983177",
+    "fetched_at": "2026-04-05T03:30:06Z",
+    "display_name": "Ian Wachtmeister",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q36488",
+    "source_url": "https://www.wikidata.org/wiki/Q36488",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "グリエルモ・マルコーニ",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11947965",
+    "source_url": "https://www.wikidata.org/wiki/Q11947965",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "Sebastià Figuerola i Escusa",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q2050534",
+    "source_url": "https://www.wikidata.org/wiki/Q2050534",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "モハンラル",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q23685",
+    "source_url": "https://www.wikidata.org/wiki/Q23685",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "ジミー・カーター",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q323707",
+    "source_url": "https://www.wikidata.org/wiki/Q323707",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "アンリ・セルヌーシ",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q62766",
+    "source_url": "https://www.wikidata.org/wiki/Q62766",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "ジェイ・Z",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q36153",
+    "source_url": "https://www.wikidata.org/wiki/Q36153",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "ビヨンセ",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11613",
+    "source_url": "https://www.wikidata.org/wiki/Q11613",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "ハリー・S・トルーマン",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q70993",
+    "source_url": "https://www.wikidata.org/wiki/Q70993",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "ルドルフ・アッカーマン",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1356281",
+    "source_url": "https://www.wikidata.org/wiki/Q1356281",
+    "fetched_at": "2026-04-05T03:30:05Z",
+    "display_name": "エルネスト・コニャック",
+    "summary": "企業経営",
+    "bio": "企業経営, businessperson",
+    "tags": [
+      "企業経営",
+      "businessperson"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q1541",
+    "source_url": "https://www.wikidata.org/wiki/Q1541",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "マルクス・トゥッリウス・キケロ",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6072812",
+    "source_url": "https://www.wikidata.org/wiki/Q6072812",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "Stig Rindborg",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q905",
+    "source_url": "https://www.wikidata.org/wiki/Q905",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "フランツ・カフカ",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3369852",
+    "source_url": "https://www.wikidata.org/wiki/Q3369852",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "Patrick Simon",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6279",
+    "source_url": "https://www.wikidata.org/wiki/Q6279",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "ジョー・バイデン",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q983565",
+    "source_url": "https://www.wikidata.org/wiki/Q983565",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "Gregório de Matos",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q310209",
+    "source_url": "https://www.wikidata.org/wiki/Q310209",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "カフェ・フィリョ",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q3336581",
+    "source_url": "https://www.wikidata.org/wiki/Q3336581",
+    "fetched_at": "2026-04-05T03:30:03Z",
+    "display_name": "Nathalie Fellonneau",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q11812",
+    "source_url": "https://www.wikidata.org/wiki/Q11812",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "トーマス・ジェファーソン",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q34982",
+    "source_url": "https://www.wikidata.org/wiki/Q34982",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "ジョアン・ゴラール",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5739826",
+    "source_url": "https://www.wikidata.org/wiki/Q5739826",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "Hans Göran Franck",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q61058",
+    "source_url": "https://www.wikidata.org/wiki/Q61058",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "ルートヴィヒ・ウーラント",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5718617",
+    "source_url": "https://www.wikidata.org/wiki/Q5718617",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "Jan Ertsborn",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q8023",
+    "source_url": "https://www.wikidata.org/wiki/Q8023",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "ネルソン・マンデラ",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q50786389",
+    "source_url": "https://www.wikidata.org/wiki/Q50786389",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "Aaron S Kesselheim",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5830059",
+    "source_url": "https://www.wikidata.org/wiki/Q5830059",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "Elton Martinez Carvalho Leme",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q8007",
+    "source_url": "https://www.wikidata.org/wiki/Q8007",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "フランクリン・ルーズベルト",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q463533",
+    "source_url": "https://www.wikidata.org/wiki/Q463533",
+    "fetched_at": "2026-04-05T03:30:01Z",
+    "display_name": "ミシェル・テメル",
+    "summary": "法律",
+    "bio": "法律, lawyer",
+    "tags": [
+      "法律",
+      "lawyer"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5588504",
+    "source_url": "https://www.wikidata.org/wiki/Q5588504",
+    "fetched_at": "2026-04-05T03:30:00Z",
+    "display_name": "Sven Brus",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5554046",
+    "source_url": "https://www.wikidata.org/wiki/Q5554046",
+    "fetched_at": "2026-04-05T03:30:00Z",
+    "display_name": "Axel Andersson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q17265833",
+    "source_url": "https://www.wikidata.org/wiki/Q17265833",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "Robert Hannah",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q22099176",
+    "source_url": "https://www.wikidata.org/wiki/Q22099176",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "李化龍",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4964936",
+    "source_url": "https://www.wikidata.org/wiki/Q4964936",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "Cecilia Magnusson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4975999",
+    "source_url": "https://www.wikidata.org/wiki/Q4975999",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "Yvonne Ruwaida",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5782917",
+    "source_url": "https://www.wikidata.org/wiki/Q5782917",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "Birger Hagård",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4988712",
+    "source_url": "https://www.wikidata.org/wiki/Q4988712",
+    "fetched_at": "2026-04-05T03:29:57Z",
+    "display_name": "Carina Ståhl Herrstedt",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5888881",
+    "source_url": "https://www.wikidata.org/wiki/Q5888881",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Jacob Johnson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q96982125",
+    "source_url": "https://www.wikidata.org/wiki/Q96982125",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Arne Fransson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5777699",
+    "source_url": "https://www.wikidata.org/wiki/Q5777699",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Hans Gustafsson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5125015",
+    "source_url": "https://www.wikidata.org/wiki/Q5125015",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Claes Roxbergh",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q6026206",
+    "source_url": "https://www.wikidata.org/wiki/Q6026206",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Bengt Harding Olson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q4609816",
+    "source_url": "https://www.wikidata.org/wiki/Q4609816",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "スヴェン＝エリック・ブフト",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q966884",
+    "source_url": "https://www.wikidata.org/wiki/Q966884",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Stefan Attefall",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5958869",
+    "source_url": "https://www.wikidata.org/wiki/Q5958869",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Torsten Lindström",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5554702",
+    "source_url": "https://www.wikidata.org/wiki/Q5554702",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Hans Andersson",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
+    "external_id": "Q5966830",
+    "source_url": "https://www.wikidata.org/wiki/Q5966830",
+    "fetched_at": "2026-04-05T03:29:56Z",
+    "display_name": "Fredrik Lundh Sammeli",
+    "summary": "政治",
+    "bio": "政治, politician",
+    "tags": [
+      "政治",
+      "politician"
+    ],
+    "affiliations": []
+  },
+  {
+    "source_name": "wikidata",
     "external_id": "Q224033",
     "source_url": "https://www.wikidata.org/wiki/Q224033",
     "fetched_at": "2026-04-05T03:09:19Z",
@@ -381,13 +3181,13 @@
     "source_name": "wikidata",
     "external_id": "Q552900",
     "source_url": "https://www.wikidata.org/wiki/Q552900",
-    "fetched_at": "2026-04-05T03:09:13Z",
+    "fetched_at": "2026-04-05T03:30:36Z",
     "display_name": "ケナン・トンプソン",
-    "summary": "映画",
-    "bio": "映画, actor",
+    "summary": "音楽",
+    "bio": "音楽, musician",
     "tags": [
-      "映画",
-      "actor"
+      "音楽",
+      "musician"
     ],
     "affiliations": []
   },
@@ -689,7 +3489,7 @@
     "source_name": "wikidata",
     "external_id": "Q1760571",
     "source_url": "https://www.wikidata.org/wiki/Q1760571",
-    "fetched_at": "2026-04-05T03:09:09Z",
+    "fetched_at": "2026-04-05T03:30:32Z",
     "display_name": "Paul Shorey",
     "summary": "文学",
     "bio": "文学, writer",
@@ -731,13 +3531,13 @@
     "source_name": "wikidata",
     "external_id": "Q3917267",
     "source_url": "https://www.wikidata.org/wiki/Q3917267",
-    "fetched_at": "2026-04-05T03:09:07Z",
+    "fetched_at": "2026-04-05T03:30:27Z",
     "display_name": "ヴェラ・リッチ",
-    "summary": "文学",
-    "bio": "文学, writer",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
     "tags": [
-      "文学",
-      "writer"
+      "ジャーナリズム",
+      "journalist"
     ],
     "affiliations": []
   },
@@ -745,13 +3545,13 @@
     "source_name": "wikidata",
     "external_id": "Q706837",
     "source_url": "https://www.wikidata.org/wiki/Q706837",
-    "fetched_at": "2026-04-05T03:09:07Z",
+    "fetched_at": "2026-04-05T03:29:57Z",
     "display_name": "劉禹錫",
-    "summary": "文学",
-    "bio": "文学, writer",
+    "summary": "政治",
+    "bio": "政治, politician",
     "tags": [
-      "文学",
-      "writer"
+      "政治",
+      "politician"
     ],
     "affiliations": []
   },
@@ -773,13 +3573,13 @@
     "source_name": "wikidata",
     "external_id": "Q6189271",
     "source_url": "https://www.wikidata.org/wiki/Q6189271",
-    "fetched_at": "2026-04-05T03:09:07Z",
+    "fetched_at": "2026-04-05T03:29:57Z",
     "display_name": "Per Stenmarck",
-    "summary": "文学",
-    "bio": "文学, writer",
+    "summary": "政治",
+    "bio": "政治, politician",
     "tags": [
-      "文学",
-      "writer"
+      "政治",
+      "politician"
     ],
     "affiliations": []
   },
@@ -815,13 +3615,13 @@
     "source_name": "wikidata",
     "external_id": "Q371905",
     "source_url": "https://www.wikidata.org/wiki/Q371905",
-    "fetched_at": "2026-04-05T03:09:06Z",
+    "fetched_at": "2026-04-05T03:30:26Z",
     "display_name": "アルフォンス・アレー",
-    "summary": "文学",
-    "bio": "文学, writer",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
     "tags": [
-      "文学",
-      "writer"
+      "ジャーナリズム",
+      "journalist"
     ],
     "affiliations": []
   },
@@ -955,7 +3755,7 @@
     "source_name": "wikidata",
     "external_id": "Q260857",
     "source_url": "https://www.wikidata.org/wiki/Q260857",
-    "fetched_at": "2026-04-05T03:09:04Z",
+    "fetched_at": "2026-04-05T03:30:26Z",
     "display_name": "David E. H. Jones",
     "summary": "ジャーナリズム",
     "bio": "ジャーナリズム, journalist",
@@ -969,7 +3769,7 @@
     "source_name": "wikidata",
     "external_id": "Q951835",
     "source_url": "https://www.wikidata.org/wiki/Q951835",
-    "fetched_at": "2026-04-05T03:09:04Z",
+    "fetched_at": "2026-04-05T03:30:26Z",
     "display_name": "ルイ・フイヤード",
     "summary": "ジャーナリズム",
     "bio": "ジャーナリズム, journalist",
@@ -1011,13 +3811,13 @@
     "source_name": "wikidata",
     "external_id": "Q2029325",
     "source_url": "https://www.wikidata.org/wiki/Q2029325",
-    "fetched_at": "2026-04-05T03:09:03Z",
+    "fetched_at": "2026-04-05T03:30:22Z",
     "display_name": "グスタフ・フリドリン",
-    "summary": "ジャーナリズム",
-    "bio": "ジャーナリズム, journalist",
+    "summary": "教育",
+    "bio": "教育, teacher",
     "tags": [
-      "ジャーナリズム",
-      "journalist"
+      "教育",
+      "teacher"
     ],
     "affiliations": []
   },
@@ -1025,13 +3825,13 @@
     "source_name": "wikidata",
     "external_id": "Q1705960",
     "source_url": "https://www.wikidata.org/wiki/Q1705960",
-    "fetched_at": "2026-04-05T03:09:03Z",
+    "fetched_at": "2026-04-05T03:30:22Z",
     "display_name": "Josef Václav Sládek",
-    "summary": "ジャーナリズム",
-    "bio": "ジャーナリズム, journalist",
+    "summary": "教育",
+    "bio": "教育, teacher",
     "tags": [
-      "ジャーナリズム",
-      "journalist"
+      "教育",
+      "teacher"
     ],
     "affiliations": []
   },
@@ -1935,13 +4735,13 @@
     "source_name": "wikidata",
     "external_id": "Q87781872",
     "source_url": "https://www.wikidata.org/wiki/Q87781872",
-    "fetched_at": "2026-04-05T03:08:47Z",
+    "fetched_at": "2026-04-05T03:30:12Z",
     "display_name": "茶山一彰",
-    "summary": "科学",
-    "bio": "科学, scientist",
+    "summary": "医学",
+    "bio": "医学, physician",
     "tags": [
-      "科学",
-      "scientist"
+      "医学",
+      "physician"
     ],
     "affiliations": []
   },
@@ -2089,13 +4889,13 @@
     "source_name": "wikidata",
     "external_id": "Q363887",
     "source_url": "https://www.wikidata.org/wiki/Q363887",
-    "fetched_at": "2026-04-05T03:08:46Z",
+    "fetched_at": "2026-04-05T03:30:27Z",
     "display_name": "シモエンス・ロペス・ネット",
-    "summary": "企業経営",
-    "bio": "企業経営, businessperson",
+    "summary": "ジャーナリズム",
+    "bio": "ジャーナリズム, journalist",
     "tags": [
-      "企業経営",
-      "businessperson"
+      "ジャーナリズム",
+      "journalist"
     ],
     "affiliations": []
   },
@@ -2299,13 +5099,13 @@
     "source_name": "wikidata",
     "external_id": "Q1124",
     "source_url": "https://www.wikidata.org/wiki/Q1124",
-    "fetched_at": "2026-04-05T03:08:42Z",
+    "fetched_at": "2026-04-05T03:30:23Z",
     "display_name": "ビル・クリントン",
-    "summary": "法律",
-    "bio": "法律, lawyer",
+    "summary": "教育",
+    "bio": "教育, teacher",
     "tags": [
-      "法律",
-      "lawyer"
+      "教育",
+      "teacher"
     ],
     "affiliations": []
   },
@@ -2341,13 +5141,13 @@
     "source_name": "wikidata",
     "external_id": "Q61064",
     "source_url": "https://www.wikidata.org/wiki/Q61064",
-    "fetched_at": "2026-04-05T03:08:42Z",
+    "fetched_at": "2026-04-05T03:30:22Z",
     "display_name": "ワシリー・カンディンスキー",
-    "summary": "法律",
-    "bio": "法律, lawyer",
+    "summary": "教育",
+    "bio": "教育, teacher",
     "tags": [
-      "法律",
-      "lawyer"
+      "教育",
+      "teacher"
     ],
     "affiliations": []
   },
@@ -2551,13 +5351,13 @@
     "source_name": "wikidata",
     "external_id": "Q4916299",
     "source_url": "https://www.wikidata.org/wiki/Q4916299",
-    "fetched_at": "2026-04-05T03:08:39Z",
+    "fetched_at": "2026-04-05T03:30:22Z",
     "display_name": "Birgitta Sellén",
-    "summary": "政治",
-    "bio": "政治, politician",
+    "summary": "教育",
+    "bio": "教育, teacher",
     "tags": [
-      "政治",
-      "politician"
+      "教育",
+      "teacher"
     ],
     "affiliations": []
   },

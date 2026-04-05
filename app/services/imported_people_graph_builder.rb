@@ -1,3 +1,4 @@
+require_dependency Rails.root.join("app/services/person_graph_metadata_builder").to_s
 class ImportedPeopleGraphBuilder
   MAX_TAG_GROUP_SIZE = 18
   MAX_ORGANIZATION_GROUP_SIZE = 24
@@ -14,7 +15,9 @@ class ImportedPeopleGraphBuilder
       centerId: nil,
       nodes: nodes,
       edges: selected_edges,
-      layout: "rings"
+      layout: "rings",
+      variant: "person_focus",
+      ariaLabel: "人物関係図"
     }
   end
 
@@ -153,20 +156,7 @@ class ImportedPeopleGraphBuilder
   def metadata_index
     @metadata_index ||= @people.each_with_object({}) do |person, index|
       resolved_metadata = @profile_metadata_by_person_id.fetch(person.id, {})
-
-      index[person.id] = {
-        tags: normalized_terms(
-          person.tags.map(&:name) +
-          person.person_external_profiles.flat_map(&:cached_graph_tags) +
-          Array(resolved_metadata[:tags])
-        ),
-        organizations: normalized_terms(
-          person.organizations.map(&:name) +
-          person.person_external_profiles.flat_map(&:cached_graph_organizations) +
-          Array(resolved_metadata[:organizations])
-        ),
-        source_names: person.person_external_profiles.map(&:source_name).compact.uniq
-      }
+      index[person.id] = PersonGraphMetadataBuilder.build(person, profile_metadata: resolved_metadata)
     end
   end
 
@@ -184,11 +174,7 @@ class ImportedPeopleGraphBuilder
 
   def missing_cache_count
     @people.count do |person|
-      person.tags.empty? &&
-        person.organizations.empty? &&
-        person.person_external_profiles.all? do |profile|
-          profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
-        end
+      person.person_external_profiles.any? && !PersonGraphMetadataBuilder.new(person).graph_ready?
     end
   end
 

@@ -153,6 +153,56 @@ class UserFlowsTest < ActionDispatch::IntegrationTest
     assert_equal 1, person.research_notes.count
   end
 
+  test "person detail uses fit modes and insight topics to build local relationships" do
+    ada = Person.create!(
+      display_name: "Ada Lovelace",
+      publication_status: "published",
+      fit_modes: "登壇向き, 相談向き",
+      recommended_for: "AI の企画を整理する会話に向いています。"
+    )
+    babbage = Person.create!(
+      display_name: "Charles Babbage",
+      publication_status: "published",
+      fit_modes: "登壇向き",
+      meeting_value: "AI と計算機の話題を深められます。"
+    )
+
+    get person_path(ada)
+
+    assert_response :success
+    assert_match "人物起点マップ", response.body
+    assert_match "charles-babbage", response.body
+    assert_match(/共通テーマ: .*登壇向き/, response.body)
+    assert_match(/共通テーマ: .*AI/, response.body)
+  end
+
+  test "global people graph uses fit modes and insight topics for local-only people" do
+    Person.create!(
+      display_name: "Ada Lovelace",
+      publication_status: "published",
+      fit_modes: "登壇向き, 相談向き",
+      recommended_for: "AI の企画を整理する会話に向いています。"
+    )
+    Person.create!(
+      display_name: "Charles Babbage",
+      publication_status: "published",
+      fit_modes: "登壇向き",
+      meeting_value: "AI と計算機の話題を深められます。"
+    )
+    Person.create!(
+      display_name: "Grace Hopper",
+      publication_status: "published",
+      fit_modes: "登壇向き",
+      introduction_note: "AI とソフトウェアの橋渡し役として紹介しやすいです。"
+    )
+
+    get graph_people_path
+
+    assert_response :success
+    assert_match "登壇向き", response.body
+    assert_match "tag-", response.body
+  end
+
   test "person detail shows relationship map around the focal person" do
     ada = Person.create!(display_name: "Ada Lovelace", publication_status: "published")
     babbage = Person.create!(display_name: "Charles Babbage", publication_status: "published")

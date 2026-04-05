@@ -3,6 +3,7 @@ require_dependency Rails.root.join("app/services/clustered_people_graph_builder"
 require_dependency Rails.root.join("app/services/cluster_focus_graph_builder").to_s
 require_dependency Rails.root.join("app/services/people_graph_snapshot").to_s
 require_dependency Rails.root.join("app/services/person_neighborhood_graph_builder").to_s
+require_dependency Rails.root.join("app/services/person_graph_metadata_builder").to_s
 require_dependency Rails.root.join("app/services/person_public_estimate_builder").to_s
 require_dependency Rails.root.join("app/services/external_people/profile_resolver").to_s
 require_dependency Rails.root.join("app/services/edit_history_recorder").to_s
@@ -427,11 +428,8 @@ class PeopleController < ApplicationController
 
   def build_relationship_graphs
     candidate_people = graph_candidate_people
-    focal_metadata = {
-      tags: @resolved_person_profile[:tags],
-      organizations: Array(@resolved_person_profile[:affiliations]).map { |affiliation| affiliation[:name] || affiliation["name"] }
-    }
-    fallback_metadata_index = person_graph_fallback_metadata_index_for(candidate_people + [ @person ])
+    graph_metadata_index = merged_graph_metadata_index_for(candidate_people + [ @person ])
+    focal_metadata = graph_metadata_index.fetch(@person.id, local_graph_metadata_for(@person))
 
     1.upto(3).each_with_object({}) do |depth, graphs|
       graph = PersonNeighborhoodGraphBuilder.new(
@@ -439,7 +437,7 @@ class PeopleController < ApplicationController
         candidates: candidate_people,
         focal_metadata:,
         depth:,
-        profile_metadata_by_person_id: fallback_metadata_index
+        profile_metadata_by_person_id: graph_metadata_index.except(@person.id)
       ).payload
 
       graph[:labelMode] = "all"
@@ -618,14 +616,26 @@ class PeopleController < ApplicationController
     {}
   end
 
+  def merged_graph_metadata_index_for(people)
+    local_index = local_profile_metadata_index_for(people)
+    fallback_index = person_graph_fallback_metadata_index_for(people)
+
+    Array(people).compact.uniq { |person| person.id }.each_with_object({}) do |person, index|
+      local_metadata = local_index.fetch(person.id, {})
+      fallback_metadata = fallback_index.fetch(person.id, {})
+
+      index[person.id] = {
+        tags: normalize_graph_terms(Array(local_metadata[:tags]) + Array(fallback_metadata[:tags])),
+        organizations: normalize_graph_terms(Array(local_metadata[:organizations]) + Array(fallback_metadata[:organizations])),
+        source_names: Array(local_metadata[:source_names]).presence || person.person_external_profiles.map(&:source_name).compact.uniq
+      }
+    end
+  end
+
   def missing_graph_metadata_for?(person)
     return false unless person.person_external_profiles.any?
 
-    person.tags.empty? &&
-      person.organizations.empty? &&
-      person.person_external_profiles.all? do |profile|
-        profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
-      end
+    !PersonGraphMetadataBuilder.new(person).graph_ready?
   end
 
   def fallback_metadata_priority_for(person)
@@ -742,22 +752,13 @@ class PeopleController < ApplicationController
 
 
   def local_profile_metadata_index_for(people)
-    Array(people).compact.uniq { |person| person.id }.index_with do |person|
-      local_graph_metadata_for(person)
+    Array(people).compact.uniq { |person| person.id }.each_with_object({}) do |person, index|
+      index[person.id] = local_graph_metadata_for(person)
     end
   end
 
   def local_graph_metadata_for(person)
-    {
-      tags: normalize_graph_terms(
-        person.tags.map(&:name) +
-        person.person_external_profiles.flat_map(&:cached_graph_tags)
-      ),
-      organizations: normalize_graph_terms(
-        person.organizations.map(&:name) +
-        person.person_external_profiles.flat_map(&:cached_graph_organizations)
-      )
-    }
+    PersonGraphMetadataBuilder.build(person)
   end
 
   def normalize_graph_terms(values)

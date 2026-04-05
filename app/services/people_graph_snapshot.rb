@@ -1,3 +1,4 @@
+require_dependency Rails.root.join("app/services/person_graph_metadata_builder").to_s
 class PeopleGraphSnapshot
   CACHE_NAMESPACE = "people-graph/v2".freeze
   CACHE_TTL = 30.minutes
@@ -82,12 +83,11 @@ class PeopleGraphSnapshot
   def graph_profile_metadata_index_for(people)
     target_people = Array(people).compact.uniq { |person| person.id }.select do |person|
       next false unless person.person_external_profiles.any?
+      next false if PersonGraphMetadataBuilder.new(person).graph_ready?
 
-      person.tags.empty? &&
-        person.organizations.empty? &&
-        person.person_external_profiles.all? do |profile|
-          profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
-        end
+      person.person_external_profiles.all? do |profile|
+        profile.cached_graph_tags.empty? && profile.cached_graph_organizations.empty?
+      end
     end
 
     return {} if target_people.empty?

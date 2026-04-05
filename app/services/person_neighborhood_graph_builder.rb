@@ -24,7 +24,9 @@ class PersonNeighborhoodGraphBuilder
     {
       centerId: @focal_person.id,
       nodes: nodes,
-      edges: edges
+      edges: edges,
+      variant: "person_focus",
+      ariaLabel: "#{@focal_person.display_name} を中心にした人物起点マップ"
     }
   end
 
@@ -41,7 +43,9 @@ class PersonNeighborhoodGraphBuilder
           role: "focus"
         }
       ],
-      edges: []
+      edges: [],
+      variant: "person_focus",
+      ariaLabel: "#{@focal_person.display_name} を中心にした人物起点マップ"
     }
   end
 
